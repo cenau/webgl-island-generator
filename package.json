@@ -1,5 +1,5 @@
 {
-  "name": "gameskel",
+  "name": "terrain-shaders",
   "version": "0.0.0",
   "description": "",
   "main": "",
@@ -11,7 +11,8 @@
     "keydrown": "^1.2.2",
     "three": "*",
     "three-effectcomposer": "0.0.1",
-    "tiny-ecs": "^2.0.0"
+    "tiny-ecs": "^2.0.0",
+    "dat.gui": "dataarts/dat.gui"
   },
   "devDependencies": {
     "babel-cli": "*",

@@ -7,11 +7,7 @@ const EffectComposer = ec(THREE)
 //import { glslify } from 'glslify'
 const glslify = require('glslify') // needed for bug https://github.com/stackgl/glslify/issues/49 - if you try using fixes like glslify babel plugin, then shaders wont live reload!!
 import CANNON from 'cannon'
-
-
-function ready() {
-
-}
+import dat from 'dat.gui'
 
 //systems 
 import initPhysics from './initPhysics'
@@ -29,6 +25,8 @@ import Quaternion from './Quaternion'
 //assets 
 
 const scene = new THREE.Scene()
+const gui = new dat.GUI()
+document.getElementsByClassName('dg')[0].style.zIndex = 1;
 
 
 //physics 
@@ -68,11 +66,11 @@ player.addComponent(Physics);
 player.addComponent(Graphics);
 player.addComponent(WASD);
 
-player.position.y = 8 
+player.position.y = 2 
 
 
-renderer.setClearColor(0xff6600, 1)
-
+//renderer.setClearColor(0xff6600, 1)
+renderer.setClearColor(0xeeeeee, 1)
 var fixedTimeStep = 1 / 60; // physics engine setting - keeps render framerate and sim in sync
 var maxSubSteps = 10; // physics engine setting - not 100% sure what this does
 
@@ -115,7 +113,12 @@ const deform_mat = new THREE.ShaderMaterial({
   vertexShader: glslify('../shaders/deform_vert.glsl'),
   fragmentShader: glslify('../shaders/deform_frag.glsl'),
   transparent: true,
-  uniforms: {
+  uniforms: { 
+    lacunarity: { type:'f',value:0.29},
+    gain: { type:'f',value:0.94},
+    fbmx: { type:'f',value:0.5},
+    fbmy: { type:'f',value:0.5},
+    deformAmount: { type:'f',value:0.3},
     iGlobalTime: { type: 'f', value: 0 },
     iResolution: {type: 'v2', value: new THREE.Vector2()},
   },
@@ -123,6 +126,17 @@ const deform_mat = new THREE.ShaderMaterial({
     USE_MAP: ''
   }
 })
+
+gui.add(deform_mat.uniforms.fbmx, 'value', -5, 5)
+    .name('fbmx');
+gui.add(deform_mat.uniforms.fbmy, 'value', -5, 5)
+    .name('fbmy');
+gui.add(deform_mat.uniforms.lacunarity, 'value', -5, 5)
+    .name('lacunarity');
+gui.add(deform_mat.uniforms.gain, 'value', -5, 5)
+    .name('gain');
+gui.add(deform_mat.uniforms.deformAmount, 'value', -5, 5)
+    .name('deform amount');
 
 const app = createLoop(canvas, { scale: renderer.devicePixelRatio })
 
@@ -135,20 +149,32 @@ let time = 0
 //the terrain plane
 var geom = new THREE.PlaneGeometry(
 			    300, 300, // Width and Height
-			        300, 300    // Terrain resolution
+			        10, 10   // Terrain resolution
 			)
 
 
 const plane = ents.createEntity();
 plane.addComponent(Graphics);
 plane.addComponent(Position);
-plane.addComponent(StickToTarget);
 plane.graphics.mesh = new THREE.Mesh(geom);
 
 plane.graphics.mesh.material = deform_mat 
 plane.graphics.mesh.material.side=THREE.DoubleSide
 plane.graphics.mesh.rotation.x -= 90 * Math.PI/180;
+plane.position.y = 6;
+plane.addComponent(StickToTarget);
 plane.stickToTarget.target = player;
+
+const plane2 = ents.createEntity();
+plane2.addComponent(Graphics);
+plane2.addComponent(Position);
+plane2.graphics.mesh = new THREE.Mesh(geom);
+
+plane2.graphics.mesh.material = deform_mat 
+plane2.graphics.mesh.material.side=THREE.DoubleSide
+plane2.graphics.mesh.rotation.x -= 90 * Math.PI/180;
+plane2.addComponent(StickToTarget);
+plane2.stickToTarget.target = player;
 
 
 app.on('tick', dt => {

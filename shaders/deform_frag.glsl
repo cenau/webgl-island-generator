@@ -18,10 +18,11 @@ varying float deform2;
 
 void main() {
     vec2 st = vUv;
-    vec3 color = vec3(0.8 + deform * 0.5,0.2,0.5-2.*deform); 
+    //vec3 color = vec3(0.8 + deform * 0.5,0.2,0.5-2.*deform); 
+    vec3 color = vec3(deform); 
 float fogDistance = gl_FragCoord.z / gl_FragCoord.w;
   float fogAmount = fog_exp2(fogDistance, FOG_DENSITY);
-  vec4 fogColor = vec4(1,0.5,0.,1.); // white 
+  vec4 fogColor = vec4(1.,1.,1.,1.); // white 
 
-    gl_FragColor = vec4(mix(vec4(color, 1.0),fogColor,fogAmount));
+    gl_FragColor = vec4(mix(vec4(color, 0.5),fogColor,fogAmount));
 }
