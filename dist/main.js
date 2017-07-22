@@ -13738,7 +13738,7 @@ function fit(canvas, parent, scale) {
   }
 }
 
-},{"element-size":4}],3:[function(require,module,exports){
+},{"element-size":28}],3:[function(require,module,exports){
 var fitter = require('canvas-fit')
 var loop = require('raf-loop')
 
@@ -13794,7 +13794,4194 @@ module.exports = function (canvas, opt) {
   }
 }
 
-},{"canvas-fit":2,"raf-loop":11}],4:[function(require,module,exports){
+},{"canvas-fit":2,"raf-loop":35}],4:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _index = require('./src/dat/index');
+
+var _index2 = _interopRequireDefault(_index);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = _index2.default; /**
+                                    * dat-gui JavaScript Controller Library
+                                    * http://code.google.com/p/dat-gui
+                                    *
+                                    * Copyright 2011 Data Arts Team, Google Creative Lab
+                                    *
+                                    * Licensed under the Apache License, Version 2.0 (the "License");
+                                    * you may not use this file except in compliance with the License.
+                                    * You may obtain a copy of the License at
+                                    *
+                                    * http://www.apache.org/licenses/LICENSE-2.0
+                                    */
+
+},{"./src/dat/index":24}],5:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * dat-gui JavaScript Controller Library
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * http://code.google.com/p/dat-gui
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Copyright 2011 Data Arts Team, Google Creative Lab
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Licensed under the Apache License, Version 2.0 (the "License");
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * you may not use this file except in compliance with the License.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * You may obtain a copy of the License at
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * http://www.apache.org/licenses/LICENSE-2.0
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
+
+var _interpret = require('./interpret');
+
+var _interpret2 = _interopRequireDefault(_interpret);
+
+var _math = require('./math');
+
+var _math2 = _interopRequireDefault(_math);
+
+var _toString = require('./toString');
+
+var _toString2 = _interopRequireDefault(_toString);
+
+var _common = require('../utils/common');
+
+var _common2 = _interopRequireDefault(_common);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Color = function () {
+  function Color() {
+    _classCallCheck(this, Color);
+
+    this.__state = _interpret2.default.apply(this, arguments);
+
+    if (this.__state === false) {
+      throw new Error('Failed to interpret color arguments');
+    }
+
+    this.__state.a = this.__state.a || 1;
+  }
+
+  _createClass(Color, [{
+    key: 'toString',
+    value: function toString() {
+      return (0, _toString2.default)(this);
+    }
+  }, {
+    key: 'toHexString',
+    value: function toHexString() {
+      return (0, _toString2.default)(this, true);
+    }
+  }, {
+    key: 'toOriginal',
+    value: function toOriginal() {
+      return this.__state.conversion.write(this);
+    }
+  }]);
+
+  return Color;
+}();
+
+function defineRGBComponent(target, component, componentHexIndex) {
+  Object.defineProperty(target, component, {
+    get: function get() {
+      if (this.__state.space === 'RGB') {
+        return this.__state[component];
+      }
+
+      Color.recalculateRGB(this, component, componentHexIndex);
+
+      return this.__state[component];
+    },
+
+    set: function set(v) {
+      if (this.__state.space !== 'RGB') {
+        Color.recalculateRGB(this, component, componentHexIndex);
+        this.__state.space = 'RGB';
+      }
+
+      this.__state[component] = v;
+    }
+  });
+}
+
+function defineHSVComponent(target, component) {
+  Object.defineProperty(target, component, {
+    get: function get() {
+      if (this.__state.space === 'HSV') {
+        return this.__state[component];
+      }
+
+      Color.recalculateHSV(this);
+
+      return this.__state[component];
+    },
+
+    set: function set(v) {
+      if (this.__state.space !== 'HSV') {
+        Color.recalculateHSV(this);
+        this.__state.space = 'HSV';
+      }
+
+      this.__state[component] = v;
+    }
+  });
+}
+
+Color.recalculateRGB = function (color, component, componentHexIndex) {
+  if (color.__state.space === 'HEX') {
+    color.__state[component] = _math2.default.component_from_hex(color.__state.hex, componentHexIndex);
+  } else if (color.__state.space === 'HSV') {
+    _common2.default.extend(color.__state, _math2.default.hsv_to_rgb(color.__state.h, color.__state.s, color.__state.v));
+  } else {
+    throw new Error('Corrupted color state');
+  }
+};
+
+Color.recalculateHSV = function (color) {
+  var result = _math2.default.rgb_to_hsv(color.r, color.g, color.b);
+
+  _common2.default.extend(color.__state, {
+    s: result.s,
+    v: result.v
+  });
+
+  if (!_common2.default.isNaN(result.h)) {
+    color.__state.h = result.h;
+  } else if (_common2.default.isUndefined(color.__state.h)) {
+    color.__state.h = 0;
+  }
+};
+
+Color.COMPONENTS = ['r', 'g', 'b', 'h', 's', 'v', 'hex', 'a'];
+
+defineRGBComponent(Color.prototype, 'r', 2);
+defineRGBComponent(Color.prototype, 'g', 1);
+defineRGBComponent(Color.prototype, 'b', 0);
+
+defineHSVComponent(Color.prototype, 'h');
+defineHSVComponent(Color.prototype, 's');
+defineHSVComponent(Color.prototype, 'v');
+
+Object.defineProperty(Color.prototype, 'a', {
+  get: function get() {
+    return this.__state.a;
+  },
+
+  set: function set(v) {
+    this.__state.a = v;
+  }
+});
+
+Object.defineProperty(Color.prototype, 'hex', {
+  get: function get() {
+    if (!this.__state.space !== 'HEX') {
+      this.__state.hex = _math2.default.rgb_to_hex(this.r, this.g, this.b);
+    }
+
+    return this.__state.hex;
+  },
+
+  set: function set(v) {
+    this.__state.space = 'HEX';
+    this.__state.hex = v;
+  }
+});
+
+exports.default = Color;
+
+},{"../utils/common":25,"./interpret":6,"./math":7,"./toString":8}],6:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _toString = require('./toString');
+
+var _toString2 = _interopRequireDefault(_toString);
+
+var _common = require('../utils/common');
+
+var _common2 = _interopRequireDefault(_common);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * dat-gui JavaScript Controller Library
+ * http://code.google.com/p/dat-gui
+ *
+ * Copyright 2011 Data Arts Team, Google Creative Lab
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+var INTERPRETATIONS = [
+// Strings
+{
+  litmus: _common2.default.isString,
+  conversions: {
+    THREE_CHAR_HEX: {
+      read: function read(original) {
+        var test = original.match(/^#([A-F0-9])([A-F0-9])([A-F0-9])$/i);
+        if (test === null) {
+          return false;
+        }
+
+        return {
+          space: 'HEX',
+          hex: parseInt('0x' + test[1].toString() + test[1].toString() + test[2].toString() + test[2].toString() + test[3].toString() + test[3].toString(), 0)
+        };
+      },
+
+      write: _toString2.default
+    },
+
+    SIX_CHAR_HEX: {
+      read: function read(original) {
+        var test = original.match(/^#([A-F0-9]{6})$/i);
+        if (test === null) {
+          return false;
+        }
+
+        return {
+          space: 'HEX',
+          hex: parseInt('0x' + test[1].toString(), 0)
+        };
+      },
+
+      write: _toString2.default
+    },
+
+    CSS_RGB: {
+      read: function read(original) {
+        var test = original.match(/^rgb\(\s*(.+)\s*,\s*(.+)\s*,\s*(.+)\s*\)/);
+        if (test === null) {
+          return false;
+        }
+
+        return {
+          space: 'RGB',
+          r: parseFloat(test[1]),
+          g: parseFloat(test[2]),
+          b: parseFloat(test[3])
+        };
+      },
+
+      write: _toString2.default
+    },
+
+    CSS_RGBA: {
+      read: function read(original) {
+        var test = original.match(/^rgba\(\s*(.+)\s*,\s*(.+)\s*,\s*(.+)\s*,\s*(.+)\s*\)/);
+        if (test === null) {
+          return false;
+        }
+
+        return {
+          space: 'RGB',
+          r: parseFloat(test[1]),
+          g: parseFloat(test[2]),
+          b: parseFloat(test[3]),
+          a: parseFloat(test[4])
+        };
+      },
+
+      write: _toString2.default
+    }
+  }
+},
+
+// Numbers
+{
+  litmus: _common2.default.isNumber,
+
+  conversions: {
+
+    HEX: {
+      read: function read(original) {
+        return {
+          space: 'HEX',
+          hex: original,
+          conversionName: 'HEX'
+        };
+      },
+
+      write: function write(color) {
+        return color.hex;
+      }
+    }
+
+  }
+
+},
+
+// Arrays
+{
+  litmus: _common2.default.isArray,
+  conversions: {
+    RGB_ARRAY: {
+      read: function read(original) {
+        if (original.length !== 3) {
+          return false;
+        }
+
+        return {
+          space: 'RGB',
+          r: original[0],
+          g: original[1],
+          b: original[2]
+        };
+      },
+
+      write: function write(color) {
+        return [color.r, color.g, color.b];
+      }
+    },
+
+    RGBA_ARRAY: {
+      read: function read(original) {
+        if (original.length !== 4) return false;
+        return {
+          space: 'RGB',
+          r: original[0],
+          g: original[1],
+          b: original[2],
+          a: original[3]
+        };
+      },
+
+      write: function write(color) {
+        return [color.r, color.g, color.b, color.a];
+      }
+    }
+  }
+},
+
+// Objects
+{
+  litmus: _common2.default.isObject,
+  conversions: {
+
+    RGBA_OBJ: {
+      read: function read(original) {
+        if (_common2.default.isNumber(original.r) && _common2.default.isNumber(original.g) && _common2.default.isNumber(original.b) && _common2.default.isNumber(original.a)) {
+          return {
+            space: 'RGB',
+            r: original.r,
+            g: original.g,
+            b: original.b,
+            a: original.a
+          };
+        }
+        return false;
+      },
+
+      write: function write(color) {
+        return {
+          r: color.r,
+          g: color.g,
+          b: color.b,
+          a: color.a
+        };
+      }
+    },
+
+    RGB_OBJ: {
+      read: function read(original) {
+        if (_common2.default.isNumber(original.r) && _common2.default.isNumber(original.g) && _common2.default.isNumber(original.b)) {
+          return {
+            space: 'RGB',
+            r: original.r,
+            g: original.g,
+            b: original.b
+          };
+        }
+        return false;
+      },
+
+      write: function write(color) {
+        return {
+          r: color.r,
+          g: color.g,
+          b: color.b
+        };
+      }
+    },
+
+    HSVA_OBJ: {
+      read: function read(original) {
+        if (_common2.default.isNumber(original.h) && _common2.default.isNumber(original.s) && _common2.default.isNumber(original.v) && _common2.default.isNumber(original.a)) {
+          return {
+            space: 'HSV',
+            h: original.h,
+            s: original.s,
+            v: original.v,
+            a: original.a
+          };
+        }
+        return false;
+      },
+
+      write: function write(color) {
+        return {
+          h: color.h,
+          s: color.s,
+          v: color.v,
+          a: color.a
+        };
+      }
+    },
+
+    HSV_OBJ: {
+      read: function read(original) {
+        if (_common2.default.isNumber(original.h) && _common2.default.isNumber(original.s) && _common2.default.isNumber(original.v)) {
+          return {
+            space: 'HSV',
+            h: original.h,
+            s: original.s,
+            v: original.v
+          };
+        }
+        return false;
+      },
+
+      write: function write(color) {
+        return {
+          h: color.h,
+          s: color.s,
+          v: color.v
+        };
+      }
+    }
+  }
+}];
+
+var result = void 0;
+var toReturn = void 0;
+
+var interpret = function interpret() {
+  toReturn = false;
+
+  var original = arguments.length > 1 ? _common2.default.toArray(arguments) : arguments[0];
+  _common2.default.each(INTERPRETATIONS, function (family) {
+    if (family.litmus(original)) {
+      _common2.default.each(family.conversions, function (conversion, conversionName) {
+        result = conversion.read(original);
+
+        if (toReturn === false && result !== false) {
+          toReturn = result;
+          result.conversionName = conversionName;
+          result.conversion = conversion;
+          return _common2.default.BREAK;
+        }
+      });
+
+      return _common2.default.BREAK;
+    }
+  });
+
+  return toReturn;
+};
+
+exports.default = interpret;
+
+},{"../utils/common":25,"./toString":8}],7:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+/**
+ * dat-gui JavaScript Controller Library
+ * http://code.google.com/p/dat-gui
+ *
+ * Copyright 2011 Data Arts Team, Google Creative Lab
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+var tmpComponent = void 0;
+
+var ColorMath = {
+  hsv_to_rgb: function hsv_to_rgb(h, s, v) {
+    var hi = Math.floor(h / 60) % 6;
+
+    var f = h / 60 - Math.floor(h / 60);
+    var p = v * (1.0 - s);
+    var q = v * (1.0 - f * s);
+    var t = v * (1.0 - (1.0 - f) * s);
+
+    var c = [[v, t, p], [q, v, p], [p, v, t], [p, q, v], [t, p, v], [v, p, q]][hi];
+
+    return {
+      r: c[0] * 255,
+      g: c[1] * 255,
+      b: c[2] * 255
+    };
+  },
+
+  rgb_to_hsv: function rgb_to_hsv(r, g, b) {
+    var min = Math.min(r, g, b);
+    var max = Math.max(r, g, b);
+    var delta = max - min;
+    var h = void 0;
+    var s = void 0;
+
+    if (max !== 0) {
+      s = delta / max;
+    } else {
+      return {
+        h: NaN,
+        s: 0,
+        v: 0
+      };
+    }
+
+    if (r === max) {
+      h = (g - b) / delta;
+    } else if (g === max) {
+      h = 2 + (b - r) / delta;
+    } else {
+      h = 4 + (r - g) / delta;
+    }
+    h /= 6;
+    if (h < 0) {
+      h += 1;
+    }
+
+    return {
+      h: h * 360,
+      s: s,
+      v: max / 255
+    };
+  },
+
+  rgb_to_hex: function rgb_to_hex(r, g, b) {
+    var hex = this.hex_with_component(0, 2, r);
+    hex = this.hex_with_component(hex, 1, g);
+    hex = this.hex_with_component(hex, 0, b);
+    return hex;
+  },
+
+  component_from_hex: function component_from_hex(hex, componentIndex) {
+    return hex >> componentIndex * 8 & 0xFF;
+  },
+
+  hex_with_component: function hex_with_component(hex, componentIndex, value) {
+    return value << (tmpComponent = componentIndex * 8) | hex & ~(0xFF << tmpComponent);
+  }
+};
+
+exports.default = ColorMath;
+
+},{}],8:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+exports.default = function (color, forceCSSHex) {
+  var colorFormat = color.__state.conversionName.toString();
+
+  var r = Math.round(color.r);
+  var g = Math.round(color.g);
+  var b = Math.round(color.b);
+  var a = color.a;
+  var h = Math.round(color.h);
+  var s = color.s.toFixed(1);
+  var v = color.v.toFixed(1);
+
+  if (forceCSSHex || colorFormat === 'THREE_CHAR_HEX' || colorFormat === 'SIX_CHAR_HEX') {
+    var str = color.hex.toString(16);
+    while (str.length < 6) {
+      str = '0' + str;
+    }
+    return '#' + str;
+  } else if (colorFormat === 'CSS_RGB') {
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+  } else if (colorFormat === 'CSS_RGBA') {
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+  } else if (colorFormat === 'HEX') {
+    return '0x' + color.hex.toString(16);
+  } else if (colorFormat === 'RGB_ARRAY') {
+    return '[' + r + ',' + g + ',' + b + ']';
+  } else if (colorFormat === 'RGBA_ARRAY') {
+    return '[' + r + ',' + g + ',' + b + ',' + a + ']';
+  } else if (colorFormat === 'RGB_OBJ') {
+    return '{r:' + r + ',g:' + g + ',b:' + b + '}';
+  } else if (colorFormat === 'RGBA_OBJ') {
+    return '{r:' + r + ',g:' + g + ',b:' + b + ',a:' + a + '}';
+  } else if (colorFormat === 'HSV_OBJ') {
+    return '{h:' + h + ',s:' + s + ',v:' + v + '}';
+  } else if (colorFormat === 'HSVA_OBJ') {
+    return '{h:' + h + ',s:' + s + ',v:' + v + ',a:' + a + '}';
+  }
+
+  return 'unknown format';
+};
+
+},{}],9:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _Controller2 = require('./Controller');
+
+var _Controller3 = _interopRequireDefault(_Controller2);
+
+var _dom = require('../dom/dom');
+
+var _dom2 = _interopRequireDefault(_dom);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * dat-gui JavaScript Controller Library
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * http://code.google.com/p/dat-gui
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Copyright 2011 Data Arts Team, Google Creative Lab
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Licensed under the Apache License, Version 2.0 (the "License");
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * you may not use this file except in compliance with the License.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * You may obtain a copy of the License at
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * http://www.apache.org/licenses/LICENSE-2.0
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+
+/**
+ * @class Provides a checkbox input to alter the boolean property of an object.
+ * @extends dat.controllers.Controller
+ *
+ * @param {Object} object The object to be manipulated
+ * @param {string} property The name of the property to be manipulated
+ *
+ * @member dat.controllers
+ */
+var BooleanController = function (_Controller) {
+  _inherits(BooleanController, _Controller);
+
+  function BooleanController(object, property) {
+    _classCallCheck(this, BooleanController);
+
+    var _this2 = _possibleConstructorReturn(this, (BooleanController.__proto__ || Object.getPrototypeOf(BooleanController)).call(this, object, property));
+
+    var _this = _this2;
+    _this2.__prev = _this2.getValue();
+
+    _this2.__checkbox = document.createElement('input');
+    _this2.__checkbox.setAttribute('type', 'checkbox');
+
+    function onChange() {
+      _this.setValue(!_this.__prev);
+    }
+
+    _dom2.default.bind(_this2.__checkbox, 'change', onChange, false);
+
+    _this2.domElement.appendChild(_this2.__checkbox);
+
+    // Match original value
+    _this2.updateDisplay();
+    return _this2;
+  }
+
+  _createClass(BooleanController, [{
+    key: 'setValue',
+    value: function setValue(v) {
+      var toReturn = _get(BooleanController.prototype.__proto__ || Object.getPrototypeOf(BooleanController.prototype), 'setValue', this).call(this, v);
+      if (this.__onFinishChange) {
+        this.__onFinishChange.call(this, this.getValue());
+      }
+      this.__prev = this.getValue();
+      return toReturn;
+    }
+  }, {
+    key: 'updateDisplay',
+    value: function updateDisplay() {
+      if (this.getValue() === true) {
+        this.__checkbox.setAttribute('checked', 'checked');
+        this.__checkbox.checked = true;
+        this.__prev = true;
+      } else {
+        this.__checkbox.checked = false;
+        this.__prev = false;
+      }
+
+      return _get(BooleanController.prototype.__proto__ || Object.getPrototypeOf(BooleanController.prototype), 'updateDisplay', this).call(this);
+    }
+  }]);
+
+  return BooleanController;
+}(_Controller3.default);
+
+exports.default = BooleanController;
+
+},{"../dom/dom":20,"./Controller":11}],10:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Controller2 = require('./Controller');
+
+var _Controller3 = _interopRequireDefault(_Controller2);
+
+var _dom = require('../dom/dom');
+
+var _dom2 = _interopRequireDefault(_dom);
+
+var _Color = require('../color/Color');
+
+var _Color2 = _interopRequireDefault(_Color);
+
+var _interpret = require('../color/interpret');
+
+var _interpret2 = _interopRequireDefault(_interpret);
+
+var _common = require('../utils/common');
+
+var _common2 = _interopRequireDefault(_common);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * dat-gui JavaScript Controller Library
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * http://code.google.com/p/dat-gui
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Copyright 2011 Data Arts Team, Google Creative Lab
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Licensed under the Apache License, Version 2.0 (the "License");
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * you may not use this file except in compliance with the License.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * You may obtain a copy of the License at
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * http://www.apache.org/licenses/LICENSE-2.0
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+
+var ColorController = function (_Controller) {
+  _inherits(ColorController, _Controller);
+
+  function ColorController(object, property) {
+    _classCallCheck(this, ColorController);
+
+    var _this2 = _possibleConstructorReturn(this, (ColorController.__proto__ || Object.getPrototypeOf(ColorController)).call(this, object, property));
+
+    _this2.__color = new _Color2.default(_this2.getValue());
+    _this2.__temp = new _Color2.default(0);
+
+    var _this = _this2;
+
+    _this2.domElement = document.createElement('div');
+
+    _dom2.default.makeSelectable(_this2.domElement, false);
+
+    _this2.__selector = document.createElement('div');
+    _this2.__selector.className = 'selector';
+
+    _this2.__saturation_field = document.createElement('div');
+    _this2.__saturation_field.className = 'saturation-field';
+
+    _this2.__field_knob = document.createElement('div');
+    _this2.__field_knob.className = 'field-knob';
+    _this2.__field_knob_border = '2px solid ';
+
+    _this2.__hue_knob = document.createElement('div');
+    _this2.__hue_knob.className = 'hue-knob';
+
+    _this2.__hue_field = document.createElement('div');
+    _this2.__hue_field.className = 'hue-field';
+
+    _this2.__input = document.createElement('input');
+    _this2.__input.type = 'text';
+    _this2.__input_textShadow = '0 1px 1px ';
+
+    _dom2.default.bind(_this2.__input, 'keydown', function (e) {
+      if (e.keyCode === 13) {
+        // on enter
+        onBlur.call(this);
+      }
+    });
+
+    _dom2.default.bind(_this2.__input, 'blur', onBlur);
+
+    _dom2.default.bind(_this2.__selector, 'mousedown', function () /* e */{
+      _dom2.default.addClass(this, 'drag').bind(window, 'mouseup', function () /* e */{
+        _dom2.default.removeClass(_this.__selector, 'drag');
+      });
+    });
+
+    var valueField = document.createElement('div');
+
+    _common2.default.extend(_this2.__selector.style, {
+      width: '122px',
+      height: '102px',
+      padding: '3px',
+      backgroundColor: '#222',
+      boxShadow: '0px 1px 3px rgba(0,0,0,0.3)'
+    });
+
+    _common2.default.extend(_this2.__field_knob.style, {
+      position: 'absolute',
+      width: '12px',
+      height: '12px',
+      border: _this2.__field_knob_border + (_this2.__color.v < 0.5 ? '#fff' : '#000'),
+      boxShadow: '0px 1px 3px rgba(0,0,0,0.5)',
+      borderRadius: '12px',
+      zIndex: 1
+    });
+
+    _common2.default.extend(_this2.__hue_knob.style, {
+      position: 'absolute',
+      width: '15px',
+      height: '2px',
+      borderRight: '4px solid #fff',
+      zIndex: 1
+    });
+
+    _common2.default.extend(_this2.__saturation_field.style, {
+      width: '100px',
+      height: '100px',
+      border: '1px solid #555',
+      marginRight: '3px',
+      display: 'inline-block',
+      cursor: 'pointer'
+    });
+
+    _common2.default.extend(valueField.style, {
+      width: '100%',
+      height: '100%',
+      background: 'none'
+    });
+
+    linearGradient(valueField, 'top', 'rgba(0,0,0,0)', '#000');
+
+    _common2.default.extend(_this2.__hue_field.style, {
+      width: '15px',
+      height: '100px',
+      border: '1px solid #555',
+      cursor: 'ns-resize',
+      position: 'absolute',
+      top: '3px',
+      right: '3px'
+    });
+
+    hueGradient(_this2.__hue_field);
+
+    _common2.default.extend(_this2.__input.style, {
+      outline: 'none',
+      //      width: '120px',
+      textAlign: 'center',
+      //      padding: '4px',
+      //      marginBottom: '6px',
+      color: '#fff',
+      border: 0,
+      fontWeight: 'bold',
+      textShadow: _this2.__input_textShadow + 'rgba(0,0,0,0.7)'
+    });
+
+    _dom2.default.bind(_this2.__saturation_field, 'mousedown', fieldDown);
+    _dom2.default.bind(_this2.__field_knob, 'mousedown', fieldDown);
+
+    _dom2.default.bind(_this2.__hue_field, 'mousedown', function (e) {
+      setH(e);
+      _dom2.default.bind(window, 'mousemove', setH);
+      _dom2.default.bind(window, 'mouseup', fieldUpH);
+    });
+
+    function fieldDown(e) {
+      setSV(e);
+      // document.body.style.cursor = 'none';
+      _dom2.default.bind(window, 'mousemove', setSV);
+      _dom2.default.bind(window, 'mouseup', fieldUpSV);
+    }
+
+    function fieldUpSV() {
+      _dom2.default.unbind(window, 'mousemove', setSV);
+      _dom2.default.unbind(window, 'mouseup', fieldUpSV);
+      // document.body.style.cursor = 'default';
+      onFinish();
+    }
+
+    function onBlur() {
+      var i = (0, _interpret2.default)(this.value);
+      if (i !== false) {
+        _this.__color.__state = i;
+        _this.setValue(_this.__color.toOriginal());
+      } else {
+        this.value = _this.__color.toString();
+      }
+    }
+
+    function fieldUpH() {
+      _dom2.default.unbind(window, 'mousemove', setH);
+      _dom2.default.unbind(window, 'mouseup', fieldUpH);
+      onFinish();
+    }
+
+    function onFinish() {
+      if (_this.__onFinishChange) {
+        _this.__onFinishChange.call(_this, _this.__color.toOriginal());
+      }
+    }
+
+    _this2.__saturation_field.appendChild(valueField);
+    _this2.__selector.appendChild(_this2.__field_knob);
+    _this2.__selector.appendChild(_this2.__saturation_field);
+    _this2.__selector.appendChild(_this2.__hue_field);
+    _this2.__hue_field.appendChild(_this2.__hue_knob);
+
+    _this2.domElement.appendChild(_this2.__input);
+    _this2.domElement.appendChild(_this2.__selector);
+
+    _this2.updateDisplay();
+
+    function setSV(e) {
+      e.preventDefault();
+
+      var fieldRect = _this.__saturation_field.getBoundingClientRect();
+      var s = (e.clientX - fieldRect.left) / (fieldRect.right - fieldRect.left);
+      var v = 1 - (e.clientY - fieldRect.top) / (fieldRect.bottom - fieldRect.top);
+
+      if (v > 1) {
+        v = 1;
+      } else if (v < 0) {
+        v = 0;
+      }
+
+      if (s > 1) {
+        s = 1;
+      } else if (s < 0) {
+        s = 0;
+      }
+
+      _this.__color.v = v;
+      _this.__color.s = s;
+
+      _this.setValue(_this.__color.toOriginal());
+
+      return false;
+    }
+
+    function setH(e) {
+      e.preventDefault();
+
+      var fieldRect = _this.__hue_field.getBoundingClientRect();
+      var h = 1 - (e.clientY - fieldRect.top) / (fieldRect.bottom - fieldRect.top);
+
+      if (h > 1) {
+        h = 1;
+      } else if (h < 0) {
+        h = 0;
+      }
+
+      _this.__color.h = h * 360;
+
+      _this.setValue(_this.__color.toOriginal());
+
+      return false;
+    }
+    return _this2;
+  }
+
+  _createClass(ColorController, [{
+    key: 'updateDisplay',
+    value: function updateDisplay() {
+      var i = (0, _interpret2.default)(this.getValue());
+
+      if (i !== false) {
+        var mismatch = false;
+
+        // Check for mismatch on the interpreted value.
+
+        _common2.default.each(_Color2.default.COMPONENTS, function (component) {
+          if (!_common2.default.isUndefined(i[component]) && !_common2.default.isUndefined(this.__color.__state[component]) && i[component] !== this.__color.__state[component]) {
+            mismatch = true;
+            return {}; // break
+          }
+        }, this);
+
+        // If nothing diverges, we keep our previous values
+        // for statefulness, otherwise we recalculate fresh
+        if (mismatch) {
+          _common2.default.extend(this.__color.__state, i);
+        }
+      }
+
+      _common2.default.extend(this.__temp.__state, this.__color.__state);
+
+      this.__temp.a = 1;
+
+      var flip = this.__color.v < 0.5 || this.__color.s > 0.5 ? 255 : 0;
+      var _flip = 255 - flip;
+
+      _common2.default.extend(this.__field_knob.style, {
+        marginLeft: 100 * this.__color.s - 7 + 'px',
+        marginTop: 100 * (1 - this.__color.v) - 7 + 'px',
+        backgroundColor: this.__temp.toHexString(),
+        border: this.__field_knob_border + 'rgb(' + flip + ',' + flip + ',' + flip + ')'
+      });
+
+      this.__hue_knob.style.marginTop = (1 - this.__color.h / 360) * 100 + 'px';
+
+      this.__temp.s = 1;
+      this.__temp.v = 1;
+
+      linearGradient(this.__saturation_field, 'left', '#fff', this.__temp.toHexString());
+
+      this.__input.value = this.__color.toString();
+
+      _common2.default.extend(this.__input.style, {
+        backgroundColor: this.__color.toHexString(),
+        color: 'rgb(' + flip + ',' + flip + ',' + flip + ')',
+        textShadow: this.__input_textShadow + 'rgba(' + _flip + ',' + _flip + ',' + _flip + ',.7)'
+      });
+    }
+  }]);
+
+  return ColorController;
+}(_Controller3.default);
+
+var vendors = ['-moz-', '-o-', '-webkit-', '-ms-', ''];
+
+function linearGradient(elem, x, a, b) {
+  elem.style.background = '';
+  _common2.default.each(vendors, function (vendor) {
+    elem.style.cssText += 'background: ' + vendor + 'linear-gradient(' + x + ', ' + a + ' 0%, ' + b + ' 100%); ';
+  });
+}
+
+function hueGradient(elem) {
+  elem.style.background = '';
+  elem.style.cssText += 'background: -moz-linear-gradient(top,  #ff0000 0%, #ff00ff 17%, #0000ff 34%, #00ffff 50%, #00ff00 67%, #ffff00 84%, #ff0000 100%);';
+  elem.style.cssText += 'background: -webkit-linear-gradient(top,  #ff0000 0%,#ff00ff 17%,#0000ff 34%,#00ffff 50%,#00ff00 67%,#ffff00 84%,#ff0000 100%);';
+  elem.style.cssText += 'background: -o-linear-gradient(top,  #ff0000 0%,#ff00ff 17%,#0000ff 34%,#00ffff 50%,#00ff00 67%,#ffff00 84%,#ff0000 100%);';
+  elem.style.cssText += 'background: -ms-linear-gradient(top,  #ff0000 0%,#ff00ff 17%,#0000ff 34%,#00ffff 50%,#00ff00 67%,#ffff00 84%,#ff0000 100%);';
+  elem.style.cssText += 'background: linear-gradient(top,  #ff0000 0%,#ff00ff 17%,#0000ff 34%,#00ffff 50%,#00ff00 67%,#ffff00 84%,#ff0000 100%);';
+}
+
+exports.default = ColorController;
+
+},{"../color/Color":5,"../color/interpret":6,"../dom/dom":20,"../utils/common":25,"./Controller":11}],11:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * dat-gui JavaScript Controller Library
+ * http://code.google.com/p/dat-gui
+ *
+ * Copyright 2011 Data Arts Team, Google Creative Lab
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+/**
+ * @class An "abstract" class that represents a given property of an object.
+ *
+ * @param {Object} object The object to be manipulated
+ * @param {string} property The name of the property to be manipulated
+ *
+ * @member dat.controllers
+ */
+var Controller = function () {
+  function Controller(object, property) {
+    _classCallCheck(this, Controller);
+
+    this.initialValue = object[property];
+
+    /**
+     * Those who extend this class will put their DOM elements in here.
+     * @type {DOMElement}
+     */
+    this.domElement = document.createElement('div');
+
+    /**
+     * The object to manipulate
+     * @type {Object}
+     */
+    this.object = object;
+
+    /**
+     * The name of the property to manipulate
+     * @type {String}
+     */
+    this.property = property;
+
+    /**
+     * The function to be called on change.
+     * @type {Function}
+     * @ignore
+     */
+    this.__onChange = undefined;
+
+    /**
+     * The function to be called on finishing change.
+     * @type {Function}
+     * @ignore
+     */
+    this.__onFinishChange = undefined;
+  }
+
+  /**
+   * Specify that a function fire every time someone changes the value with
+   * this Controller.
+   *
+   * @param {Function} fnc This function will be called whenever the value
+   * is modified via this Controller.
+   * @returns {Controller} this
+   */
+
+
+  _createClass(Controller, [{
+    key: 'onChange',
+    value: function onChange(fnc) {
+      this.__onChange = fnc;
+      return this;
+    }
+
+    /**
+     * Specify that a function fire every time someone "finishes" changing
+     * the value wih this Controller. Useful for values that change
+     * incrementally like numbers or strings.
+     *
+     * @param {Function} fnc This function will be called whenever
+     * someone "finishes" changing the value via this Controller.
+     * @returns {Controller} this
+     */
+
+  }, {
+    key: 'onFinishChange',
+    value: function onFinishChange(fnc) {
+      this.__onFinishChange = fnc;
+      return this;
+    }
+
+    /**
+     * Change the value of <code>object[property]</code>
+     *
+     * @param {Object} newValue The new value of <code>object[property]</code>
+     */
+
+  }, {
+    key: 'setValue',
+    value: function setValue(newValue) {
+      this.object[this.property] = newValue;
+      if (this.__onChange) {
+        this.__onChange.call(this, newValue);
+      }
+
+      this.updateDisplay();
+      return this;
+    }
+
+    /**
+     * Gets the value of <code>object[property]</code>
+     *
+     * @returns {Object} The current value of <code>object[property]</code>
+     */
+
+  }, {
+    key: 'getValue',
+    value: function getValue() {
+      return this.object[this.property];
+    }
+
+    /**
+     * Refreshes the visual display of a Controller in order to keep sync
+     * with the object's current value.
+     * @returns {Controller} this
+     */
+
+  }, {
+    key: 'updateDisplay',
+    value: function updateDisplay() {
+      return this;
+    }
+
+    /**
+     * @returns {Boolean} true if the value has deviated from initialValue
+     */
+
+  }, {
+    key: 'isModified',
+    value: function isModified() {
+      return this.initialValue !== this.getValue();
+    }
+  }]);
+
+  return Controller;
+}();
+
+exports.default = Controller;
+
+},{}],12:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _OptionController = require('./OptionController');
+
+var _OptionController2 = _interopRequireDefault(_OptionController);
+
+var _NumberControllerBox = require('./NumberControllerBox');
+
+var _NumberControllerBox2 = _interopRequireDefault(_NumberControllerBox);
+
+var _NumberControllerSlider = require('./NumberControllerSlider');
+
+var _NumberControllerSlider2 = _interopRequireDefault(_NumberControllerSlider);
+
+var _StringController = require('./StringController');
+
+var _StringController2 = _interopRequireDefault(_StringController);
+
+var _FunctionController = require('./FunctionController');
+
+var _FunctionController2 = _interopRequireDefault(_FunctionController);
+
+var _BooleanController = require('./BooleanController');
+
+var _BooleanController2 = _interopRequireDefault(_BooleanController);
+
+var _common = require('../utils/common');
+
+var _common2 = _interopRequireDefault(_common);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var ControllerFactory = function ControllerFactory(object, property) {
+  var initialValue = object[property];
+
+  // Providing options?
+  if (_common2.default.isArray(arguments[2]) || _common2.default.isObject(arguments[2])) {
+    return new _OptionController2.default(object, property, arguments[2]);
+  }
+
+  // Providing a map?
+  if (_common2.default.isNumber(initialValue)) {
+    // Has min and max? (slider)
+    if (_common2.default.isNumber(arguments[2]) && _common2.default.isNumber(arguments[3])) {
+      // has step?
+      if (_common2.default.isNumber(arguments[4])) {
+        return new _NumberControllerSlider2.default(object, property, arguments[2], arguments[3], arguments[4]);
+      }
+
+      return new _NumberControllerSlider2.default(object, property, arguments[2], arguments[3]);
+    }
+
+    // number box
+    if (_common2.default.isNumber(arguments[4])) {
+      // has step
+      return new _NumberControllerBox2.default(object, property, { min: arguments[2], max: arguments[3], step: arguments[4] });
+    }
+    return new _NumberControllerBox2.default(object, property, { min: arguments[2], max: arguments[3] });
+  }
+
+  if (_common2.default.isString(initialValue)) {
+    return new _StringController2.default(object, property);
+  }
+
+  if (_common2.default.isFunction(initialValue)) {
+    return new _FunctionController2.default(object, property, '');
+  }
+
+  if (_common2.default.isBoolean(initialValue)) {
+    return new _BooleanController2.default(object, property);
+  }
+
+  return null;
+}; /**
+    * dat-gui JavaScript Controller Library
+    * http://code.google.com/p/dat-gui
+    *
+    * Copyright 2011 Data Arts Team, Google Creative Lab
+    *
+    * Licensed under the Apache License, Version 2.0 (the "License");
+    * you may not use this file except in compliance with the License.
+    * You may obtain a copy of the License at
+    *
+    * http://www.apache.org/licenses/LICENSE-2.0
+    */
+
+exports.default = ControllerFactory;
+
+},{"../utils/common":25,"./BooleanController":9,"./FunctionController":13,"./NumberControllerBox":15,"./NumberControllerSlider":16,"./OptionController":17,"./StringController":18}],13:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Controller2 = require('./Controller');
+
+var _Controller3 = _interopRequireDefault(_Controller2);
+
+var _dom = require('../dom/dom');
+
+var _dom2 = _interopRequireDefault(_dom);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * dat-gui JavaScript Controller Library
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * http://code.google.com/p/dat-gui
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Copyright 2011 Data Arts Team, Google Creative Lab
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Licensed under the Apache License, Version 2.0 (the "License");
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * you may not use this file except in compliance with the License.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * You may obtain a copy of the License at
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * http://www.apache.org/licenses/LICENSE-2.0
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+
+/**
+ * @class Provides a GUI interface to fire a specified method, a property of an object.
+ *
+ * @extends dat.controllers.Controller
+ *
+ * @param {Object} object The object to be manipulated
+ * @param {string} property The name of the property to be manipulated
+ *
+ * @member dat.controllers
+ */
+var FunctionController = function (_Controller) {
+  _inherits(FunctionController, _Controller);
+
+  function FunctionController(object, property, text) {
+    _classCallCheck(this, FunctionController);
+
+    var _this2 = _possibleConstructorReturn(this, (FunctionController.__proto__ || Object.getPrototypeOf(FunctionController)).call(this, object, property));
+
+    var _this = _this2;
+
+    _this2.__button = document.createElement('div');
+    _this2.__button.innerHTML = text === undefined ? 'Fire' : text;
+
+    _dom2.default.bind(_this2.__button, 'click', function (e) {
+      e.preventDefault();
+      _this.fire();
+      return false;
+    });
+
+    _dom2.default.addClass(_this2.__button, 'button');
+
+    _this2.domElement.appendChild(_this2.__button);
+    return _this2;
+  }
+
+  _createClass(FunctionController, [{
+    key: 'fire',
+    value: function fire() {
+      if (this.__onChange) {
+        this.__onChange.call(this);
+      }
+      this.getValue().call(this.object);
+      if (this.__onFinishChange) {
+        this.__onFinishChange.call(this, this.getValue());
+      }
+    }
+  }]);
+
+  return FunctionController;
+}(_Controller3.default);
+
+exports.default = FunctionController;
+
+},{"../dom/dom":20,"./Controller":11}],14:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _Controller2 = require('./Controller');
+
+var _Controller3 = _interopRequireDefault(_Controller2);
+
+var _common = require('../utils/common');
+
+var _common2 = _interopRequireDefault(_common);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * dat-gui JavaScript Controller Library
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * http://code.google.com/p/dat-gui
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Copyright 2011 Data Arts Team, Google Creative Lab
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Licensed under the Apache License, Version 2.0 (the "License");
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * you may not use this file except in compliance with the License.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * You may obtain a copy of the License at
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * http://www.apache.org/licenses/LICENSE-2.0
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+
+function numDecimals(x) {
+  var _x = x.toString();
+  if (_x.indexOf('.') > -1) {
+    return _x.length - _x.indexOf('.') - 1;
+  }
+
+  return 0;
+}
+
+/**
+ * @class Represents a given property of an object that is a number.
+ *
+ * @extends dat.controllers.Controller
+ *
+ * @param {Object} object The object to be manipulated
+ * @param {string} property The name of the property to be manipulated
+ * @param {Object} [params] Optional parameters
+ * @param {Number} [params.min] Minimum allowed value
+ * @param {Number} [params.max] Maximum allowed value
+ * @param {Number} [params.step] Increment by which to change value
+ *
+ * @member dat.controllers
+ */
+
+var NumberController = function (_Controller) {
+  _inherits(NumberController, _Controller);
+
+  function NumberController(object, property, params) {
+    _classCallCheck(this, NumberController);
+
+    var _this = _possibleConstructorReturn(this, (NumberController.__proto__ || Object.getPrototypeOf(NumberController)).call(this, object, property));
+
+    var _params = params || {};
+
+    _this.__min = _params.min;
+    _this.__max = _params.max;
+    _this.__step = _params.step;
+
+    if (_common2.default.isUndefined(_this.__step)) {
+      if (_this.initialValue === 0) {
+        _this.__impliedStep = 1; // What are we, psychics?
+      } else {
+        // Hey Doug, check this out.
+        _this.__impliedStep = Math.pow(10, Math.floor(Math.log(Math.abs(_this.initialValue)) / Math.LN10)) / 10;
+      }
+    } else {
+      _this.__impliedStep = _this.__step;
+    }
+
+    _this.__precision = numDecimals(_this.__impliedStep);
+    return _this;
+  }
+
+  _createClass(NumberController, [{
+    key: 'setValue',
+    value: function setValue(v) {
+      var _v = v;
+
+      if (this.__min !== undefined && _v < this.__min) {
+        _v = this.__min;
+      } else if (this.__max !== undefined && _v > this.__max) {
+        _v = this.__max;
+      }
+
+      if (this.__step !== undefined && _v % this.__step !== 0) {
+        _v = Math.round(_v / this.__step) * this.__step;
+      }
+
+      return _get(NumberController.prototype.__proto__ || Object.getPrototypeOf(NumberController.prototype), 'setValue', this).call(this, _v);
+    }
+
+    /**
+     * Specify a minimum value for <code>object[property]</code>.
+     *
+     * @param {Number} minValue The minimum value for
+     * <code>object[property]</code>
+     * @returns {dat.controllers.NumberController} this
+     */
+
+  }, {
+    key: 'min',
+    value: function min(v) {
+      this.__min = v;
+      return this;
+    }
+
+    /**
+     * Specify a maximum value for <code>object[property]</code>.
+     *
+     * @param {Number} maxValue The maximum value for
+     * <code>object[property]</code>
+     * @returns {dat.controllers.NumberController} this
+     */
+
+  }, {
+    key: 'max',
+    value: function max(v) {
+      this.__max = v;
+      return this;
+    }
+
+    /**
+     * Specify a step value that dat.controllers.NumberController
+     * increments by.
+     *
+     * @param {Number} stepValue The step value for
+     * dat.controllers.NumberController
+     * @default if minimum and maximum specified increment is 1% of the
+     * difference otherwise stepValue is 1
+     * @returns {dat.controllers.NumberController} this
+     */
+
+  }, {
+    key: 'step',
+    value: function step(v) {
+      this.__step = v;
+      this.__impliedStep = v;
+      this.__precision = numDecimals(v);
+      return this;
+    }
+  }]);
+
+  return NumberController;
+}(_Controller3.default);
+
+exports.default = NumberController;
+
+},{"../utils/common":25,"./Controller":11}],15:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _NumberController2 = require('./NumberController');
+
+var _NumberController3 = _interopRequireDefault(_NumberController2);
+
+var _dom = require('../dom/dom');
+
+var _dom2 = _interopRequireDefault(_dom);
+
+var _common = require('../utils/common');
+
+var _common2 = _interopRequireDefault(_common);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * dat-gui JavaScript Controller Library
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * http://code.google.com/p/dat-gui
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Copyright 2011 Data Arts Team, Google Creative Lab
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Licensed under the Apache License, Version 2.0 (the "License");
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * you may not use this file except in compliance with the License.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * You may obtain a copy of the License at
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * http://www.apache.org/licenses/LICENSE-2.0
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+
+function roundToDecimal(value, decimals) {
+  var tenTo = Math.pow(10, decimals);
+  return Math.round(value * tenTo) / tenTo;
+}
+
+/**
+ * @class Represents a given property of an object that is a number and
+ * provides an input element with which to manipulate it.
+ *
+ * @extends dat.controllers.Controller
+ * @extends dat.controllers.NumberController
+ *
+ * @param {Object} object The object to be manipulated
+ * @param {string} property The name of the property to be manipulated
+ * @param {Object} [params] Optional parameters
+ * @param {Number} [params.min] Minimum allowed value
+ * @param {Number} [params.max] Maximum allowed value
+ * @param {Number} [params.step] Increment by which to change value
+ *
+ * @member dat.controllers
+ */
+
+var NumberControllerBox = function (_NumberController) {
+  _inherits(NumberControllerBox, _NumberController);
+
+  function NumberControllerBox(object, property, params) {
+    _classCallCheck(this, NumberControllerBox);
+
+    var _this2 = _possibleConstructorReturn(this, (NumberControllerBox.__proto__ || Object.getPrototypeOf(NumberControllerBox)).call(this, object, property, params));
+
+    _this2.__truncationSuspended = false;
+
+    var _this = _this2;
+
+    /**
+     * {Number} Previous mouse y position
+     * @ignore
+     */
+    var prevY = void 0;
+
+    function onChange() {
+      var attempted = parseFloat(_this.__input.value);
+      if (!_common2.default.isNaN(attempted)) {
+        _this.setValue(attempted);
+      }
+    }
+
+    function onFinish() {
+      if (_this.__onFinishChange) {
+        _this.__onFinishChange.call(_this, _this.getValue());
+      }
+    }
+
+    function onBlur() {
+      onFinish();
+    }
+
+    function onMouseDrag(e) {
+      var diff = prevY - e.clientY;
+      _this.setValue(_this.getValue() + diff * _this.__impliedStep);
+
+      prevY = e.clientY;
+    }
+
+    function onMouseUp() {
+      _dom2.default.unbind(window, 'mousemove', onMouseDrag);
+      _dom2.default.unbind(window, 'mouseup', onMouseUp);
+      onFinish();
+    }
+
+    function onMouseDown(e) {
+      _dom2.default.bind(window, 'mousemove', onMouseDrag);
+      _dom2.default.bind(window, 'mouseup', onMouseUp);
+      prevY = e.clientY;
+    }
+
+    _this2.__input = document.createElement('input');
+    _this2.__input.setAttribute('type', 'text');
+
+    // Makes it so manually specified values are not truncated.
+
+    _dom2.default.bind(_this2.__input, 'change', onChange);
+    _dom2.default.bind(_this2.__input, 'blur', onBlur);
+    _dom2.default.bind(_this2.__input, 'mousedown', onMouseDown);
+    _dom2.default.bind(_this2.__input, 'keydown', function (e) {
+      // When pressing enter, you can be as precise as you want.
+      if (e.keyCode === 13) {
+        _this.__truncationSuspended = true;
+        this.blur();
+        _this.__truncationSuspended = false;
+        onFinish();
+      }
+    });
+
+    _this2.updateDisplay();
+
+    _this2.domElement.appendChild(_this2.__input);
+    return _this2;
+  }
+
+  _createClass(NumberControllerBox, [{
+    key: 'updateDisplay',
+    value: function updateDisplay() {
+      this.__input.value = this.__truncationSuspended ? this.getValue() : roundToDecimal(this.getValue(), this.__precision);
+      return _get(NumberControllerBox.prototype.__proto__ || Object.getPrototypeOf(NumberControllerBox.prototype), 'updateDisplay', this).call(this);
+    }
+  }]);
+
+  return NumberControllerBox;
+}(_NumberController3.default);
+
+exports.default = NumberControllerBox;
+
+},{"../dom/dom":20,"../utils/common":25,"./NumberController":14}],16:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _NumberController2 = require('./NumberController');
+
+var _NumberController3 = _interopRequireDefault(_NumberController2);
+
+var _dom = require('../dom/dom');
+
+var _dom2 = _interopRequireDefault(_dom);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * dat-gui JavaScript Controller Library
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * http://code.google.com/p/dat-gui
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Copyright 2011 Data Arts Team, Google Creative Lab
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Licensed under the Apache License, Version 2.0 (the "License");
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * you may not use this file except in compliance with the License.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * You may obtain a copy of the License at
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * http://www.apache.org/licenses/LICENSE-2.0
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+
+function map(v, i1, i2, o1, o2) {
+  return o1 + (o2 - o1) * ((v - i1) / (i2 - i1));
+}
+
+/**
+ * @class Represents a given property of an object that is a number, contains
+ * a minimum and maximum, and provides a slider element with which to
+ * manipulate it. It should be noted that the slider element is made up of
+ * <code>&lt;div&gt;</code> tags, <strong>not</strong> the html5
+ * <code>&lt;slider&gt;</code> element.
+ *
+ * @extends dat.controllers.Controller
+ * @extends dat.controllers.NumberController
+ *
+ * @param {Object} object The object to be manipulated
+ * @param {string} property The name of the property to be manipulated
+ * @param {Number} minValue Minimum allowed value
+ * @param {Number} maxValue Maximum allowed value
+ * @param {Number} stepValue Increment by which to change value
+ *
+ * @member dat.controllers
+ */
+
+var NumberControllerSlider = function (_NumberController) {
+  _inherits(NumberControllerSlider, _NumberController);
+
+  function NumberControllerSlider(object, property, min, max, step) {
+    _classCallCheck(this, NumberControllerSlider);
+
+    var _this2 = _possibleConstructorReturn(this, (NumberControllerSlider.__proto__ || Object.getPrototypeOf(NumberControllerSlider)).call(this, object, property, { min: min, max: max, step: step }));
+
+    var _this = _this2;
+
+    _this2.__background = document.createElement('div');
+    _this2.__foreground = document.createElement('div');
+
+    _dom2.default.bind(_this2.__background, 'mousedown', onMouseDown);
+
+    _dom2.default.addClass(_this2.__background, 'slider');
+    _dom2.default.addClass(_this2.__foreground, 'slider-fg');
+
+    function onMouseDown(e) {
+      document.activeElement.blur();
+
+      _dom2.default.bind(window, 'mousemove', onMouseDrag);
+      _dom2.default.bind(window, 'mouseup', onMouseUp);
+
+      onMouseDrag(e);
+    }
+
+    function onMouseDrag(e) {
+      e.preventDefault();
+
+      var bgRect = _this.__background.getBoundingClientRect();
+
+      _this.setValue(map(e.clientX, bgRect.left, bgRect.right, _this.__min, _this.__max));
+
+      return false;
+    }
+
+    function onMouseUp() {
+      _dom2.default.unbind(window, 'mousemove', onMouseDrag);
+      _dom2.default.unbind(window, 'mouseup', onMouseUp);
+      if (_this.__onFinishChange) {
+        _this.__onFinishChange.call(_this, _this.getValue());
+      }
+    }
+
+    _this2.updateDisplay();
+
+    _this2.__background.appendChild(_this2.__foreground);
+    _this2.domElement.appendChild(_this2.__background);
+    return _this2;
+  }
+
+  _createClass(NumberControllerSlider, [{
+    key: 'updateDisplay',
+    value: function updateDisplay() {
+      var pct = (this.getValue() - this.__min) / (this.__max - this.__min);
+      this.__foreground.style.width = pct * 100 + '%';
+      return _get(NumberControllerSlider.prototype.__proto__ || Object.getPrototypeOf(NumberControllerSlider.prototype), 'updateDisplay', this).call(this);
+    }
+  }]);
+
+  return NumberControllerSlider;
+}(_NumberController3.default);
+
+exports.default = NumberControllerSlider;
+
+},{"../dom/dom":20,"./NumberController":14}],17:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _Controller2 = require('./Controller');
+
+var _Controller3 = _interopRequireDefault(_Controller2);
+
+var _dom = require('../dom/dom');
+
+var _dom2 = _interopRequireDefault(_dom);
+
+var _common = require('../utils/common');
+
+var _common2 = _interopRequireDefault(_common);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * dat-gui JavaScript Controller Library
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * http://code.google.com/p/dat-gui
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Copyright 2011 Data Arts Team, Google Creative Lab
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Licensed under the Apache License, Version 2.0 (the "License");
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * you may not use this file except in compliance with the License.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * You may obtain a copy of the License at
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * http://www.apache.org/licenses/LICENSE-2.0
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+
+/**
+ * @class Provides a select input to alter the property of an object, using a
+ * list of accepted values.
+ *
+ * @extends dat.controllers.Controller
+ *
+ * @param {Object} object The object to be manipulated
+ * @param {string} property The name of the property to be manipulated
+ * @param {Object|string[]} options A map of labels to acceptable values, or
+ * a list of acceptable string values.
+ *
+ * @member dat.controllers
+ */
+var OptionController = function (_Controller) {
+  _inherits(OptionController, _Controller);
+
+  function OptionController(object, property, opts) {
+    _classCallCheck(this, OptionController);
+
+    var _this2 = _possibleConstructorReturn(this, (OptionController.__proto__ || Object.getPrototypeOf(OptionController)).call(this, object, property));
+
+    var options = opts;
+
+    var _this = _this2;
+
+    /**
+     * The drop down menu
+     * @ignore
+     */
+    _this2.__select = document.createElement('select');
+
+    if (_common2.default.isArray(options)) {
+      var map = {};
+      _common2.default.each(options, function (element) {
+        map[element] = element;
+      });
+      options = map;
+    }
+
+    _common2.default.each(options, function (value, key) {
+      var opt = document.createElement('option');
+      opt.innerHTML = key;
+      opt.setAttribute('value', value);
+      _this.__select.appendChild(opt);
+    });
+
+    // Acknowledge original value
+    _this2.updateDisplay();
+
+    _dom2.default.bind(_this2.__select, 'change', function () {
+      var desiredValue = this.options[this.selectedIndex].value;
+      _this.setValue(desiredValue);
+    });
+
+    _this2.domElement.appendChild(_this2.__select);
+    return _this2;
+  }
+
+  _createClass(OptionController, [{
+    key: 'setValue',
+    value: function setValue(v) {
+      var toReturn = _get(OptionController.prototype.__proto__ || Object.getPrototypeOf(OptionController.prototype), 'setValue', this).call(this, v);
+
+      if (this.__onFinishChange) {
+        this.__onFinishChange.call(this, this.getValue());
+      }
+      return toReturn;
+    }
+  }, {
+    key: 'updateDisplay',
+    value: function updateDisplay() {
+      if (_dom2.default.isActive(this.__select)) return this; // prevent number from updating if user is trying to manually update
+      this.__select.value = this.getValue();
+      return _get(OptionController.prototype.__proto__ || Object.getPrototypeOf(OptionController.prototype), 'updateDisplay', this).call(this);
+    }
+  }]);
+
+  return OptionController;
+}(_Controller3.default);
+
+exports.default = OptionController;
+
+},{"../dom/dom":20,"../utils/common":25,"./Controller":11}],18:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _Controller2 = require('./Controller');
+
+var _Controller3 = _interopRequireDefault(_Controller2);
+
+var _dom = require('../dom/dom');
+
+var _dom2 = _interopRequireDefault(_dom);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * dat-gui JavaScript Controller Library
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * http://code.google.com/p/dat-gui
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Copyright 2011 Data Arts Team, Google Creative Lab
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Licensed under the Apache License, Version 2.0 (the "License");
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * you may not use this file except in compliance with the License.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * You may obtain a copy of the License at
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * http://www.apache.org/licenses/LICENSE-2.0
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+
+/**
+ * @class Provides a text input to alter the string property of an object.
+ *
+ * @extends dat.controllers.Controller
+ *
+ * @param {Object} object The object to be manipulated
+ * @param {string} property The name of the property to be manipulated
+ *
+ * @member dat.controllers
+ */
+var StringController = function (_Controller) {
+  _inherits(StringController, _Controller);
+
+  function StringController(object, property) {
+    _classCallCheck(this, StringController);
+
+    var _this2 = _possibleConstructorReturn(this, (StringController.__proto__ || Object.getPrototypeOf(StringController)).call(this, object, property));
+
+    var _this = _this2;
+
+    function onChange() {
+      _this.setValue(_this.__input.value);
+    }
+
+    function onBlur() {
+      if (_this.__onFinishChange) {
+        _this.__onFinishChange.call(_this, _this.getValue());
+      }
+    }
+
+    _this2.__input = document.createElement('input');
+    _this2.__input.setAttribute('type', 'text');
+
+    _dom2.default.bind(_this2.__input, 'keyup', onChange);
+    _dom2.default.bind(_this2.__input, 'change', onChange);
+    _dom2.default.bind(_this2.__input, 'blur', onBlur);
+    _dom2.default.bind(_this2.__input, 'keydown', function (e) {
+      if (e.keyCode === 13) {
+        this.blur();
+      }
+    });
+
+    _this2.updateDisplay();
+
+    _this2.domElement.appendChild(_this2.__input);
+    return _this2;
+  }
+
+  _createClass(StringController, [{
+    key: 'updateDisplay',
+    value: function updateDisplay() {
+      // Stops the caret from moving on account of:
+      // keyup -> setValue -> updateDisplay
+      if (!_dom2.default.isActive(this.__input)) {
+        this.__input.value = this.getValue();
+      }
+      return _get(StringController.prototype.__proto__ || Object.getPrototypeOf(StringController.prototype), 'updateDisplay', this).call(this);
+    }
+  }]);
+
+  return StringController;
+}(_Controller3.default);
+
+exports.default = StringController;
+
+},{"../dom/dom":20,"./Controller":11}],19:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * dat-gui JavaScript Controller Library
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * http://code.google.com/p/dat-gui
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Copyright 2011 Data Arts Team, Google Creative Lab
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Licensed under the Apache License, Version 2.0 (the "License");
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * you may not use this file except in compliance with the License.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * You may obtain a copy of the License at
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * http://www.apache.org/licenses/LICENSE-2.0
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
+
+var _dom = require('../dom/dom');
+
+var _dom2 = _interopRequireDefault(_dom);
+
+var _common = require('../utils/common');
+
+var _common2 = _interopRequireDefault(_common);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var CenteredDiv = function () {
+  function CenteredDiv() {
+    _classCallCheck(this, CenteredDiv);
+
+    this.backgroundElement = document.createElement('div');
+    _common2.default.extend(this.backgroundElement.style, {
+      backgroundColor: 'rgba(0,0,0,0.8)',
+      top: 0,
+      left: 0,
+      display: 'none',
+      zIndex: '1000',
+      opacity: 0,
+      WebkitTransition: 'opacity 0.2s linear',
+      transition: 'opacity 0.2s linear'
+    });
+
+    _dom2.default.makeFullscreen(this.backgroundElement);
+    this.backgroundElement.style.position = 'fixed';
+
+    this.domElement = document.createElement('div');
+    _common2.default.extend(this.domElement.style, {
+      position: 'fixed',
+      display: 'none',
+      zIndex: '1001',
+      opacity: 0,
+      WebkitTransition: '-webkit-transform 0.2s ease-out, opacity 0.2s linear',
+      transition: 'transform 0.2s ease-out, opacity 0.2s linear'
+    });
+
+    document.body.appendChild(this.backgroundElement);
+    document.body.appendChild(this.domElement);
+
+    var _this = this;
+    _dom2.default.bind(this.backgroundElement, 'click', function () {
+      _this.hide();
+    });
+  }
+
+  _createClass(CenteredDiv, [{
+    key: 'show',
+    value: function show() {
+      var _this = this;
+
+      this.backgroundElement.style.display = 'block';
+
+      this.domElement.style.display = 'block';
+      this.domElement.style.opacity = 0;
+      //    this.domElement.style.top = '52%';
+      this.domElement.style.webkitTransform = 'scale(1.1)';
+
+      this.layout();
+
+      _common2.default.defer(function () {
+        _this.backgroundElement.style.opacity = 1;
+        _this.domElement.style.opacity = 1;
+        _this.domElement.style.webkitTransform = 'scale(1)';
+      });
+    }
+
+    /**
+     * Hide centered div
+     */
+
+  }, {
+    key: 'hide',
+    value: function hide() {
+      var _this = this;
+
+      var hide = function hide() {
+        _this.domElement.style.display = 'none';
+        _this.backgroundElement.style.display = 'none';
+
+        _dom2.default.unbind(_this.domElement, 'webkitTransitionEnd', hide);
+        _dom2.default.unbind(_this.domElement, 'transitionend', hide);
+        _dom2.default.unbind(_this.domElement, 'oTransitionEnd', hide);
+      };
+
+      _dom2.default.bind(this.domElement, 'webkitTransitionEnd', hide);
+      _dom2.default.bind(this.domElement, 'transitionend', hide);
+      _dom2.default.bind(this.domElement, 'oTransitionEnd', hide);
+
+      this.backgroundElement.style.opacity = 0;
+      //    this.domElement.style.top = '48%';
+      this.domElement.style.opacity = 0;
+      this.domElement.style.webkitTransform = 'scale(1.1)';
+    }
+  }, {
+    key: 'layout',
+    value: function layout() {
+      this.domElement.style.left = window.innerWidth / 2 - _dom2.default.getWidth(this.domElement) / 2 + 'px';
+      this.domElement.style.top = window.innerHeight / 2 - _dom2.default.getHeight(this.domElement) / 2 + 'px';
+    }
+  }]);
+
+  return CenteredDiv;
+}();
+
+exports.default = CenteredDiv;
+
+},{"../dom/dom":20,"../utils/common":25}],20:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _common = require('../utils/common');
+
+var _common2 = _interopRequireDefault(_common);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var EVENT_MAP = {
+  HTMLEvents: ['change'],
+  MouseEvents: ['click', 'mousemove', 'mousedown', 'mouseup', 'mouseover'],
+  KeyboardEvents: ['keydown']
+}; /**
+    * dat-gui JavaScript Controller Library
+    * http://code.google.com/p/dat-gui
+    *
+    * Copyright 2011 Data Arts Team, Google Creative Lab
+    *
+    * Licensed under the Apache License, Version 2.0 (the "License");
+    * you may not use this file except in compliance with the License.
+    * You may obtain a copy of the License at
+    *
+    * http://www.apache.org/licenses/LICENSE-2.0
+    */
+
+var EVENT_MAP_INV = {};
+_common2.default.each(EVENT_MAP, function (v, k) {
+  _common2.default.each(v, function (e) {
+    EVENT_MAP_INV[e] = k;
+  });
+});
+
+var CSS_VALUE_PIXELS = /(\d+(\.\d+)?)px/;
+
+function cssValueToPixels(val) {
+  if (val === '0' || _common2.default.isUndefined(val)) {
+    return 0;
+  }
+
+  var match = val.match(CSS_VALUE_PIXELS);
+
+  if (!_common2.default.isNull(match)) {
+    return parseFloat(match[1]);
+  }
+
+  // TODO ...ems? %?
+
+  return 0;
+}
+
+/**
+ * @namespace
+ * @member dat.dom
+ */
+var dom = {
+
+  /**
+   *
+   * @param elem
+   * @param selectable
+   */
+  makeSelectable: function makeSelectable(elem, selectable) {
+    if (elem === undefined || elem.style === undefined) return;
+
+    elem.onselectstart = selectable ? function () {
+      return false;
+    } : function () {};
+
+    elem.style.MozUserSelect = selectable ? 'auto' : 'none';
+    elem.style.KhtmlUserSelect = selectable ? 'auto' : 'none';
+    elem.unselectable = selectable ? 'on' : 'off';
+  },
+
+  /**
+   *
+   * @param elem
+   * @param horizontal
+   * @param vert
+   */
+  makeFullscreen: function makeFullscreen(elem, hor, vert) {
+    var vertical = vert;
+    var horizontal = hor;
+
+    if (_common2.default.isUndefined(horizontal)) {
+      horizontal = true;
+    }
+
+    if (_common2.default.isUndefined(vertical)) {
+      vertical = true;
+    }
+
+    elem.style.position = 'absolute';
+
+    if (horizontal) {
+      elem.style.left = 0;
+      elem.style.right = 0;
+    }
+    if (vertical) {
+      elem.style.top = 0;
+      elem.style.bottom = 0;
+    }
+  },
+
+  /**
+   *
+   * @param elem
+   * @param eventType
+   * @param params
+   */
+  fakeEvent: function fakeEvent(elem, eventType, pars, aux) {
+    var params = pars || {};
+    var className = EVENT_MAP_INV[eventType];
+    if (!className) {
+      throw new Error('Event type ' + eventType + ' not supported.');
+    }
+    var evt = document.createEvent(className);
+    switch (className) {
+      case 'MouseEvents':
+        {
+          var clientX = params.x || params.clientX || 0;
+          var clientY = params.y || params.clientY || 0;
+          evt.initMouseEvent(eventType, params.bubbles || false, params.cancelable || true, window, params.clickCount || 1, 0, // screen X
+          0, // screen Y
+          clientX, // client X
+          clientY, // client Y
+          false, false, false, false, 0, null);
+          break;
+        }
+      case 'KeyboardEvents':
+        {
+          var init = evt.initKeyboardEvent || evt.initKeyEvent; // webkit || moz
+          _common2.default.defaults(params, {
+            cancelable: true,
+            ctrlKey: false,
+            altKey: false,
+            shiftKey: false,
+            metaKey: false,
+            keyCode: undefined,
+            charCode: undefined
+          });
+          init(eventType, params.bubbles || false, params.cancelable, window, params.ctrlKey, params.altKey, params.shiftKey, params.metaKey, params.keyCode, params.charCode);
+          break;
+        }
+      default:
+        {
+          evt.initEvent(eventType, params.bubbles || false, params.cancelable || true);
+          break;
+        }
+    }
+    _common2.default.defaults(evt, aux);
+    elem.dispatchEvent(evt);
+  },
+
+  /**
+   *
+   * @param elem
+   * @param event
+   * @param func
+   * @param bool
+   */
+  bind: function bind(elem, event, func, newBool) {
+    var bool = newBool || false;
+    if (elem.addEventListener) {
+      elem.addEventListener(event, func, bool);
+    } else if (elem.attachEvent) {
+      elem.attachEvent('on' + event, func);
+    }
+    return dom;
+  },
+
+  /**
+   *
+   * @param elem
+   * @param event
+   * @param func
+   * @param bool
+   */
+  unbind: function unbind(elem, event, func, newBool) {
+    var bool = newBool || false;
+    if (elem.removeEventListener) {
+      elem.removeEventListener(event, func, bool);
+    } else if (elem.detachEvent) {
+      elem.detachEvent('on' + event, func);
+    }
+    return dom;
+  },
+
+  /**
+   *
+   * @param elem
+   * @param className
+   */
+  addClass: function addClass(elem, className) {
+    if (elem.className === undefined) {
+      elem.className = className;
+    } else if (elem.className !== className) {
+      var classes = elem.className.split(/ +/);
+      if (classes.indexOf(className) === -1) {
+        classes.push(className);
+        elem.className = classes.join(' ').replace(/^\s+/, '').replace(/\s+$/, '');
+      }
+    }
+    return dom;
+  },
+
+  /**
+   *
+   * @param elem
+   * @param className
+   */
+  removeClass: function removeClass(elem, className) {
+    if (className) {
+      if (elem.className === className) {
+        elem.removeAttribute('class');
+      } else {
+        var classes = elem.className.split(/ +/);
+        var index = classes.indexOf(className);
+        if (index !== -1) {
+          classes.splice(index, 1);
+          elem.className = classes.join(' ');
+        }
+      }
+    } else {
+      elem.className = undefined;
+    }
+    return dom;
+  },
+
+  hasClass: function hasClass(elem, className) {
+    return new RegExp('(?:^|\\s+)' + className + '(?:\\s+|$)').test(elem.className) || false;
+  },
+
+  /**
+   *
+   * @param elem
+   */
+  getWidth: function getWidth(elem) {
+    var style = getComputedStyle(elem);
+
+    return cssValueToPixels(style['border-left-width']) + cssValueToPixels(style['border-right-width']) + cssValueToPixels(style['padding-left']) + cssValueToPixels(style['padding-right']) + cssValueToPixels(style.width);
+  },
+
+  /**
+   *
+   * @param elem
+   */
+  getHeight: function getHeight(elem) {
+    var style = getComputedStyle(elem);
+
+    return cssValueToPixels(style['border-top-width']) + cssValueToPixels(style['border-bottom-width']) + cssValueToPixels(style['padding-top']) + cssValueToPixels(style['padding-bottom']) + cssValueToPixels(style.height);
+  },
+
+  /**
+   *
+   * @param el
+   */
+  getOffset: function getOffset(el) {
+    var elem = el;
+    var offset = { left: 0, top: 0 };
+    if (elem.offsetParent) {
+      do {
+        offset.left += elem.offsetLeft;
+        offset.top += elem.offsetTop;
+        elem = elem.offsetParent;
+      } while (elem);
+    }
+    return offset;
+  },
+
+  // http://stackoverflow.com/posts/2684561/revisions
+  /**
+   *
+   * @param elem
+   */
+  isActive: function isActive(elem) {
+    return elem === document.activeElement && (elem.type || elem.href);
+  }
+
+};
+
+exports.default = dom;
+
+},{"../utils/common":25}],21:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; /**
+                                                                                                                                                                                                                                                                               * dat-gui JavaScript Controller Library
+                                                                                                                                                                                                                                                                               * http://code.google.com/p/dat-gui
+                                                                                                                                                                                                                                                                               *
+                                                                                                                                                                                                                                                                               * Copyright 2011 Data Arts Team, Google Creative Lab
+                                                                                                                                                                                                                                                                               *
+                                                                                                                                                                                                                                                                               * Licensed under the Apache License, Version 2.0 (the "License");
+                                                                                                                                                                                                                                                                               * you may not use this file except in compliance with the License.
+                                                                                                                                                                                                                                                                               * You may obtain a copy of the License at
+                                                                                                                                                                                                                                                                               *
+                                                                                                                                                                                                                                                                               * http://www.apache.org/licenses/LICENSE-2.0
+                                                                                                                                                                                                                                                                               */
+
+var _css = require('../utils/css');
+
+var _css2 = _interopRequireDefault(_css);
+
+var _saveDialogue = require('./saveDialogue.html');
+
+var _saveDialogue2 = _interopRequireDefault(_saveDialogue);
+
+var _ControllerFactory = require('../controllers/ControllerFactory');
+
+var _ControllerFactory2 = _interopRequireDefault(_ControllerFactory);
+
+var _Controller = require('../controllers/Controller');
+
+var _Controller2 = _interopRequireDefault(_Controller);
+
+var _BooleanController = require('../controllers/BooleanController');
+
+var _BooleanController2 = _interopRequireDefault(_BooleanController);
+
+var _FunctionController = require('../controllers/FunctionController');
+
+var _FunctionController2 = _interopRequireDefault(_FunctionController);
+
+var _NumberControllerBox = require('../controllers/NumberControllerBox');
+
+var _NumberControllerBox2 = _interopRequireDefault(_NumberControllerBox);
+
+var _NumberControllerSlider = require('../controllers/NumberControllerSlider');
+
+var _NumberControllerSlider2 = _interopRequireDefault(_NumberControllerSlider);
+
+var _ColorController = require('../controllers/ColorController');
+
+var _ColorController2 = _interopRequireDefault(_ColorController);
+
+var _requestAnimationFrame = require('../utils/requestAnimationFrame');
+
+var _requestAnimationFrame2 = _interopRequireDefault(_requestAnimationFrame);
+
+var _CenteredDiv = require('../dom/CenteredDiv');
+
+var _CenteredDiv2 = _interopRequireDefault(_CenteredDiv);
+
+var _dom = require('../dom/dom');
+
+var _dom2 = _interopRequireDefault(_dom);
+
+var _common = require('../utils/common');
+
+var _common2 = _interopRequireDefault(_common);
+
+var _style = require('./style.scss');
+
+var _style2 = _interopRequireDefault(_style);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// CSS to embed in build
+
+_css2.default.inject(_style2.default);
+
+/** Outer-most className for GUI's */
+var CSS_NAMESPACE = 'dg';
+
+var HIDE_KEY_CODE = 72;
+
+/** The only value shared between the JS and SCSS. Use caution. */
+var CLOSE_BUTTON_HEIGHT = 20;
+
+var DEFAULT_DEFAULT_PRESET_NAME = 'Default';
+
+var SUPPORTS_LOCAL_STORAGE = function () {
+  try {
+    return 'localStorage' in window && window.localStorage !== null;
+  } catch (e) {
+    return false;
+  }
+}();
+
+var SAVE_DIALOGUE = void 0;
+
+/** Have we yet to create an autoPlace GUI? */
+var autoPlaceVirgin = true;
+
+/** Fixed position div that auto place GUI's go inside */
+var autoPlaceContainer = void 0;
+
+/** Are we hiding the GUI's ? */
+var hide = false;
+
+/** GUI's which should be hidden */
+var hideableGuis = [];
+
+/**
+ * A lightweight controller library for JavaScript. It allows you to easily
+ * manipulate variables and fire functions on the fly.
+ * @class
+ *
+ * @member dat.gui
+ *
+ * @param {Object} [params]
+ * @param {String} [params.name] The name of this GUI.
+ * @param {Object} [params.load] JSON object representing the saved state of
+ * this GUI.
+ * @param {Boolean} [params.auto=true]
+ * @param {dat.gui.GUI} [params.parent] The GUI I'm nested in.
+ * @param {Boolean} [params.closed] If true, starts closed
+ * @param {Boolean} [params.closeOnTop] If true, close/open button shows on top of the GUI
+ */
+var GUI = function GUI(pars) {
+  var _this = this;
+
+  var params = pars || {};
+
+  /**
+   * Outermost DOM Element
+   * @type DOMElement
+   */
+  this.domElement = document.createElement('div');
+  this.__ul = document.createElement('ul');
+  this.domElement.appendChild(this.__ul);
+
+  _dom2.default.addClass(this.domElement, CSS_NAMESPACE);
+
+  /**
+   * Nested GUI's by name
+   * @ignore
+   */
+  this.__folders = {};
+
+  this.__controllers = [];
+
+  /**
+   * List of objects I'm remembering for save, only used in top level GUI
+   * @ignore
+   */
+  this.__rememberedObjects = [];
+
+  /**
+   * Maps the index of remembered objects to a map of controllers, only used
+   * in top level GUI.
+   *
+   * @private
+   * @ignore
+   *
+   * @example
+   * [
+   *  {
+     *    propertyName: Controller,
+     *    anotherPropertyName: Controller
+     *  },
+   *  {
+     *    propertyName: Controller
+     *  }
+   * ]
+   */
+  this.__rememberedObjectIndecesToControllers = [];
+
+  this.__listening = [];
+
+  // Default parameters
+  params = _common2.default.defaults(params, {
+    closeOnTop: false,
+    autoPlace: true,
+    width: GUI.DEFAULT_WIDTH
+  });
+
+  params = _common2.default.defaults(params, {
+    resizable: params.autoPlace,
+    hideable: params.autoPlace
+  });
+
+  if (!_common2.default.isUndefined(params.load)) {
+    // Explicit preset
+    if (params.preset) {
+      params.load.preset = params.preset;
+    }
+  } else {
+    params.load = { preset: DEFAULT_DEFAULT_PRESET_NAME };
+  }
+
+  if (_common2.default.isUndefined(params.parent) && params.hideable) {
+    hideableGuis.push(this);
+  }
+
+  // Only root level GUI's are resizable.
+  params.resizable = _common2.default.isUndefined(params.parent) && params.resizable;
+
+  if (params.autoPlace && _common2.default.isUndefined(params.scrollable)) {
+    params.scrollable = true;
+  }
+  //    params.scrollable = common.isUndefined(params.parent) && params.scrollable === true;
+
+  // Not part of params because I don't want people passing this in via
+  // constructor. Should be a 'remembered' value.
+  var useLocalStorage = SUPPORTS_LOCAL_STORAGE && localStorage.getItem(getLocalStorageHash(this, 'isLocal')) === 'true';
+
+  var saveToLocalStorage = void 0;
+
+  Object.defineProperties(this,
+  /** @lends dat.gui.GUI.prototype */
+  {
+    /**
+     * The parent <code>GUI</code>
+     * @type dat.gui.GUI
+     */
+    parent: {
+      get: function get() {
+        return params.parent;
+      }
+    },
+
+    scrollable: {
+      get: function get() {
+        return params.scrollable;
+      }
+    },
+
+    /**
+     * Handles <code>GUI</code>'s element placement for you
+     * @type Boolean
+     */
+    autoPlace: {
+      get: function get() {
+        return params.autoPlace;
+      }
+    },
+
+    /**
+     * Handles <code>GUI</code>'s position of open/close button
+     * @type Boolean
+     */
+    closeOnTop: {
+      get: function get() {
+        return params.closeOnTop;
+      }
+    },
+
+    /**
+     * The identifier for a set of saved values
+     * @type String
+     */
+    preset: {
+      get: function get() {
+        if (_this.parent) {
+          return _this.getRoot().preset;
+        }
+
+        return params.load.preset;
+      },
+
+      set: function set(v) {
+        if (_this.parent) {
+          _this.getRoot().preset = v;
+        } else {
+          params.load.preset = v;
+        }
+        setPresetSelectIndex(this);
+        _this.revert();
+      }
+    },
+
+    /**
+     * The width of <code>GUI</code> element
+     * @type Number
+     */
+    width: {
+      get: function get() {
+        return params.width;
+      },
+      set: function set(v) {
+        params.width = v;
+        setWidth(_this, v);
+      }
+    },
+
+    /**
+     * The name of <code>GUI</code>. Used for folders. i.e
+     * a folder's name
+     * @type String
+     */
+    name: {
+      get: function get() {
+        return params.name;
+      },
+      set: function set(v) {
+        // TODO Check for collisions among sibling folders
+        params.name = v;
+        if (titleRowName) {
+          titleRowName.innerHTML = params.name;
+        }
+      }
+    },
+
+    /**
+     * Whether the <code>GUI</code> is collapsed or not
+     * @type Boolean
+     */
+    closed: {
+      get: function get() {
+        return params.closed;
+      },
+      set: function set(v) {
+        params.closed = v;
+        if (params.closed) {
+          _dom2.default.addClass(_this.__ul, GUI.CLASS_CLOSED);
+        } else {
+          _dom2.default.removeClass(_this.__ul, GUI.CLASS_CLOSED);
+        }
+        // For browsers that aren't going to respect the CSS transition,
+        // Lets just check our height against the window height right off
+        // the bat.
+        this.onResize();
+
+        if (_this.__closeButton) {
+          _this.__closeButton.innerHTML = v ? GUI.TEXT_OPEN : GUI.TEXT_CLOSED;
+        }
+      }
+    },
+
+    /**
+     * Contains all presets
+     * @type Object
+     */
+    load: {
+      get: function get() {
+        return params.load;
+      }
+    },
+
+    /**
+     * Determines whether or not to use <a href="https://developer.mozilla.org/en/DOM/Storage#localStorage">localStorage</a> as the means for
+     * <code>remember</code>ing
+     * @type Boolean
+     */
+    useLocalStorage: {
+
+      get: function get() {
+        return useLocalStorage;
+      },
+      set: function set(bool) {
+        if (SUPPORTS_LOCAL_STORAGE) {
+          useLocalStorage = bool;
+          if (bool) {
+            _dom2.default.bind(window, 'unload', saveToLocalStorage);
+          } else {
+            _dom2.default.unbind(window, 'unload', saveToLocalStorage);
+          }
+          localStorage.setItem(getLocalStorageHash(_this, 'isLocal'), bool);
+        }
+      }
+    }
+  });
+
+  // Are we a root level GUI?
+  if (_common2.default.isUndefined(params.parent)) {
+    params.closed = false;
+
+    _dom2.default.addClass(this.domElement, GUI.CLASS_MAIN);
+    _dom2.default.makeSelectable(this.domElement, false);
+
+    // Are we supposed to be loading locally?
+    if (SUPPORTS_LOCAL_STORAGE) {
+      if (useLocalStorage) {
+        _this.useLocalStorage = true;
+
+        var savedGui = localStorage.getItem(getLocalStorageHash(this, 'gui'));
+
+        if (savedGui) {
+          params.load = JSON.parse(savedGui);
+        }
+      }
+    }
+
+    this.__closeButton = document.createElement('div');
+    this.__closeButton.innerHTML = GUI.TEXT_CLOSED;
+    _dom2.default.addClass(this.__closeButton, GUI.CLASS_CLOSE_BUTTON);
+    if (params.closeOnTop) {
+      _dom2.default.addClass(this.__closeButton, GUI.CLASS_CLOSE_TOP);
+      this.domElement.insertBefore(this.__closeButton, this.domElement.childNodes[0]);
+    } else {
+      _dom2.default.addClass(this.__closeButton, GUI.CLASS_CLOSE_BOTTOM);
+      this.domElement.appendChild(this.__closeButton);
+    }
+
+    _dom2.default.bind(this.__closeButton, 'click', function () {
+      _this.closed = !_this.closed;
+    });
+    // Oh, you're a nested GUI!
+  } else {
+    if (params.closed === undefined) {
+      params.closed = true;
+    }
+
+    var _titleRowName = document.createTextNode(params.name);
+    _dom2.default.addClass(_titleRowName, 'controller-name');
+
+    var titleRow = addRow(_this, _titleRowName);
+
+    var onClickTitle = function onClickTitle(e) {
+      e.preventDefault();
+      _this.closed = !_this.closed;
+      return false;
+    };
+
+    _dom2.default.addClass(this.__ul, GUI.CLASS_CLOSED);
+
+    _dom2.default.addClass(titleRow, 'title');
+    _dom2.default.bind(titleRow, 'click', onClickTitle);
+
+    if (!params.closed) {
+      this.closed = false;
+    }
+  }
+
+  if (params.autoPlace) {
+    if (_common2.default.isUndefined(params.parent)) {
+      if (autoPlaceVirgin) {
+        autoPlaceContainer = document.createElement('div');
+        _dom2.default.addClass(autoPlaceContainer, CSS_NAMESPACE);
+        _dom2.default.addClass(autoPlaceContainer, GUI.CLASS_AUTO_PLACE_CONTAINER);
+        document.body.appendChild(autoPlaceContainer);
+        autoPlaceVirgin = false;
+      }
+
+      // Put it in the dom for you.
+      autoPlaceContainer.appendChild(this.domElement);
+
+      // Apply the auto styles
+      _dom2.default.addClass(this.domElement, GUI.CLASS_AUTO_PLACE);
+    }
+
+    // Make it not elastic.
+    if (!this.parent) {
+      setWidth(_this, params.width);
+    }
+  }
+
+  this.__resizeHandler = function () {
+    _this.onResizeDebounced();
+  };
+
+  _dom2.default.bind(window, 'resize', this.__resizeHandler);
+  _dom2.default.bind(this.__ul, 'webkitTransitionEnd', this.__resizeHandler);
+  _dom2.default.bind(this.__ul, 'transitionend', this.__resizeHandler);
+  _dom2.default.bind(this.__ul, 'oTransitionEnd', this.__resizeHandler);
+  this.onResize();
+
+  if (params.resizable) {
+    addResizeHandle(this);
+  }
+
+  saveToLocalStorage = function saveToLocalStorage() {
+    if (SUPPORTS_LOCAL_STORAGE && localStorage.getItem(getLocalStorageHash(_this, 'isLocal')) === 'true') {
+      localStorage.setItem(getLocalStorageHash(_this, 'gui'), JSON.stringify(_this.getSaveObject()));
+    }
+  };
+
+  // expose this method publicly
+  this.saveToLocalStorageIfPossible = saveToLocalStorage;
+
+  function resetWidth() {
+    var root = _this.getRoot();
+    root.width += 1;
+    _common2.default.defer(function () {
+      root.width -= 1;
+    });
+  }
+
+  if (!params.parent) {
+    resetWidth();
+  }
+};
+
+GUI.toggleHide = function () {
+  hide = !hide;
+  _common2.default.each(hideableGuis, function (gui) {
+    gui.domElement.style.display = hide ? 'none' : '';
+  });
+};
+
+GUI.CLASS_AUTO_PLACE = 'a';
+GUI.CLASS_AUTO_PLACE_CONTAINER = 'ac';
+GUI.CLASS_MAIN = 'main';
+GUI.CLASS_CONTROLLER_ROW = 'cr';
+GUI.CLASS_TOO_TALL = 'taller-than-window';
+GUI.CLASS_CLOSED = 'closed';
+GUI.CLASS_CLOSE_BUTTON = 'close-button';
+GUI.CLASS_CLOSE_TOP = 'close-top';
+GUI.CLASS_CLOSE_BOTTOM = 'close-bottom';
+GUI.CLASS_DRAG = 'drag';
+
+GUI.DEFAULT_WIDTH = 245;
+GUI.TEXT_CLOSED = 'Close Controls';
+GUI.TEXT_OPEN = 'Open Controls';
+
+GUI._keydownHandler = function (e) {
+  if (document.activeElement.type !== 'text' && (e.which === HIDE_KEY_CODE || e.keyCode === HIDE_KEY_CODE)) {
+    GUI.toggleHide();
+  }
+};
+_dom2.default.bind(window, 'keydown', GUI._keydownHandler, false);
+
+_common2.default.extend(GUI.prototype,
+
+/** @lends dat.gui.GUI */
+{
+
+  /**
+   * @param object
+   * @param property
+   * @returns {dat.controllers.Controller} The new controller that was added.
+   * @instance
+   */
+  add: function add(object, property) {
+    return _add(this, object, property, {
+      factoryArgs: Array.prototype.slice.call(arguments, 2)
+    });
+  },
+
+  /**
+   * @param object
+   * @param property
+   * @returns {dat.controllers.ColorController} The new controller that was added.
+   * @instance
+   */
+  addColor: function addColor(object, property) {
+    return _add(this, object, property, {
+      color: true
+    });
+  },
+
+  /**
+   * @param controller
+   * @instance
+   */
+  remove: function remove(controller) {
+    // TODO listening?
+    this.__ul.removeChild(controller.__li);
+    this.__controllers.splice(this.__controllers.indexOf(controller), 1);
+    var _this = this;
+    _common2.default.defer(function () {
+      _this.onResize();
+    });
+  },
+
+  destroy: function destroy() {
+    if (this.autoPlace) {
+      autoPlaceContainer.removeChild(this.domElement);
+    }
+
+    _dom2.default.unbind(window, 'keydown', GUI._keydownHandler, false);
+    _dom2.default.unbind(window, 'resize', this.__resizeHandler);
+
+    if (this.saveToLocalStorageIfPossible) {
+      _dom2.default.unbind(window, 'unload', this.saveToLocalStorageIfPossible);
+    }
+  },
+
+  /**
+   * @param name
+   * @returns {dat.gui.GUI} The new folder.
+   * @throws {Error} if this GUI already has a folder by the specified
+   * name
+   * @instance
+   */
+  addFolder: function addFolder(name) {
+    // We have to prevent collisions on names in order to have a key
+    // by which to remember saved values
+    if (this.__folders[name] !== undefined) {
+      throw new Error('You already have a folder in this GUI by the' + ' name "' + name + '"');
+    }
+
+    var newGuiParams = { name: name, parent: this };
+
+    // We need to pass down the autoPlace trait so that we can
+    // attach event listeners to open/close folder actions to
+    // ensure that a scrollbar appears if the window is too short.
+    newGuiParams.autoPlace = this.autoPlace;
+
+    // Do we have saved appearance data for this folder?
+    if (this.load && // Anything loaded?
+    this.load.folders && // Was my parent a dead-end?
+    this.load.folders[name]) {
+      // Did daddy remember me?
+      // Start me closed if I was closed
+      newGuiParams.closed = this.load.folders[name].closed;
+
+      // Pass down the loaded data
+      newGuiParams.load = this.load.folders[name];
+    }
+
+    var gui = new GUI(newGuiParams);
+    this.__folders[name] = gui;
+
+    var li = addRow(this, gui.domElement);
+    _dom2.default.addClass(li, 'folder');
+    return gui;
+  },
+
+  open: function open() {
+    this.closed = false;
+  },
+
+  close: function close() {
+    this.closed = true;
+  },
+
+  onResize: function onResize() {
+    // we debounce this function to prevent performance issues when rotating on tablet/mobile
+    var root = this.getRoot();
+    if (root.scrollable) {
+      var top = _dom2.default.getOffset(root.__ul).top;
+      var h = 0;
+
+      _common2.default.each(root.__ul.childNodes, function (node) {
+        if (!(root.autoPlace && node === root.__save_row)) {
+          h += _dom2.default.getHeight(node);
+        }
+      });
+
+      if (window.innerHeight - top - CLOSE_BUTTON_HEIGHT < h) {
+        _dom2.default.addClass(root.domElement, GUI.CLASS_TOO_TALL);
+        root.__ul.style.height = window.innerHeight - top - CLOSE_BUTTON_HEIGHT + 'px';
+      } else {
+        _dom2.default.removeClass(root.domElement, GUI.CLASS_TOO_TALL);
+        root.__ul.style.height = 'auto';
+      }
+    }
+
+    if (root.__resize_handle) {
+      _common2.default.defer(function () {
+        root.__resize_handle.style.height = root.__ul.offsetHeight + 'px';
+      });
+    }
+
+    if (root.__closeButton) {
+      root.__closeButton.style.width = root.width + 'px';
+    }
+  },
+
+  onResizeDebounced: _common2.default.debounce(function () {
+    this.onResize();
+  }, 50),
+
+  /**
+   * Mark objects for saving. The order of these objects cannot change as
+   * the GUI grows. When remembering new objects, append them to the end
+   * of the list.
+   *
+   * @param {Object...} objects
+   * @throws {Error} if not called on a top level GUI.
+   * @instance
+   */
+  remember: function remember() {
+    if (_common2.default.isUndefined(SAVE_DIALOGUE)) {
+      SAVE_DIALOGUE = new _CenteredDiv2.default();
+      SAVE_DIALOGUE.domElement.innerHTML = _saveDialogue2.default;
+    }
+
+    if (this.parent) {
+      throw new Error('You can only call remember on a top level GUI.');
+    }
+
+    var _this = this;
+
+    _common2.default.each(Array.prototype.slice.call(arguments), function (object) {
+      if (_this.__rememberedObjects.length === 0) {
+        addSaveMenu(_this);
+      }
+      if (_this.__rememberedObjects.indexOf(object) === -1) {
+        _this.__rememberedObjects.push(object);
+      }
+    });
+
+    if (this.autoPlace) {
+      // Set save row width
+      setWidth(this, this.width);
+    }
+  },
+
+  /**
+   * @returns {dat.gui.GUI} the topmost parent GUI of a nested GUI.
+   * @instance
+   */
+  getRoot: function getRoot() {
+    var gui = this;
+    while (gui.parent) {
+      gui = gui.parent;
+    }
+    return gui;
+  },
+
+  /**
+   * @returns {Object} a JSON object representing the current state of
+   * this GUI as well as its remembered properties.
+   * @instance
+   */
+  getSaveObject: function getSaveObject() {
+    var toReturn = this.load;
+    toReturn.closed = this.closed;
+
+    // Am I remembering any values?
+    if (this.__rememberedObjects.length > 0) {
+      toReturn.preset = this.preset;
+
+      if (!toReturn.remembered) {
+        toReturn.remembered = {};
+      }
+
+      toReturn.remembered[this.preset] = getCurrentPreset(this);
+    }
+
+    toReturn.folders = {};
+    _common2.default.each(this.__folders, function (element, key) {
+      toReturn.folders[key] = element.getSaveObject();
+    });
+
+    return toReturn;
+  },
+
+  save: function save() {
+    if (!this.load.remembered) {
+      this.load.remembered = {};
+    }
+
+    this.load.remembered[this.preset] = getCurrentPreset(this);
+    markPresetModified(this, false);
+    this.saveToLocalStorageIfPossible();
+  },
+
+  saveAs: function saveAs(presetName) {
+    if (!this.load.remembered) {
+      // Retain default values upon first save
+      this.load.remembered = {};
+      this.load.remembered[DEFAULT_DEFAULT_PRESET_NAME] = getCurrentPreset(this, true);
+    }
+
+    this.load.remembered[presetName] = getCurrentPreset(this);
+    this.preset = presetName;
+    addPresetOption(this, presetName, true);
+    this.saveToLocalStorageIfPossible();
+  },
+
+  revert: function revert(gui) {
+    _common2.default.each(this.__controllers, function (controller) {
+      // Make revert work on Default.
+      if (!this.getRoot().load.remembered) {
+        controller.setValue(controller.initialValue);
+      } else {
+        recallSavedValue(gui || this.getRoot(), controller);
+      }
+
+      // fire onFinishChange callback
+      if (controller.__onFinishChange) {
+        controller.__onFinishChange.call(controller, controller.getValue());
+      }
+    }, this);
+
+    _common2.default.each(this.__folders, function (folder) {
+      folder.revert(folder);
+    });
+
+    if (!gui) {
+      markPresetModified(this.getRoot(), false);
+    }
+  },
+
+  listen: function listen(controller) {
+    var init = this.__listening.length === 0;
+    this.__listening.push(controller);
+    if (init) {
+      updateDisplays(this.__listening);
+    }
+  },
+
+  updateDisplay: function updateDisplay() {
+    _common2.default.each(this.__controllers, function (controller) {
+      controller.updateDisplay();
+    });
+    _common2.default.each(this.__folders, function (folder) {
+      folder.updateDisplay();
+    });
+  }
+});
+
+/**
+ * Add a row to the end of the GUI or before another row.
+ *
+ * @param gui
+ * @param [newDom] If specified, inserts the dom content in the new row
+ * @param [liBefore] If specified, places the new row before another row
+ */
+function addRow(gui, newDom, liBefore) {
+  var li = document.createElement('li');
+  if (newDom) {
+    li.appendChild(newDom);
+  }
+
+  if (liBefore) {
+    gui.__ul.insertBefore(li, liBefore);
+  } else {
+    gui.__ul.appendChild(li);
+  }
+  gui.onResize();
+  return li;
+}
+
+function markPresetModified(gui, modified) {
+  var opt = gui.__preset_select[gui.__preset_select.selectedIndex];
+
+  // console.log('mark', modified, opt);
+  if (modified) {
+    opt.innerHTML = opt.value + '*';
+  } else {
+    opt.innerHTML = opt.value;
+  }
+}
+
+function augmentController(gui, li, controller) {
+  controller.__li = li;
+  controller.__gui = gui;
+
+  _common2.default.extend(controller, {
+    options: function options(_options) {
+      if (arguments.length > 1) {
+        var nextSibling = controller.__li.nextElementSibling;
+        controller.remove();
+
+        return _add(gui, controller.object, controller.property, {
+          before: nextSibling,
+          factoryArgs: [_common2.default.toArray(arguments)]
+        });
+      }
+
+      if (_common2.default.isArray(_options) || _common2.default.isObject(_options)) {
+        var _nextSibling = controller.__li.nextElementSibling;
+        controller.remove();
+
+        return _add(gui, controller.object, controller.property, {
+          before: _nextSibling,
+          factoryArgs: [_options]
+        });
+      }
+    },
+
+    name: function name(v) {
+      controller.__li.firstElementChild.firstElementChild.innerHTML = v;
+      return controller;
+    },
+
+    listen: function listen() {
+      controller.__gui.listen(controller);
+      return controller;
+    },
+
+    remove: function remove() {
+      controller.__gui.remove(controller);
+      return controller;
+    }
+  });
+
+  // All sliders should be accompanied by a box.
+  if (controller instanceof _NumberControllerSlider2.default) {
+    var box = new _NumberControllerBox2.default(controller.object, controller.property, { min: controller.__min, max: controller.__max, step: controller.__step });
+
+    _common2.default.each(['updateDisplay', 'onChange', 'onFinishChange', 'step'], function (method) {
+      var pc = controller[method];
+      var pb = box[method];
+      controller[method] = box[method] = function () {
+        var args = Array.prototype.slice.call(arguments);
+        pb.apply(box, args);
+        return pc.apply(controller, args);
+      };
+    });
+
+    _dom2.default.addClass(li, 'has-slider');
+    controller.domElement.insertBefore(box.domElement, controller.domElement.firstElementChild);
+  } else if (controller instanceof _NumberControllerBox2.default) {
+    var r = function r(returned) {
+      // Have we defined both boundaries?
+      if (_common2.default.isNumber(controller.__min) && _common2.default.isNumber(controller.__max)) {
+        // Well, then lets just replace this with a slider.
+
+        // lets remember if the old controller had a specific name or was listening
+        var oldName = controller.__li.firstElementChild.firstElementChild.innerHTML;
+        var wasListening = controller.__gui.__listening.indexOf(controller) > -1;
+
+        controller.remove();
+        var newController = _add(gui, controller.object, controller.property, {
+          before: controller.__li.nextElementSibling,
+          factoryArgs: [controller.__min, controller.__max, controller.__step]
+        });
+
+        newController.name(oldName);
+        if (wasListening) newController.listen();
+
+        return newController;
+      }
+
+      return returned;
+    };
+
+    controller.min = _common2.default.compose(r, controller.min);
+    controller.max = _common2.default.compose(r, controller.max);
+  } else if (controller instanceof _BooleanController2.default) {
+    _dom2.default.bind(li, 'click', function () {
+      _dom2.default.fakeEvent(controller.__checkbox, 'click');
+    });
+
+    _dom2.default.bind(controller.__checkbox, 'click', function (e) {
+      e.stopPropagation(); // Prevents double-toggle
+    });
+  } else if (controller instanceof _FunctionController2.default) {
+    _dom2.default.bind(li, 'click', function () {
+      _dom2.default.fakeEvent(controller.__button, 'click');
+    });
+
+    _dom2.default.bind(li, 'mouseover', function () {
+      _dom2.default.addClass(controller.__button, 'hover');
+    });
+
+    _dom2.default.bind(li, 'mouseout', function () {
+      _dom2.default.removeClass(controller.__button, 'hover');
+    });
+  } else if (controller instanceof _ColorController2.default) {
+    _dom2.default.addClass(li, 'color');
+    controller.updateDisplay = _common2.default.compose(function (val) {
+      li.style.borderLeftColor = controller.__color.toString();
+      return val;
+    }, controller.updateDisplay);
+
+    controller.updateDisplay();
+  }
+
+  controller.setValue = _common2.default.compose(function (val) {
+    if (gui.getRoot().__preset_select && controller.isModified()) {
+      markPresetModified(gui.getRoot(), true);
+    }
+
+    return val;
+  }, controller.setValue);
+}
+
+function recallSavedValue(gui, controller) {
+  // Find the topmost GUI, that's where remembered objects live.
+  var root = gui.getRoot();
+
+  // Does the object we're controlling match anything we've been told to
+  // remember?
+  var matchedIndex = root.__rememberedObjects.indexOf(controller.object);
+
+  // Why yes, it does!
+  if (matchedIndex !== -1) {
+    // Let me fetch a map of controllers for thcommon.isObject.
+    var controllerMap = root.__rememberedObjectIndecesToControllers[matchedIndex];
+
+    // Ohp, I believe this is the first controller we've created for this
+    // object. Lets make the map fresh.
+    if (controllerMap === undefined) {
+      controllerMap = {};
+      root.__rememberedObjectIndecesToControllers[matchedIndex] = controllerMap;
+    }
+
+    // Keep track of this controller
+    controllerMap[controller.property] = controller;
+
+    // Okay, now have we saved any values for this controller?
+    if (root.load && root.load.remembered) {
+      var presetMap = root.load.remembered;
+
+      // Which preset are we trying to load?
+      var preset = void 0;
+
+      if (presetMap[gui.preset]) {
+        preset = presetMap[gui.preset];
+      } else if (presetMap[DEFAULT_DEFAULT_PRESET_NAME]) {
+        // Uhh, you can have the default instead?
+        preset = presetMap[DEFAULT_DEFAULT_PRESET_NAME];
+      } else {
+        // Nada.
+        return;
+      }
+
+      // Did the loaded object remember thcommon.isObject? &&  Did we remember this particular property?
+      if (preset[matchedIndex] && preset[matchedIndex][controller.property] !== undefined) {
+        // We did remember something for this guy ...
+        var value = preset[matchedIndex][controller.property];
+
+        // And that's what it is.
+        controller.initialValue = value;
+        controller.setValue(value);
+      }
+    }
+  }
+}
+
+function _add(gui, object, property, params) {
+  if (object[property] === undefined) {
+    throw new Error('Object "' + object + '" has no property "' + property + '"');
+  }
+
+  var controller = void 0;
+
+  if (params.color) {
+    controller = new _ColorController2.default(object, property);
+  } else {
+    var factoryArgs = [object, property].concat(params.factoryArgs);
+    controller = _ControllerFactory2.default.apply(gui, factoryArgs);
+  }
+
+  if (params.before instanceof _Controller2.default) {
+    params.before = params.before.__li;
+  }
+
+  recallSavedValue(gui, controller);
+
+  _dom2.default.addClass(controller.domElement, 'c');
+
+  var name = document.createElement('span');
+  _dom2.default.addClass(name, 'property-name');
+  name.innerHTML = controller.property;
+
+  var container = document.createElement('div');
+  container.appendChild(name);
+  container.appendChild(controller.domElement);
+
+  var li = addRow(gui, container, params.before);
+
+  _dom2.default.addClass(li, GUI.CLASS_CONTROLLER_ROW);
+  if (controller instanceof _ColorController2.default) {
+    _dom2.default.addClass(li, 'color');
+  } else {
+    _dom2.default.addClass(li, _typeof(controller.getValue()));
+  }
+
+  augmentController(gui, li, controller);
+
+  gui.__controllers.push(controller);
+
+  return controller;
+}
+
+function getLocalStorageHash(gui, key) {
+  // TODO how does this deal with multiple GUI's?
+  return document.location.href + '.' + key;
+}
+
+function addPresetOption(gui, name, setSelected) {
+  var opt = document.createElement('option');
+  opt.innerHTML = name;
+  opt.value = name;
+  gui.__preset_select.appendChild(opt);
+  if (setSelected) {
+    gui.__preset_select.selectedIndex = gui.__preset_select.length - 1;
+  }
+}
+
+function showHideExplain(gui, explain) {
+  explain.style.display = gui.useLocalStorage ? 'block' : 'none';
+}
+
+function addSaveMenu(gui) {
+  var div = gui.__save_row = document.createElement('li');
+
+  _dom2.default.addClass(gui.domElement, 'has-save');
+
+  gui.__ul.insertBefore(div, gui.__ul.firstChild);
+
+  _dom2.default.addClass(div, 'save-row');
+
+  var gears = document.createElement('span');
+  gears.innerHTML = '&nbsp;';
+  _dom2.default.addClass(gears, 'button gears');
+
+  // TODO replace with FunctionController
+  var button = document.createElement('span');
+  button.innerHTML = 'Save';
+  _dom2.default.addClass(button, 'button');
+  _dom2.default.addClass(button, 'save');
+
+  var button2 = document.createElement('span');
+  button2.innerHTML = 'New';
+  _dom2.default.addClass(button2, 'button');
+  _dom2.default.addClass(button2, 'save-as');
+
+  var button3 = document.createElement('span');
+  button3.innerHTML = 'Revert';
+  _dom2.default.addClass(button3, 'button');
+  _dom2.default.addClass(button3, 'revert');
+
+  var select = gui.__preset_select = document.createElement('select');
+
+  if (gui.load && gui.load.remembered) {
+    _common2.default.each(gui.load.remembered, function (value, key) {
+      addPresetOption(gui, key, key === gui.preset);
+    });
+  } else {
+    addPresetOption(gui, DEFAULT_DEFAULT_PRESET_NAME, false);
+  }
+
+  _dom2.default.bind(select, 'change', function () {
+    for (var index = 0; index < gui.__preset_select.length; index++) {
+      gui.__preset_select[index].innerHTML = gui.__preset_select[index].value;
+    }
+
+    gui.preset = this.value;
+  });
+
+  div.appendChild(select);
+  div.appendChild(gears);
+  div.appendChild(button);
+  div.appendChild(button2);
+  div.appendChild(button3);
+
+  if (SUPPORTS_LOCAL_STORAGE) {
+    var explain = document.getElementById('dg-local-explain');
+    var localStorageCheckBox = document.getElementById('dg-local-storage');
+    var saveLocally = document.getElementById('dg-save-locally');
+
+    saveLocally.style.display = 'block';
+
+    if (localStorage.getItem(getLocalStorageHash(gui, 'isLocal')) === 'true') {
+      localStorageCheckBox.setAttribute('checked', 'checked');
+    }
+
+    showHideExplain(gui, explain);
+
+    // TODO: Use a boolean controller, fool!
+    _dom2.default.bind(localStorageCheckBox, 'change', function () {
+      gui.useLocalStorage = !gui.useLocalStorage;
+      showHideExplain(gui, explain);
+    });
+  }
+
+  var newConstructorTextArea = document.getElementById('dg-new-constructor');
+
+  _dom2.default.bind(newConstructorTextArea, 'keydown', function (e) {
+    if (e.metaKey && (e.which === 67 || e.keyCode === 67)) {
+      SAVE_DIALOGUE.hide();
+    }
+  });
+
+  _dom2.default.bind(gears, 'click', function () {
+    newConstructorTextArea.innerHTML = JSON.stringify(gui.getSaveObject(), undefined, 2);
+    SAVE_DIALOGUE.show();
+    newConstructorTextArea.focus();
+    newConstructorTextArea.select();
+  });
+
+  _dom2.default.bind(button, 'click', function () {
+    gui.save();
+  });
+
+  _dom2.default.bind(button2, 'click', function () {
+    var presetName = prompt('Enter a new preset name.');
+    if (presetName) {
+      gui.saveAs(presetName);
+    }
+  });
+
+  _dom2.default.bind(button3, 'click', function () {
+    gui.revert();
+  });
+
+  // div.appendChild(button2);
+}
+
+function addResizeHandle(gui) {
+  var pmouseX = void 0;
+
+  gui.__resize_handle = document.createElement('div');
+
+  _common2.default.extend(gui.__resize_handle.style, {
+
+    width: '6px',
+    marginLeft: '-3px',
+    height: '200px',
+    cursor: 'ew-resize',
+    position: 'absolute'
+    // border: '1px solid blue'
+
+  });
+
+  function drag(e) {
+    e.preventDefault();
+
+    gui.width += pmouseX - e.clientX;
+    gui.onResize();
+    pmouseX = e.clientX;
+
+    return false;
+  }
+
+  function dragStop() {
+    _dom2.default.removeClass(gui.__closeButton, GUI.CLASS_DRAG);
+    _dom2.default.unbind(window, 'mousemove', drag);
+    _dom2.default.unbind(window, 'mouseup', dragStop);
+  }
+
+  function dragStart(e) {
+    e.preventDefault();
+
+    pmouseX = e.clientX;
+
+    _dom2.default.addClass(gui.__closeButton, GUI.CLASS_DRAG);
+    _dom2.default.bind(window, 'mousemove', drag);
+    _dom2.default.bind(window, 'mouseup', dragStop);
+
+    return false;
+  }
+
+  _dom2.default.bind(gui.__resize_handle, 'mousedown', dragStart);
+  _dom2.default.bind(gui.__closeButton, 'mousedown', dragStart);
+
+  gui.domElement.insertBefore(gui.__resize_handle, gui.domElement.firstElementChild);
+}
+
+function setWidth(gui, w) {
+  gui.domElement.style.width = w + 'px';
+  // Auto placed save-rows are position fixed, so we have to
+  // set the width manually if we want it to bleed to the edge
+  if (gui.__save_row && gui.autoPlace) {
+    gui.__save_row.style.width = w + 'px';
+  }
+  if (gui.__closeButton) {
+    gui.__closeButton.style.width = w + 'px';
+  }
+}
+
+function getCurrentPreset(gui, useInitialValues) {
+  var toReturn = {};
+
+  // For each object I'm remembering
+  _common2.default.each(gui.__rememberedObjects, function (val, index) {
+    var savedValues = {};
+
+    // The controllers I've made for thcommon.isObject by property
+    var controllerMap = gui.__rememberedObjectIndecesToControllers[index];
+
+    // Remember each value for each property
+    _common2.default.each(controllerMap, function (controller, property) {
+      savedValues[property] = useInitialValues ? controller.initialValue : controller.getValue();
+    });
+
+    // Save the values for thcommon.isObject
+    toReturn[index] = savedValues;
+  });
+
+  return toReturn;
+}
+
+function setPresetSelectIndex(gui) {
+  for (var index = 0; index < gui.__preset_select.length; index++) {
+    if (gui.__preset_select[index].value === gui.preset) {
+      gui.__preset_select.selectedIndex = index;
+    }
+  }
+}
+
+function updateDisplays(controllerArray) {
+  if (controllerArray.length !== 0) {
+    _requestAnimationFrame2.default.call(window, function () {
+      updateDisplays(controllerArray);
+    });
+  }
+
+  _common2.default.each(controllerArray, function (c) {
+    c.updateDisplay();
+  });
+}
+
+exports.default = GUI;
+
+},{"../controllers/BooleanController":9,"../controllers/ColorController":10,"../controllers/Controller":11,"../controllers/ControllerFactory":12,"../controllers/FunctionController":13,"../controllers/NumberControllerBox":15,"../controllers/NumberControllerSlider":16,"../dom/CenteredDiv":19,"../dom/dom":20,"../utils/common":25,"../utils/css":26,"../utils/requestAnimationFrame":27,"./saveDialogue.html":22,"./style.scss":23}],22:[function(require,module,exports){
+module.exports = "<div id=\"dg-save\" class=\"dg dialogue\">\n\n  Here's the new load parameter for your <code>GUI</code>'s constructor:\n\n  <textarea id=\"dg-new-constructor\"></textarea>\n\n  <div id=\"dg-save-locally\">\n\n    <input id=\"dg-local-storage\" type=\"checkbox\"/> Automatically save\n    values to <code>localStorage</code> on exit.\n\n    <div id=\"dg-local-explain\">The values saved to <code>localStorage</code> will\n      override those passed to <code>dat.GUI</code>'s constructor. This makes it\n      easier to work incrementally, but <code>localStorage</code> is fragile,\n      and your friends may not see the same values you do.\n\n    </div>\n\n  </div>\n\n</div>";
+
+},{}],23:[function(require,module,exports){
+module.exports = ".dg {\n  /** Clear list styles */\n  /* Auto-place container */\n  /* Auto-placed GUI's */\n  /* Line items that don't contain folders. */\n  /** Folder names */\n  /** Hides closed items */\n  /** Controller row */\n  /** Name-half (left) */\n  /** Controller-half (right) */\n  /** Controller placement */\n  /** Shorter number boxes when slider is present. */\n  /** Ensure the entire boolean and function row shows a hand */\n  /** allow overflow for color selector */ }\n  .dg ul {\n    list-style: none;\n    margin: 0;\n    padding: 0;\n    width: 100%;\n    clear: both; }\n  .dg.ac {\n    position: fixed;\n    top: 0;\n    left: 0;\n    right: 0;\n    height: 0;\n    z-index: 0; }\n  .dg:not(.ac) .main {\n    /** Exclude mains in ac so that we don't hide close button */\n    overflow: hidden; }\n  .dg.main {\n    -webkit-transition: opacity 0.1s linear;\n    -o-transition: opacity 0.1s linear;\n    -moz-transition: opacity 0.1s linear;\n    transition: opacity 0.1s linear; }\n    .dg.main.taller-than-window {\n      overflow-y: auto; }\n      .dg.main.taller-than-window .close-button {\n        opacity: 1;\n        /* TODO, these are style notes */\n        margin-top: -1px;\n        border-top: 1px solid #2c2c2c; }\n    .dg.main ul.closed .close-button {\n      opacity: 1 !important; }\n    .dg.main:hover .close-button,\n    .dg.main .close-button.drag {\n      opacity: 1; }\n    .dg.main .close-button {\n      /*opacity: 0;*/\n      -webkit-transition: opacity 0.1s linear;\n      -o-transition: opacity 0.1s linear;\n      -moz-transition: opacity 0.1s linear;\n      transition: opacity 0.1s linear;\n      border: 0;\n      line-height: 19px;\n      height: 20px;\n      /* TODO, these are style notes */\n      cursor: pointer;\n      text-align: center;\n      background-color: #000; }\n      .dg.main .close-button.close-top {\n        position: relative; }\n      .dg.main .close-button.close-bottom {\n        position: absolute; }\n      .dg.main .close-button:hover {\n        background-color: #111; }\n  .dg.a {\n    float: right;\n    margin-right: 15px;\n    overflow-y: visible; }\n    .dg.a.has-save > ul.close-top {\n      margin-top: 0; }\n    .dg.a.has-save > ul.close-bottom {\n      margin-top: 27px; }\n    .dg.a.has-save > ul.closed {\n      margin-top: 0; }\n    .dg.a .save-row {\n      top: 0;\n      z-index: 1002; }\n      .dg.a .save-row.close-top {\n        position: relative; }\n      .dg.a .save-row.close-bottom {\n        position: fixed; }\n  .dg li {\n    -webkit-transition: height 0.1s ease-out;\n    -o-transition: height 0.1s ease-out;\n    -moz-transition: height 0.1s ease-out;\n    transition: height 0.1s ease-out;\n    -webkit-transition: overflow 0.1s linear;\n    -o-transition: overflow 0.1s linear;\n    -moz-transition: overflow 0.1s linear;\n    transition: overflow 0.1s linear; }\n  .dg li:not(.folder) {\n    cursor: auto;\n    height: 27px;\n    line-height: 27px;\n    padding: 0 4px 0 5px; }\n  .dg li.folder {\n    padding: 0;\n    border-left: 4px solid transparent; }\n  .dg li.title {\n    cursor: pointer;\n    margin-left: -4px; }\n  .dg .closed li:not(.title),\n  .dg .closed ul li,\n  .dg .closed ul li > * {\n    height: 0;\n    overflow: hidden;\n    border: 0; }\n  .dg .cr {\n    clear: both;\n    padding-left: 3px;\n    height: 27px;\n    overflow: hidden; }\n  .dg .property-name {\n    cursor: default;\n    float: left;\n    clear: left;\n    width: 40%;\n    overflow: hidden;\n    text-overflow: ellipsis; }\n  .dg .c {\n    float: left;\n    width: 60%;\n    position: relative; }\n  .dg .c input[type=text] {\n    border: 0;\n    margin-top: 4px;\n    padding: 3px;\n    width: 100%;\n    float: right; }\n  .dg .has-slider input[type=text] {\n    width: 30%;\n    /*display: none;*/\n    margin-left: 0; }\n  .dg .slider {\n    float: left;\n    width: 66%;\n    margin-left: -5px;\n    margin-right: 0;\n    height: 19px;\n    margin-top: 4px; }\n  .dg .slider-fg {\n    height: 100%; }\n  .dg .c input[type=checkbox] {\n    margin-top: 7px; }\n  .dg .c select {\n    margin-top: 5px; }\n  .dg .cr.function,\n  .dg .cr.function .property-name,\n  .dg .cr.function *,\n  .dg .cr.boolean,\n  .dg .cr.boolean * {\n    cursor: pointer; }\n  .dg .cr.color {\n    overflow: visible; }\n  .dg .selector {\n    display: none;\n    position: absolute;\n    margin-left: -9px;\n    margin-top: 23px;\n    z-index: 10; }\n  .dg .c:hover .selector,\n  .dg .selector.drag {\n    display: block; }\n  .dg li.save-row {\n    padding: 0; }\n    .dg li.save-row .button {\n      display: inline-block;\n      padding: 0px 6px; }\n  .dg.dialogue {\n    background-color: #222;\n    width: 460px;\n    padding: 15px;\n    font-size: 13px;\n    line-height: 15px; }\n\n/* TODO Separate style and structure */\n#dg-new-constructor {\n  padding: 10px;\n  color: #222;\n  font-family: Monaco, monospace;\n  font-size: 10px;\n  border: 0;\n  resize: none;\n  box-shadow: inset 1px 1px 1px #888;\n  word-wrap: break-word;\n  margin: 12px 0;\n  display: block;\n  width: 440px;\n  overflow-y: scroll;\n  height: 100px;\n  position: relative; }\n\n#dg-local-explain {\n  display: none;\n  font-size: 11px;\n  line-height: 17px;\n  border-radius: 3px;\n  background-color: #333;\n  padding: 8px;\n  margin-top: 10px; }\n  #dg-local-explain code {\n    font-size: 10px; }\n\n#dat-gui-save-locally {\n  display: none; }\n\n/** Main type */\n.dg {\n  color: #eee;\n  font: 11px 'Lucida Grande', sans-serif;\n  text-shadow: 0 -1px 0 #111;\n  /** Auto place */\n  /* Controller row, <li> */\n  /** Controllers */ }\n  .dg.main {\n    /** Scrollbar */ }\n    .dg.main::-webkit-scrollbar {\n      width: 5px;\n      background: #1a1a1a; }\n    .dg.main::-webkit-scrollbar-corner {\n      height: 0;\n      display: none; }\n    .dg.main::-webkit-scrollbar-thumb {\n      border-radius: 5px;\n      background: #676767; }\n  .dg li:not(.folder) {\n    background: #1a1a1a;\n    border-bottom: 1px solid #2c2c2c; }\n  .dg li.save-row {\n    line-height: 25px;\n    background: #dad5cb;\n    border: 0; }\n    .dg li.save-row select {\n      margin-left: 5px;\n      width: 108px; }\n    .dg li.save-row .button {\n      margin-left: 5px;\n      margin-top: 1px;\n      border-radius: 2px;\n      font-size: 9px;\n      line-height: 7px;\n      padding: 4px 4px 5px 4px;\n      background: #c5bdad;\n      color: #fff;\n      text-shadow: 0 1px 0 #b0a58f;\n      box-shadow: 0 -1px 0 #b0a58f;\n      cursor: pointer; }\n      .dg li.save-row .button.gears {\n        background: #c5bdad url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAANCAYAAAB/9ZQ7AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAQJJREFUeNpiYKAU/P//PwGIC/ApCABiBSAW+I8AClAcgKxQ4T9hoMAEUrxx2QSGN6+egDX+/vWT4e7N82AMYoPAx/evwWoYoSYbACX2s7KxCxzcsezDh3evFoDEBYTEEqycggWAzA9AuUSQQgeYPa9fPv6/YWm/Acx5IPb7ty/fw+QZblw67vDs8R0YHyQhgObx+yAJkBqmG5dPPDh1aPOGR/eugW0G4vlIoTIfyFcA+QekhhHJhPdQxbiAIguMBTQZrPD7108M6roWYDFQiIAAv6Aow/1bFwXgis+f2LUAynwoIaNcz8XNx3Dl7MEJUDGQpx9gtQ8YCueB+D26OECAAQDadt7e46D42QAAAABJRU5ErkJggg==) 2px 1px no-repeat;\n        height: 7px;\n        width: 8px; }\n      .dg li.save-row .button:hover {\n        background-color: #bab19e;\n        box-shadow: 0 -1px 0 #b0a58f; }\n  .dg li.folder {\n    border-bottom: 0; }\n  .dg li.title {\n    padding-left: 16px;\n    background: #000 url(data:image/gif;base64,R0lGODlhBQAFAJEAAP////Pz8////////yH5BAEAAAIALAAAAAAFAAUAAAIIlI+hKgFxoCgAOw==) 6px 10px no-repeat;\n    cursor: pointer;\n    border-bottom: 1px solid rgba(255, 255, 255, 0.2); }\n  .dg .closed li.title {\n    background-image: url(data:image/gif;base64,R0lGODlhBQAFAJEAAP////Pz8////////yH5BAEAAAIALAAAAAAFAAUAAAIIlGIWqMCbWAEAOw==); }\n  .dg .cr.boolean {\n    border-left: 3px solid #806787; }\n  .dg .cr.color {\n    border-left: 3px solid; }\n  .dg .cr.function {\n    border-left: 3px solid #e61d5f; }\n  .dg .cr.number {\n    border-left: 3px solid #2FA1D6; }\n    .dg .cr.number input[type=text] {\n      color: #2FA1D6; }\n  .dg .cr.string {\n    border-left: 3px solid #1ed36f; }\n    .dg .cr.string input[type=text] {\n      color: #1ed36f; }\n  .dg .cr.function:hover, .dg .cr.boolean:hover {\n    background: #111; }\n  .dg .c input[type=text] {\n    background: #303030;\n    outline: none; }\n    .dg .c input[type=text]:hover {\n      background: #3c3c3c; }\n    .dg .c input[type=text]:focus {\n      background: #494949;\n      color: #fff; }\n  .dg .c .slider {\n    background: #303030;\n    cursor: ew-resize; }\n  .dg .c .slider-fg {\n    background: #2FA1D6;\n    max-width: 100%; }\n  .dg .c .slider:hover {\n    background: #3c3c3c; }\n    .dg .c .slider:hover .slider-fg {\n      background: #44abda; }\n";
+},{}],24:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _Color = require('./color/Color');
+
+var _Color2 = _interopRequireDefault(_Color);
+
+var _math = require('./color/math');
+
+var _math2 = _interopRequireDefault(_math);
+
+var _interpret = require('./color/interpret');
+
+var _interpret2 = _interopRequireDefault(_interpret);
+
+var _Controller = require('./controllers/Controller');
+
+var _Controller2 = _interopRequireDefault(_Controller);
+
+var _BooleanController = require('./controllers/BooleanController');
+
+var _BooleanController2 = _interopRequireDefault(_BooleanController);
+
+var _OptionController = require('./controllers/OptionController');
+
+var _OptionController2 = _interopRequireDefault(_OptionController);
+
+var _StringController = require('./controllers/StringController');
+
+var _StringController2 = _interopRequireDefault(_StringController);
+
+var _NumberController = require('./controllers/NumberController');
+
+var _NumberController2 = _interopRequireDefault(_NumberController);
+
+var _NumberControllerBox = require('./controllers/NumberControllerBox');
+
+var _NumberControllerBox2 = _interopRequireDefault(_NumberControllerBox);
+
+var _NumberControllerSlider = require('./controllers/NumberControllerSlider');
+
+var _NumberControllerSlider2 = _interopRequireDefault(_NumberControllerSlider);
+
+var _FunctionController = require('./controllers/FunctionController');
+
+var _FunctionController2 = _interopRequireDefault(_FunctionController);
+
+var _ColorController = require('./controllers/ColorController');
+
+var _ColorController2 = _interopRequireDefault(_ColorController);
+
+var _dom = require('./dom/dom');
+
+var _dom2 = _interopRequireDefault(_dom);
+
+var _GUI = require('./gui/GUI');
+
+var _GUI2 = _interopRequireDefault(_GUI);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * dat-gui JavaScript Controller Library
+ * http://code.google.com/p/dat-gui
+ *
+ * Copyright 2011 Data Arts Team, Google Creative Lab
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+exports.default = {
+  color: {
+    Color: _Color2.default,
+    math: _math2.default,
+    interpret: _interpret2.default
+  },
+
+  controllers: {
+    Controller: _Controller2.default,
+    BooleanController: _BooleanController2.default,
+    OptionController: _OptionController2.default,
+    StringController: _StringController2.default,
+    NumberController: _NumberController2.default,
+    NumberControllerBox: _NumberControllerBox2.default,
+    NumberControllerSlider: _NumberControllerSlider2.default,
+    FunctionController: _FunctionController2.default,
+    ColorController: _ColorController2.default
+  },
+
+  dom: {
+    dom: _dom2.default
+  },
+
+  gui: {
+    GUI: _GUI2.default
+  },
+
+  GUI: _GUI2.default
+};
+
+},{"./color/Color":5,"./color/interpret":6,"./color/math":7,"./controllers/BooleanController":9,"./controllers/ColorController":10,"./controllers/Controller":11,"./controllers/FunctionController":13,"./controllers/NumberController":14,"./controllers/NumberControllerBox":15,"./controllers/NumberControllerSlider":16,"./controllers/OptionController":17,"./controllers/StringController":18,"./dom/dom":20,"./gui/GUI":21}],25:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+/**
+ * dat-gui JavaScript Controller Library
+ * http://code.google.com/p/dat-gui
+ *
+ * Copyright 2011 Data Arts Team, Google Creative Lab
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+var ARR_EACH = Array.prototype.forEach;
+var ARR_SLICE = Array.prototype.slice;
+
+/**
+ * Band-aid methods for things that should be a lot easier in JavaScript.
+ * Implementation and structure inspired by underscore.js
+ * http://documentcloud.github.com/underscore/
+ */
+
+var Common = {
+  BREAK: {},
+
+  extend: function extend(target) {
+    this.each(ARR_SLICE.call(arguments, 1), function (obj) {
+      var keys = this.isObject(obj) ? Object.keys(obj) : [];
+      keys.forEach(function (key) {
+        if (!this.isUndefined(obj[key])) {
+          target[key] = obj[key];
+        }
+      }.bind(this));
+    }, this);
+
+    return target;
+  },
+
+  defaults: function defaults(target) {
+    this.each(ARR_SLICE.call(arguments, 1), function (obj) {
+      var keys = this.isObject(obj) ? Object.keys(obj) : [];
+      keys.forEach(function (key) {
+        if (this.isUndefined(target[key])) {
+          target[key] = obj[key];
+        }
+      }.bind(this));
+    }, this);
+
+    return target;
+  },
+
+  compose: function compose() {
+    var toCall = ARR_SLICE.call(arguments);
+    return function () {
+      var args = ARR_SLICE.call(arguments);
+      for (var i = toCall.length - 1; i >= 0; i--) {
+        args = [toCall[i].apply(this, args)];
+      }
+      return args[0];
+    };
+  },
+
+  each: function each(obj, itr, scope) {
+    if (!obj) {
+      return;
+    }
+
+    if (ARR_EACH && obj.forEach && obj.forEach === ARR_EACH) {
+      obj.forEach(itr, scope);
+    } else if (obj.length === obj.length + 0) {
+      // Is number but not NaN
+      var key = void 0;
+      var l = void 0;
+      for (key = 0, l = obj.length; key < l; key++) {
+        if (key in obj && itr.call(scope, obj[key], key) === this.BREAK) {
+          return;
+        }
+      }
+    } else {
+      for (var _key in obj) {
+        if (itr.call(scope, obj[_key], _key) === this.BREAK) {
+          return;
+        }
+      }
+    }
+  },
+
+  defer: function defer(fnc) {
+    setTimeout(fnc, 0);
+  },
+
+  // if the function is called repeatedly, wait until threshold passes until we execute the function
+  debounce: function debounce(func, threshold, callImmediately) {
+    var timeout = void 0;
+
+    return function () {
+      var obj = this;
+      var args = arguments;
+      function delayed() {
+        timeout = null;
+        if (!callImmediately) func.apply(obj, args);
+      }
+
+      var callNow = callImmediately || !timeout;
+
+      clearTimeout(timeout);
+      timeout = setTimeout(delayed, threshold);
+
+      if (callNow) {
+        func.apply(obj, args);
+      }
+    };
+  },
+
+  toArray: function toArray(obj) {
+    if (obj.toArray) return obj.toArray();
+    return ARR_SLICE.call(obj);
+  },
+
+  isUndefined: function isUndefined(obj) {
+    return obj === undefined;
+  },
+
+  isNull: function isNull(obj) {
+    return obj === null;
+  },
+
+  isNaN: function (_isNaN) {
+    function isNaN(_x) {
+      return _isNaN.apply(this, arguments);
+    }
+
+    isNaN.toString = function () {
+      return _isNaN.toString();
+    };
+
+    return isNaN;
+  }(function (obj) {
+    return isNaN(obj);
+  }),
+
+  isArray: Array.isArray || function (obj) {
+    return obj.constructor === Array;
+  },
+
+  isObject: function isObject(obj) {
+    return obj === Object(obj);
+  },
+
+  isNumber: function isNumber(obj) {
+    return obj === obj + 0;
+  },
+
+  isString: function isString(obj) {
+    return obj === obj + '';
+  },
+
+  isBoolean: function isBoolean(obj) {
+    return obj === false || obj === true;
+  },
+
+  isFunction: function isFunction(obj) {
+    return Object.prototype.toString.call(obj) === '[object Function]';
+  }
+
+};
+
+exports.default = Common;
+
+},{}],26:[function(require,module,exports){
+'use strict';
+
+/**
+ * dat-gui JavaScript Controller Library
+ * http://code.google.com/p/dat-gui
+ *
+ * Copyright 2011 Data Arts Team, Google Creative Lab
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+module.exports = {
+  load: function load(url, indoc) {
+    var doc = indoc || document;
+    var link = doc.createElement('link');
+    link.type = 'text/css';
+    link.rel = 'stylesheet';
+    link.href = url;
+    doc.getElementsByTagName('head')[0].appendChild(link);
+  },
+
+  inject: function inject(css, indoc) {
+    var doc = indoc || document;
+    var injected = document.createElement('style');
+    injected.type = 'text/css';
+    injected.innerHTML = css;
+    var head = doc.getElementsByTagName('head')[0];
+    try {
+      head.appendChild(injected);
+    } catch (e) {// Unable to inject CSS, probably because of a Content Security Policy
+    }
+  }
+};
+
+},{}],27:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+/**
+ * dat-gui JavaScript Controller Library
+ * http://code.google.com/p/dat-gui
+ *
+ * Copyright 2011 Data Arts Team, Google Creative Lab
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+function requestAnimationFrame(callback) {
+  setTimeout(callback, 1000 / 60);
+}
+
+exports.default = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || requestAnimationFrame;
+
+},{}],28:[function(require,module,exports){
 module.exports = getSize
 
 function getSize(element) {
@@ -13830,7 +18017,7 @@ function parse(prop) {
   return parseFloat(prop) || 0
 }
 
-},{}],5:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -14134,7 +18321,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],6:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 module.exports = function(strings) {
   if (typeof strings === 'string') strings = [strings]
   var exprs = [].slice.call(arguments,1)
@@ -14146,7 +18333,7 @@ module.exports = function(strings) {
   return parts.join('')
 }
 
-},{}],7:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -14171,7 +18358,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],8:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 /*! keydrown - v1.2.3 - 2016-09-24 - http://jeremyckahn.github.com/keydrown */
 ;(function (window) {
 
@@ -14684,7 +18871,7 @@ if (typeof module === "object" && typeof module.exports === "object") {
 
 } (window));
 
-},{}],9:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 (function (process){
 // Generated by CoffeeScript 1.12.2
 (function() {
@@ -14724,7 +18911,7 @@ if (typeof module === "object" && typeof module.exports === "object") {
 
 
 }).call(this,require('_process'))
-},{"_process":10}],10:[function(require,module,exports){
+},{"_process":34}],34:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -14910,7 +19097,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],11:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 var inherits = require('inherits')
 var EventEmitter = require('events').EventEmitter
 var now = require('right-now')
@@ -14955,7 +19142,7 @@ Engine.prototype.tick = function() {
     this.emit('tick', dt)
     this.last = time
 }
-},{"events":5,"inherits":7,"raf":12,"right-now":13}],12:[function(require,module,exports){
+},{"events":29,"inherits":31,"raf":36,"right-now":37}],36:[function(require,module,exports){
 (function (global){
 var now = require('performance-now')
   , root = typeof window === 'undefined' ? global : window
@@ -15031,7 +19218,7 @@ module.exports.polyfill = function() {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"performance-now":9}],13:[function(require,module,exports){
+},{"performance-now":33}],37:[function(require,module,exports){
 (function (global){
 module.exports =
   global.performance &&
@@ -15042,7 +19229,7 @@ module.exports =
   }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],14:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 /**
  * @author alteredq / http://alteredqualia.com/
  *
@@ -15080,7 +19267,7 @@ module.exports = {
   ].join("\n")
 };
 
-},{}],15:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 /**
  * @author alteredq / http://alteredqualia.com/
  */
@@ -15227,7 +19414,7 @@ module.exports = function(THREE) {
 
   return EffectComposer
 };
-},{"./lib/clearmaskpass":16,"./lib/maskpass":17,"./lib/renderpass":18,"./lib/shaderpass":19,"three-copyshader":14}],16:[function(require,module,exports){
+},{"./lib/clearmaskpass":40,"./lib/maskpass":41,"./lib/renderpass":42,"./lib/shaderpass":43,"three-copyshader":38}],40:[function(require,module,exports){
 /**
  * @author alteredq / http://alteredqualia.com/
  */
@@ -15247,7 +19434,7 @@ module.exports = function(THREE) {
 
   return ClearMaskPass
 };
-},{}],17:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 /**
  * @author alteredq / http://alteredqualia.com/
  */
@@ -15320,7 +19507,7 @@ module.exports = function(THREE) {
   return MaskPass
 };
 
-},{}],18:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 /**
  * @author alteredq / http://alteredqualia.com/
  */
@@ -15379,7 +19566,7 @@ module.exports = function(THREE) {
 
 };
 
-},{}],19:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 /**
  * @author alteredq / http://alteredqualia.com/
  */
@@ -15437,7 +19624,7 @@ module.exports = function(THREE, EffectComposer) {
   return ShaderPass;
 
 };
-},{}],20:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -15613,16 +19800,9 @@ module.exports = function(THREE, EffectComposer) {
 
 				event.target = this;
 
-				var array = [], i = 0;
-				var length = listenerArray.length;
+				var array = listenerArray.slice( 0 );
 
-				for ( i = 0; i < length; i ++ ) {
-
-					array[ i ] = listenerArray[ i ];
-
-				}
-
-				for ( i = 0; i < length; i ++ ) {
+				for ( var i = 0, l = array.length; i < l; i ++ ) {
 
 					array[ i ].call( this, event );
 
@@ -15634,7 +19814,7 @@ module.exports = function(THREE, EffectComposer) {
 
 	} );
 
-	var REVISION = '85';
+	var REVISION = '86';
 	var MOUSE = { LEFT: 0, MIDDLE: 1, RIGHT: 2 };
 	var CullFaceNone = 0;
 	var CullFaceBack = 1;
@@ -16185,7 +20365,7 @@ module.exports = function(THREE, EffectComposer) {
 
 		clamp: function ( min, max ) {
 
-			// This function assumes min < max, if this assumption isn't true it will not operate correctly
+			// assumes min < max, componentwise
 
 			this.x = Math.max( min.x, Math.min( max.x, this.x ) );
 			this.y = Math.max( min.y, Math.min( max.y, this.y ) );
@@ -16214,7 +20394,7 @@ module.exports = function(THREE, EffectComposer) {
 
 			var length = this.length();
 
-			return this.multiplyScalar( Math.max( min, Math.min( max, length ) ) / length );
+			return this.divideScalar( length || 1 ).multiplyScalar( Math.max( min, Math.min( max, length ) ) );
 
 		},
 
@@ -16289,7 +20469,7 @@ module.exports = function(THREE, EffectComposer) {
 
 		normalize: function () {
 
-			return this.divideScalar( this.length() );
+			return this.divideScalar( this.length() || 1 );
 
 		},
 
@@ -16326,7 +20506,7 @@ module.exports = function(THREE, EffectComposer) {
 
 		setLength: function ( length ) {
 
-			return this.multiplyScalar( length / this.length() );
+			return this.normalize().multiplyScalar( length );
 
 		},
 
@@ -17117,7 +21297,7 @@ module.exports = function(THREE, EffectComposer) {
 
 		clamp: function ( min, max ) {
 
-			// This function assumes min < max, if this assumption isn't true it will not operate correctly
+			// assumes min < max, componentwise
 
 			this.x = Math.max( min.x, Math.min( max.x, this.x ) );
 			this.y = Math.max( min.y, Math.min( max.y, this.y ) );
@@ -17130,10 +21310,16 @@ module.exports = function(THREE, EffectComposer) {
 
 		clampScalar: function () {
 
-			var min = new Vector4();
-			var max = new Vector4();
+			var min, max;
 
 			return function clampScalar( minVal, maxVal ) {
+
+				if ( min === undefined ) {
+
+					min = new Vector4();
+					max = new Vector4();
+
+				}
 
 				min.set( minVal, minVal, minVal, minVal );
 				max.set( maxVal, maxVal, maxVal, maxVal );
@@ -17143,6 +21329,14 @@ module.exports = function(THREE, EffectComposer) {
 			};
 
 		}(),
+
+		clampLength: function ( min, max ) {
+
+			var length = this.length();
+
+			return this.divideScalar( length || 1 ).multiplyScalar( Math.max( min, Math.min( max, length ) ) );
+
+		},
 
 		floor: function () {
 
@@ -17225,13 +21419,13 @@ module.exports = function(THREE, EffectComposer) {
 
 		normalize: function () {
 
-			return this.divideScalar( this.length() );
+			return this.divideScalar( this.length() || 1 );
 
 		},
 
 		setLength: function ( length ) {
 
-			return this.multiplyScalar( length / this.length() );
+			return this.normalize().multiplyScalar( length );
 
 		},
 
@@ -17604,7 +21798,7 @@ module.exports = function(THREE, EffectComposer) {
 
 		setFromEuler: function ( euler, update ) {
 
-			if ( ( euler && euler.isEuler ) === false ) {
+			if ( ! ( euler && euler.isEuler ) ) {
 
 				throw new Error( 'THREE.Quaternion: .setFromEuler() now expects an Euler rotation rather than a Vector3 and order.' );
 
@@ -18016,7 +22210,7 @@ module.exports = function(THREE, EffectComposer) {
 
 	/**
 	 * @author mrdoob / http://mrdoob.com/
-	 * @author *kile / http://kile.stravaganza.org/
+	 * @author kile / http://kile.stravaganza.org/
 	 * @author philogb / http://blog.thejit.org/
 	 * @author mikael emtinger / http://gomo.se/
 	 * @author egraether / http://egraether.com/
@@ -18250,7 +22444,7 @@ module.exports = function(THREE, EffectComposer) {
 
 			return function applyEuler( euler ) {
 
-				if ( ( euler && euler.isEuler ) === false ) {
+				if ( ! ( euler && euler.isEuler ) ) {
 
 					console.error( 'THREE.Vector3: .applyEuler() now expects an Euler rotation rather than a Vector3 and order.' );
 
@@ -18292,12 +22486,13 @@ module.exports = function(THREE, EffectComposer) {
 			var x = this.x, y = this.y, z = this.z;
 			var e = m.elements;
 
-			this.x = e[ 0 ] * x + e[ 4 ] * y + e[ 8 ]  * z + e[ 12 ];
-			this.y = e[ 1 ] * x + e[ 5 ] * y + e[ 9 ]  * z + e[ 13 ];
-			this.z = e[ 2 ] * x + e[ 6 ] * y + e[ 10 ] * z + e[ 14 ];
-			var w =  e[ 3 ] * x + e[ 7 ] * y + e[ 11 ] * z + e[ 15 ];
+			var w = 1 / ( e[ 3 ] * x + e[ 7 ] * y + e[ 11 ] * z + e[ 15 ] );
 
-			return this.divideScalar( w );
+			this.x = ( e[ 0 ] * x + e[ 4 ] * y + e[ 8 ]  * z + e[ 12 ] ) * w;
+			this.y = ( e[ 1 ] * x + e[ 5 ] * y + e[ 9 ]  * z + e[ 13 ] ) * w;
+			this.z = ( e[ 2 ] * x + e[ 6 ] * y + e[ 10 ] * z + e[ 14 ] ) * w;
+
+			return this;
 
 		},
 
@@ -18403,7 +22598,7 @@ module.exports = function(THREE, EffectComposer) {
 
 		clamp: function ( min, max ) {
 
-			// This function assumes min < max, if this assumption isn't true it will not operate correctly
+			// assumes min < max, componentwise
 
 			this.x = Math.max( min.x, Math.min( max.x, this.x ) );
 			this.y = Math.max( min.y, Math.min( max.y, this.y ) );
@@ -18433,7 +22628,7 @@ module.exports = function(THREE, EffectComposer) {
 
 			var length = this.length();
 
-			return this.multiplyScalar( Math.max( min, Math.min( max, length ) ) / length );
+			return this.divideScalar( length || 1 ).multiplyScalar( Math.max( min, Math.min( max, length ) ) );
 
 		},
 
@@ -18515,13 +22710,13 @@ module.exports = function(THREE, EffectComposer) {
 
 		normalize: function () {
 
-			return this.divideScalar( this.length() );
+			return this.divideScalar( this.length() || 1 );
 
 		},
 
 		setLength: function ( length ) {
 
-			return this.multiplyScalar( length / this.length() );
+			return this.normalize().multiplyScalar( length );
 
 		},
 
@@ -18664,7 +22859,13 @@ module.exports = function(THREE, EffectComposer) {
 
 		setFromMatrixPosition: function ( m ) {
 
-			return this.setFromMatrixColumn( m, 3 );
+			var e = m.elements;
+
+			this.x = e[ 12 ];
+			this.y = e[ 13 ];
+			this.z = e[ 14 ];
+
+			return this;
 
 		},
 
@@ -18683,7 +22884,6 @@ module.exports = function(THREE, EffectComposer) {
 		},
 
 		setFromMatrixColumn: function ( m, index ) {
-
 
 			return this.fromArray( m.elements, index * 4 );
 
@@ -18890,7 +23090,7 @@ module.exports = function(THREE, EffectComposer) {
 
 		makeRotationFromEuler: function ( euler ) {
 
-			if ( ( euler && euler.isEuler ) === false ) {
+			if ( ! ( euler && euler.isEuler ) ) {
 
 				console.error( 'THREE.Matrix: .makeRotationFromEuler() now expects a Euler rotation rather than a Vector3 and order.' );
 
@@ -19078,9 +23278,19 @@ module.exports = function(THREE, EffectComposer) {
 
 				if ( x.lengthSq() === 0 ) {
 
-					// eye and target are in the same vertical
+					// up and z are parallel
 
-					z.z += 0.0001;
+					if ( Math.abs( up.z ) === 1 ) {
+
+						z.x += 0.0001;
+
+					} else {
+
+						z.z += 0.0001;
+
+					}
+
+					z.normalize();
 					x.crossVectors( up, z );
 
 				}
@@ -19954,7 +24164,7 @@ module.exports = function(THREE, EffectComposer) {
 			case 0x8b5b: return setValue3fm; // _MAT3
 			case 0x8b5c: return setValue4fm; // _MAT4
 
-			case 0x8b5e: return setValueT1; // SAMPLER_2D
+			case 0x8b5e: case 0x8d66: return setValueT1; // SAMPLER_2D, SAMPLER_EXTERNAL_OES
 			case 0x8b60: return setValueT6; // SAMPLER_CUBE
 
 			case 0x1404: case 0x8b56: return setValue1i; // INT, BOOL
@@ -21035,7 +25245,7 @@ module.exports = function(THREE, EffectComposer) {
 
 	var bsdfs = "float punctualLightIntensityToIrradianceFactor( const in float lightDistance, const in float cutoffDistance, const in float decayExponent ) {\n\tif( decayExponent > 0.0 ) {\n#if defined ( PHYSICALLY_CORRECT_LIGHTS )\n\t\tfloat distanceFalloff = 1.0 / max( pow( lightDistance, decayExponent ), 0.01 );\n\t\tfloat maxDistanceCutoffFactor = pow2( saturate( 1.0 - pow4( lightDistance / cutoffDistance ) ) );\n\t\treturn distanceFalloff * maxDistanceCutoffFactor;\n#else\n\t\treturn pow( saturate( -lightDistance / cutoffDistance + 1.0 ), decayExponent );\n#endif\n\t}\n\treturn 1.0;\n}\nvec3 BRDF_Diffuse_Lambert( const in vec3 diffuseColor ) {\n\treturn RECIPROCAL_PI * diffuseColor;\n}\nvec3 F_Schlick( const in vec3 specularColor, const in float dotLH ) {\n\tfloat fresnel = exp2( ( -5.55473 * dotLH - 6.98316 ) * dotLH );\n\treturn ( 1.0 - specularColor ) * fresnel + specularColor;\n}\nfloat G_GGX_Smith( const in float alpha, const in float dotNL, const in float dotNV ) {\n\tfloat a2 = pow2( alpha );\n\tfloat gl = dotNL + sqrt( a2 + ( 1.0 - a2 ) * pow2( dotNL ) );\n\tfloat gv = dotNV + sqrt( a2 + ( 1.0 - a2 ) * pow2( dotNV ) );\n\treturn 1.0 / ( gl * gv );\n}\nfloat G_GGX_SmithCorrelated( const in float alpha, const in float dotNL, const in float dotNV ) {\n\tfloat a2 = pow2( alpha );\n\tfloat gv = dotNL * sqrt( a2 + ( 1.0 - a2 ) * pow2( dotNV ) );\n\tfloat gl = dotNV * sqrt( a2 + ( 1.0 - a2 ) * pow2( dotNL ) );\n\treturn 0.5 / max( gv + gl, EPSILON );\n}\nfloat D_GGX( const in float alpha, const in float dotNH ) {\n\tfloat a2 = pow2( alpha );\n\tfloat denom = pow2( dotNH ) * ( a2 - 1.0 ) + 1.0;\n\treturn RECIPROCAL_PI * a2 / pow2( denom );\n}\nvec3 BRDF_Specular_GGX( const in IncidentLight incidentLight, const in GeometricContext geometry, const in vec3 specularColor, const in float roughness ) {\n\tfloat alpha = pow2( roughness );\n\tvec3 halfDir = normalize( incidentLight.direction + geometry.viewDir );\n\tfloat dotNL = saturate( dot( geometry.normal, incidentLight.direction ) );\n\tfloat dotNV = saturate( dot( geometry.normal, geometry.viewDir ) );\n\tfloat dotNH = saturate( dot( geometry.normal, halfDir ) );\n\tfloat dotLH = saturate( dot( incidentLight.direction, halfDir ) );\n\tvec3 F = F_Schlick( specularColor, dotLH );\n\tfloat G = G_GGX_SmithCorrelated( alpha, dotNL, dotNV );\n\tfloat D = D_GGX( alpha, dotNH );\n\treturn F * ( G * D );\n}\nvec2 LTC_Uv( const in vec3 N, const in vec3 V, const in float roughness ) {\n\tconst float LUT_SIZE  = 64.0;\n\tconst float LUT_SCALE = ( LUT_SIZE - 1.0 ) / LUT_SIZE;\n\tconst float LUT_BIAS  = 0.5 / LUT_SIZE;\n\tfloat theta = acos( dot( N, V ) );\n\tvec2 uv = vec2(\n\t\tsqrt( saturate( roughness ) ),\n\t\tsaturate( theta / ( 0.5 * PI ) ) );\n\tuv = uv * LUT_SCALE + LUT_BIAS;\n\treturn uv;\n}\nfloat LTC_ClippedSphereFormFactor( const in vec3 f ) {\n\tfloat l = length( f );\n\treturn max( ( l * l + f.z ) / ( l + 1.0 ), 0.0 );\n}\nvec3 LTC_EdgeVectorFormFactor( const in vec3 v1, const in vec3 v2 ) {\n\tfloat x = dot( v1, v2 );\n\tfloat y = abs( x );\n\tfloat a = 0.86267 + (0.49788 + 0.01436 * y ) * y;\n\tfloat b = 3.45068 + (4.18814 + y) * y;\n\tfloat v = a / b;\n\tfloat theta_sintheta = (x > 0.0) ? v : 0.5 * inversesqrt( 1.0 - x * x ) - v;\n\treturn cross( v1, v2 ) * theta_sintheta;\n}\nvec3 LTC_Evaluate( const in vec3 N, const in vec3 V, const in vec3 P, const in mat3 mInv, const in vec3 rectCoords[ 4 ] ) {\n\tvec3 v1 = rectCoords[ 1 ] - rectCoords[ 0 ];\n\tvec3 v2 = rectCoords[ 3 ] - rectCoords[ 0 ];\n\tvec3 lightNormal = cross( v1, v2 );\n\tif( dot( lightNormal, P - rectCoords[ 0 ] ) < 0.0 ) return vec3( 0.0 );\n\tvec3 T1, T2;\n\tT1 = normalize( V - N * dot( V, N ) );\n\tT2 = - cross( N, T1 );\n\tmat3 mat = mInv * transpose( mat3( T1, T2, N ) );\n\tvec3 coords[ 4 ];\n\tcoords[ 0 ] = mat * ( rectCoords[ 0 ] - P );\n\tcoords[ 1 ] = mat * ( rectCoords[ 1 ] - P );\n\tcoords[ 2 ] = mat * ( rectCoords[ 2 ] - P );\n\tcoords[ 3 ] = mat * ( rectCoords[ 3 ] - P );\n\tcoords[ 0 ] = normalize( coords[ 0 ] );\n\tcoords[ 1 ] = normalize( coords[ 1 ] );\n\tcoords[ 2 ] = normalize( coords[ 2 ] );\n\tcoords[ 3 ] = normalize( coords[ 3 ] );\n\tvec3 vectorFormFactor = vec3( 0.0 );\n\tvectorFormFactor += LTC_EdgeVectorFormFactor( coords[ 0 ], coords[ 1 ] );\n\tvectorFormFactor += LTC_EdgeVectorFormFactor( coords[ 1 ], coords[ 2 ] );\n\tvectorFormFactor += LTC_EdgeVectorFormFactor( coords[ 2 ], coords[ 3 ] );\n\tvectorFormFactor += LTC_EdgeVectorFormFactor( coords[ 3 ], coords[ 0 ] );\n\tvec3 result = vec3( LTC_ClippedSphereFormFactor( vectorFormFactor ) );\n\treturn result;\n}\nvec3 BRDF_Specular_GGX_Environment( const in GeometricContext geometry, const in vec3 specularColor, const in float roughness ) {\n\tfloat dotNV = saturate( dot( geometry.normal, geometry.viewDir ) );\n\tconst vec4 c0 = vec4( - 1, - 0.0275, - 0.572, 0.022 );\n\tconst vec4 c1 = vec4( 1, 0.0425, 1.04, - 0.04 );\n\tvec4 r = roughness * c0 + c1;\n\tfloat a004 = min( r.x * r.x, exp2( - 9.28 * dotNV ) ) * r.x + r.y;\n\tvec2 AB = vec2( -1.04, 1.04 ) * a004 + r.zw;\n\treturn specularColor * AB.x + AB.y;\n}\nfloat G_BlinnPhong_Implicit( ) {\n\treturn 0.25;\n}\nfloat D_BlinnPhong( const in float shininess, const in float dotNH ) {\n\treturn RECIPROCAL_PI * ( shininess * 0.5 + 1.0 ) * pow( dotNH, shininess );\n}\nvec3 BRDF_Specular_BlinnPhong( const in IncidentLight incidentLight, const in GeometricContext geometry, const in vec3 specularColor, const in float shininess ) {\n\tvec3 halfDir = normalize( incidentLight.direction + geometry.viewDir );\n\tfloat dotNH = saturate( dot( geometry.normal, halfDir ) );\n\tfloat dotLH = saturate( dot( incidentLight.direction, halfDir ) );\n\tvec3 F = F_Schlick( specularColor, dotLH );\n\tfloat G = G_BlinnPhong_Implicit( );\n\tfloat D = D_BlinnPhong( shininess, dotNH );\n\treturn F * ( G * D );\n}\nfloat GGXRoughnessToBlinnExponent( const in float ggxRoughness ) {\n\treturn ( 2.0 / pow2( ggxRoughness + 0.0001 ) - 2.0 );\n}\nfloat BlinnExponentToGGXRoughness( const in float blinnExponent ) {\n\treturn sqrt( 2.0 / ( blinnExponent + 2.0 ) );\n}\n";
 
-	var bumpmap_pars_fragment = "#ifdef USE_BUMPMAP\n\tuniform sampler2D bumpMap;\n\tuniform float bumpScale;\n\tvec2 dHdxy_fwd() {\n\t\tvec2 dSTdx = dFdx( vUv );\n\t\tvec2 dSTdy = dFdy( vUv );\n\t\tfloat Hll = bumpScale * texture2D( bumpMap, vUv ).x;\n\t\tfloat dBx = bumpScale * texture2D( bumpMap, vUv + dSTdx ).x - Hll;\n\t\tfloat dBy = bumpScale * texture2D( bumpMap, vUv + dSTdy ).x - Hll;\n\t\treturn vec2( dBx, dBy );\n\t}\n\tvec3 perturbNormalArb( vec3 surf_pos, vec3 surf_norm, vec2 dHdxy ) {\n\t\tvec3 vSigmaX = dFdx( surf_pos );\n\t\tvec3 vSigmaY = dFdy( surf_pos );\n\t\tvec3 vN = surf_norm;\n\t\tvec3 R1 = cross( vSigmaY, vN );\n\t\tvec3 R2 = cross( vN, vSigmaX );\n\t\tfloat fDet = dot( vSigmaX, R1 );\n\t\tvec3 vGrad = sign( fDet ) * ( dHdxy.x * R1 + dHdxy.y * R2 );\n\t\treturn normalize( abs( fDet ) * surf_norm - vGrad );\n\t}\n#endif\n";
+	var bumpmap_pars_fragment = "#ifdef USE_BUMPMAP\n\tuniform sampler2D bumpMap;\n\tuniform float bumpScale;\n\tvec2 dHdxy_fwd() {\n\t\tvec2 dSTdx = dFdx( vUv );\n\t\tvec2 dSTdy = dFdy( vUv );\n\t\tfloat Hll = bumpScale * texture2D( bumpMap, vUv ).x;\n\t\tfloat dBx = bumpScale * texture2D( bumpMap, vUv + dSTdx ).x - Hll;\n\t\tfloat dBy = bumpScale * texture2D( bumpMap, vUv + dSTdy ).x - Hll;\n\t\treturn vec2( dBx, dBy );\n\t}\n\tvec3 perturbNormalArb( vec3 surf_pos, vec3 surf_norm, vec2 dHdxy ) {\n\t\tvec3 vSigmaX = vec3( dFdx( surf_pos.x ), dFdx( surf_pos.y ), dFdx( surf_pos.z ) );\n\t\tvec3 vSigmaY = vec3( dFdy( surf_pos.x ), dFdy( surf_pos.y ), dFdy( surf_pos.z ) );\n\t\tvec3 vN = surf_norm;\n\t\tvec3 R1 = cross( vSigmaY, vN );\n\t\tvec3 R2 = cross( vN, vSigmaX );\n\t\tfloat fDet = dot( vSigmaX, R1 );\n\t\tvec3 vGrad = sign( fDet ) * ( dHdxy.x * R1 + dHdxy.y * R2 );\n\t\treturn normalize( abs( fDet ) * surf_norm - vGrad );\n\t}\n#endif\n";
 
 	var clipping_planes_fragment = "#if NUM_CLIPPING_PLANES > 0\n\tfor ( int i = 0; i < UNION_CLIPPING_PLANES; ++ i ) {\n\t\tvec4 plane = clippingPlanes[ i ];\n\t\tif ( dot( vViewPosition, plane.xyz ) > plane.w ) discard;\n\t}\n\t\t\n\t#if UNION_CLIPPING_PLANES < NUM_CLIPPING_PLANES\n\t\tbool clipped = true;\n\t\tfor ( int i = UNION_CLIPPING_PLANES; i < NUM_CLIPPING_PLANES; ++ i ) {\n\t\t\tvec4 plane = clippingPlanes[ i ];\n\t\t\tclipped = ( dot( vViewPosition, plane.xyz ) > plane.w ) && clipped;\n\t\t}\n\t\tif ( clipped ) discard;\n\t\n\t#endif\n#endif\n";
 
@@ -21057,11 +25267,11 @@ module.exports = function(THREE, EffectComposer) {
 
 	var cube_uv_reflection_fragment = "#ifdef ENVMAP_TYPE_CUBE_UV\n#define cubeUV_textureSize (1024.0)\nint getFaceFromDirection(vec3 direction) {\n\tvec3 absDirection = abs(direction);\n\tint face = -1;\n\tif( absDirection.x > absDirection.z ) {\n\t\tif(absDirection.x > absDirection.y )\n\t\t\tface = direction.x > 0.0 ? 0 : 3;\n\t\telse\n\t\t\tface = direction.y > 0.0 ? 1 : 4;\n\t}\n\telse {\n\t\tif(absDirection.z > absDirection.y )\n\t\t\tface = direction.z > 0.0 ? 2 : 5;\n\t\telse\n\t\t\tface = direction.y > 0.0 ? 1 : 4;\n\t}\n\treturn face;\n}\n#define cubeUV_maxLods1  (log2(cubeUV_textureSize*0.25) - 1.0)\n#define cubeUV_rangeClamp (exp2((6.0 - 1.0) * 2.0))\nvec2 MipLevelInfo( vec3 vec, float roughnessLevel, float roughness ) {\n\tfloat scale = exp2(cubeUV_maxLods1 - roughnessLevel);\n\tfloat dxRoughness = dFdx(roughness);\n\tfloat dyRoughness = dFdy(roughness);\n\tvec3 dx = dFdx( vec * scale * dxRoughness );\n\tvec3 dy = dFdy( vec * scale * dyRoughness );\n\tfloat d = max( dot( dx, dx ), dot( dy, dy ) );\n\td = clamp(d, 1.0, cubeUV_rangeClamp);\n\tfloat mipLevel = 0.5 * log2(d);\n\treturn vec2(floor(mipLevel), fract(mipLevel));\n}\n#define cubeUV_maxLods2 (log2(cubeUV_textureSize*0.25) - 2.0)\n#define cubeUV_rcpTextureSize (1.0 / cubeUV_textureSize)\nvec2 getCubeUV(vec3 direction, float roughnessLevel, float mipLevel) {\n\tmipLevel = roughnessLevel > cubeUV_maxLods2 - 3.0 ? 0.0 : mipLevel;\n\tfloat a = 16.0 * cubeUV_rcpTextureSize;\n\tvec2 exp2_packed = exp2( vec2( roughnessLevel, mipLevel ) );\n\tvec2 rcp_exp2_packed = vec2( 1.0 ) / exp2_packed;\n\tfloat powScale = exp2_packed.x * exp2_packed.y;\n\tfloat scale = rcp_exp2_packed.x * rcp_exp2_packed.y * 0.25;\n\tfloat mipOffset = 0.75*(1.0 - rcp_exp2_packed.y) * rcp_exp2_packed.x;\n\tbool bRes = mipLevel == 0.0;\n\tscale =  bRes && (scale < a) ? a : scale;\n\tvec3 r;\n\tvec2 offset;\n\tint face = getFaceFromDirection(direction);\n\tfloat rcpPowScale = 1.0 / powScale;\n\tif( face == 0) {\n\t\tr = vec3(direction.x, -direction.z, direction.y);\n\t\toffset = vec2(0.0+mipOffset,0.75 * rcpPowScale);\n\t\toffset.y = bRes && (offset.y < 2.0*a) ? a : offset.y;\n\t}\n\telse if( face == 1) {\n\t\tr = vec3(direction.y, direction.x, direction.z);\n\t\toffset = vec2(scale+mipOffset, 0.75 * rcpPowScale);\n\t\toffset.y = bRes && (offset.y < 2.0*a) ? a : offset.y;\n\t}\n\telse if( face == 2) {\n\t\tr = vec3(direction.z, direction.x, direction.y);\n\t\toffset = vec2(2.0*scale+mipOffset, 0.75 * rcpPowScale);\n\t\toffset.y = bRes && (offset.y < 2.0*a) ? a : offset.y;\n\t}\n\telse if( face == 3) {\n\t\tr = vec3(direction.x, direction.z, direction.y);\n\t\toffset = vec2(0.0+mipOffset,0.5 * rcpPowScale);\n\t\toffset.y = bRes && (offset.y < 2.0*a) ? 0.0 : offset.y;\n\t}\n\telse if( face == 4) {\n\t\tr = vec3(direction.y, direction.x, -direction.z);\n\t\toffset = vec2(scale+mipOffset, 0.5 * rcpPowScale);\n\t\toffset.y = bRes && (offset.y < 2.0*a) ? 0.0 : offset.y;\n\t}\n\telse {\n\t\tr = vec3(direction.z, -direction.x, direction.y);\n\t\toffset = vec2(2.0*scale+mipOffset, 0.5 * rcpPowScale);\n\t\toffset.y = bRes && (offset.y < 2.0*a) ? 0.0 : offset.y;\n\t}\n\tr = normalize(r);\n\tfloat texelOffset = 0.5 * cubeUV_rcpTextureSize;\n\tvec2 s = ( r.yz / abs( r.x ) + vec2( 1.0 ) ) * 0.5;\n\tvec2 base = offset + vec2( texelOffset );\n\treturn base + s * ( scale - 2.0 * texelOffset );\n}\n#define cubeUV_maxLods3 (log2(cubeUV_textureSize*0.25) - 3.0)\nvec4 textureCubeUV(vec3 reflectedDirection, float roughness ) {\n\tfloat roughnessVal = roughness* cubeUV_maxLods3;\n\tfloat r1 = floor(roughnessVal);\n\tfloat r2 = r1 + 1.0;\n\tfloat t = fract(roughnessVal);\n\tvec2 mipInfo = MipLevelInfo(reflectedDirection, r1, roughness);\n\tfloat s = mipInfo.y;\n\tfloat level0 = mipInfo.x;\n\tfloat level1 = level0 + 1.0;\n\tlevel1 = level1 > 5.0 ? 5.0 : level1;\n\tlevel0 += min( floor( s + 0.5 ), 5.0 );\n\tvec2 uv_10 = getCubeUV(reflectedDirection, r1, level0);\n\tvec4 color10 = envMapTexelToLinear(texture2D(envMap, uv_10));\n\tvec2 uv_20 = getCubeUV(reflectedDirection, r2, level0);\n\tvec4 color20 = envMapTexelToLinear(texture2D(envMap, uv_20));\n\tvec4 result = mix(color10, color20, t);\n\treturn vec4(result.rgb, 1.0);\n}\n#endif\n";
 
-	var defaultnormal_vertex = "#ifdef FLIP_SIDED\n\tobjectNormal = -objectNormal;\n#endif\nvec3 transformedNormal = normalMatrix * objectNormal;\n";
+	var defaultnormal_vertex = "vec3 transformedNormal = normalMatrix * objectNormal;\n#ifdef FLIP_SIDED\n\ttransformedNormal = - transformedNormal;\n#endif\n";
 
 	var displacementmap_pars_vertex = "#ifdef USE_DISPLACEMENTMAP\n\tuniform sampler2D displacementMap;\n\tuniform float displacementScale;\n\tuniform float displacementBias;\n#endif\n";
 
-	var displacementmap_vertex = "#ifdef USE_DISPLACEMENTMAP\n\ttransformed += normal * ( texture2D( displacementMap, uv ).x * displacementScale + displacementBias );\n#endif\n";
+	var displacementmap_vertex = "#ifdef USE_DISPLACEMENTMAP\n\ttransformed += normalize( objectNormal ) * ( texture2D( displacementMap, uv ).x * displacementScale + displacementBias );\n#endif\n";
 
 	var emissivemap_fragment = "#ifdef USE_EMISSIVEMAP\n\tvec4 emissiveColor = texture2D( emissiveMap, vUv );\n\temissiveColor.rgb = emissiveMapTexelToLinear( emissiveColor ).rgb;\n\ttotalEmissiveRadiance *= emissiveColor.rgb;\n#endif\n";
 
@@ -21071,7 +25281,7 @@ module.exports = function(THREE, EffectComposer) {
 
 	var encodings_pars_fragment = "\nvec4 LinearToLinear( in vec4 value ) {\n\treturn value;\n}\nvec4 GammaToLinear( in vec4 value, in float gammaFactor ) {\n\treturn vec4( pow( value.xyz, vec3( gammaFactor ) ), value.w );\n}\nvec4 LinearToGamma( in vec4 value, in float gammaFactor ) {\n\treturn vec4( pow( value.xyz, vec3( 1.0 / gammaFactor ) ), value.w );\n}\nvec4 sRGBToLinear( in vec4 value ) {\n\treturn vec4( mix( pow( value.rgb * 0.9478672986 + vec3( 0.0521327014 ), vec3( 2.4 ) ), value.rgb * 0.0773993808, vec3( lessThanEqual( value.rgb, vec3( 0.04045 ) ) ) ), value.w );\n}\nvec4 LinearTosRGB( in vec4 value ) {\n\treturn vec4( mix( pow( value.rgb, vec3( 0.41666 ) ) * 1.055 - vec3( 0.055 ), value.rgb * 12.92, vec3( lessThanEqual( value.rgb, vec3( 0.0031308 ) ) ) ), value.w );\n}\nvec4 RGBEToLinear( in vec4 value ) {\n\treturn vec4( value.rgb * exp2( value.a * 255.0 - 128.0 ), 1.0 );\n}\nvec4 LinearToRGBE( in vec4 value ) {\n\tfloat maxComponent = max( max( value.r, value.g ), value.b );\n\tfloat fExp = clamp( ceil( log2( maxComponent ) ), -128.0, 127.0 );\n\treturn vec4( value.rgb / exp2( fExp ), ( fExp + 128.0 ) / 255.0 );\n}\nvec4 RGBMToLinear( in vec4 value, in float maxRange ) {\n\treturn vec4( value.xyz * value.w * maxRange, 1.0 );\n}\nvec4 LinearToRGBM( in vec4 value, in float maxRange ) {\n\tfloat maxRGB = max( value.x, max( value.g, value.b ) );\n\tfloat M      = clamp( maxRGB / maxRange, 0.0, 1.0 );\n\tM            = ceil( M * 255.0 ) / 255.0;\n\treturn vec4( value.rgb / ( M * maxRange ), M );\n}\nvec4 RGBDToLinear( in vec4 value, in float maxRange ) {\n\treturn vec4( value.rgb * ( ( maxRange / 255.0 ) / value.a ), 1.0 );\n}\nvec4 LinearToRGBD( in vec4 value, in float maxRange ) {\n\tfloat maxRGB = max( value.x, max( value.g, value.b ) );\n\tfloat D      = max( maxRange / maxRGB, 1.0 );\n\tD            = min( floor( D ) / 255.0, 1.0 );\n\treturn vec4( value.rgb * ( D * ( 255.0 / maxRange ) ), D );\n}\nconst mat3 cLogLuvM = mat3( 0.2209, 0.3390, 0.4184, 0.1138, 0.6780, 0.7319, 0.0102, 0.1130, 0.2969 );\nvec4 LinearToLogLuv( in vec4 value )  {\n\tvec3 Xp_Y_XYZp = value.rgb * cLogLuvM;\n\tXp_Y_XYZp = max(Xp_Y_XYZp, vec3(1e-6, 1e-6, 1e-6));\n\tvec4 vResult;\n\tvResult.xy = Xp_Y_XYZp.xy / Xp_Y_XYZp.z;\n\tfloat Le = 2.0 * log2(Xp_Y_XYZp.y) + 127.0;\n\tvResult.w = fract(Le);\n\tvResult.z = (Le - (floor(vResult.w*255.0))/255.0)/255.0;\n\treturn vResult;\n}\nconst mat3 cLogLuvInverseM = mat3( 6.0014, -2.7008, -1.7996, -1.3320, 3.1029, -5.7721, 0.3008, -1.0882, 5.6268 );\nvec4 LogLuvToLinear( in vec4 value ) {\n\tfloat Le = value.z * 255.0 + value.w;\n\tvec3 Xp_Y_XYZp;\n\tXp_Y_XYZp.y = exp2((Le - 127.0) / 2.0);\n\tXp_Y_XYZp.z = Xp_Y_XYZp.y / value.y;\n\tXp_Y_XYZp.x = value.x * Xp_Y_XYZp.z;\n\tvec3 vRGB = Xp_Y_XYZp.rgb * cLogLuvInverseM;\n\treturn vec4( max(vRGB, 0.0), 1.0 );\n}\n";
 
-	var envmap_fragment = "#ifdef USE_ENVMAP\n\t#if defined( USE_BUMPMAP ) || defined( USE_NORMALMAP ) || defined( PHONG )\n\t\tvec3 cameraToVertex = normalize( vWorldPosition - cameraPosition );\n\t\tvec3 worldNormal = inverseTransformDirection( normal, viewMatrix );\n\t\t#ifdef ENVMAP_MODE_REFLECTION\n\t\t\tvec3 reflectVec = reflect( cameraToVertex, worldNormal );\n\t\t#else\n\t\t\tvec3 reflectVec = refract( cameraToVertex, worldNormal, refractionRatio );\n\t\t#endif\n\t#else\n\t\tvec3 reflectVec = vReflect;\n\t#endif\n\t#ifdef ENVMAP_TYPE_CUBE\n\t\tvec4 envColor = textureCube( envMap, flipNormal * vec3( flipEnvMap * reflectVec.x, reflectVec.yz ) );\n\t#elif defined( ENVMAP_TYPE_EQUIREC )\n\t\tvec2 sampleUV;\n\t\tsampleUV.y = saturate( flipNormal * reflectVec.y * 0.5 + 0.5 );\n\t\tsampleUV.x = atan( flipNormal * reflectVec.z, flipNormal * reflectVec.x ) * RECIPROCAL_PI2 + 0.5;\n\t\tvec4 envColor = texture2D( envMap, sampleUV );\n\t#elif defined( ENVMAP_TYPE_SPHERE )\n\t\tvec3 reflectView = flipNormal * normalize( ( viewMatrix * vec4( reflectVec, 0.0 ) ).xyz + vec3( 0.0, 0.0, 1.0 ) );\n\t\tvec4 envColor = texture2D( envMap, reflectView.xy * 0.5 + 0.5 );\n\t#else\n\t\tvec4 envColor = vec4( 0.0 );\n\t#endif\n\tenvColor = envMapTexelToLinear( envColor );\n\t#ifdef ENVMAP_BLENDING_MULTIPLY\n\t\toutgoingLight = mix( outgoingLight, outgoingLight * envColor.xyz, specularStrength * reflectivity );\n\t#elif defined( ENVMAP_BLENDING_MIX )\n\t\toutgoingLight = mix( outgoingLight, envColor.xyz, specularStrength * reflectivity );\n\t#elif defined( ENVMAP_BLENDING_ADD )\n\t\toutgoingLight += envColor.xyz * specularStrength * reflectivity;\n\t#endif\n#endif\n";
+	var envmap_fragment = "#ifdef USE_ENVMAP\n\t#if defined( USE_BUMPMAP ) || defined( USE_NORMALMAP ) || defined( PHONG )\n\t\tvec3 cameraToVertex = normalize( vWorldPosition - cameraPosition );\n\t\tvec3 worldNormal = inverseTransformDirection( normal, viewMatrix );\n\t\t#ifdef ENVMAP_MODE_REFLECTION\n\t\t\tvec3 reflectVec = reflect( cameraToVertex, worldNormal );\n\t\t#else\n\t\t\tvec3 reflectVec = refract( cameraToVertex, worldNormal, refractionRatio );\n\t\t#endif\n\t#else\n\t\tvec3 reflectVec = vReflect;\n\t#endif\n\t#ifdef ENVMAP_TYPE_CUBE\n\t\tvec4 envColor = textureCube( envMap, flipNormal * vec3( flipEnvMap * reflectVec.x, reflectVec.yz ) );\n\t#elif defined( ENVMAP_TYPE_EQUIREC )\n\t\tvec2 sampleUV;\n\t\tsampleUV.y = asin( flipNormal * reflectVec.y ) * RECIPROCAL_PI + 0.5;\n\t\tsampleUV.x = atan( flipNormal * reflectVec.z, flipNormal * reflectVec.x ) * RECIPROCAL_PI2 + 0.5;\n\t\tvec4 envColor = texture2D( envMap, sampleUV );\n\t#elif defined( ENVMAP_TYPE_SPHERE )\n\t\tvec3 reflectView = flipNormal * normalize( ( viewMatrix * vec4( reflectVec, 0.0 ) ).xyz + vec3( 0.0, 0.0, 1.0 ) );\n\t\tvec4 envColor = texture2D( envMap, reflectView.xy * 0.5 + 0.5 );\n\t#else\n\t\tvec4 envColor = vec4( 0.0 );\n\t#endif\n\tenvColor = envMapTexelToLinear( envColor );\n\t#ifdef ENVMAP_BLENDING_MULTIPLY\n\t\toutgoingLight = mix( outgoingLight, outgoingLight * envColor.xyz, specularStrength * reflectivity );\n\t#elif defined( ENVMAP_BLENDING_MIX )\n\t\toutgoingLight = mix( outgoingLight, envColor.xyz, specularStrength * reflectivity );\n\t#elif defined( ENVMAP_BLENDING_ADD )\n\t\toutgoingLight += envColor.xyz * specularStrength * reflectivity;\n\t#endif\n#endif\n";
 
 	var envmap_pars_fragment = "#if defined( USE_ENVMAP ) || defined( PHYSICAL )\n\tuniform float reflectivity;\n\tuniform float envMapIntensity;\n#endif\n#ifdef USE_ENVMAP\n\t#if ! defined( PHYSICAL ) && ( defined( USE_BUMPMAP ) || defined( USE_NORMALMAP ) || defined( PHONG ) )\n\t\tvarying vec3 vWorldPosition;\n\t#endif\n\t#ifdef ENVMAP_TYPE_CUBE\n\t\tuniform samplerCube envMap;\n\t#else\n\t\tuniform sampler2D envMap;\n\t#endif\n\tuniform float flipEnvMap;\n\t#if defined( USE_BUMPMAP ) || defined( USE_NORMALMAP ) || defined( PHONG ) || defined( PHYSICAL )\n\t\tuniform float refractionRatio;\n\t#else\n\t\tvarying vec3 vReflect;\n\t#endif\n#endif\n";
 
@@ -21099,7 +25309,7 @@ module.exports = function(THREE, EffectComposer) {
 
 	var lights_phong_fragment = "BlinnPhongMaterial material;\nmaterial.diffuseColor = diffuseColor.rgb;\nmaterial.specularColor = specular;\nmaterial.specularShininess = shininess;\nmaterial.specularStrength = specularStrength;\n";
 
-	var lights_phong_pars_fragment = "varying vec3 vViewPosition;\n#ifndef FLAT_SHADED\n\tvarying vec3 vNormal;\n#endif\nstruct BlinnPhongMaterial {\n\tvec3\tdiffuseColor;\n\tvec3\tspecularColor;\n\tfloat\tspecularShininess;\n\tfloat\tspecularStrength;\n};\n#if NUM_RECT_AREA_LIGHTS > 0\n\tvoid RE_Direct_RectArea_BlinnPhong( const in RectAreaLight rectAreaLight, const in GeometricContext geometry, const in BlinnPhongMaterial material, inout ReflectedLight reflectedLight ) {\n\t\tvec3 normal = geometry.normal;\n\t\tvec3 viewDir = geometry.viewDir;\n\t\tvec3 position = geometry.position;\n\t\tvec3 lightPos = rectAreaLight.position;\n\t\tvec3 halfWidth = rectAreaLight.halfWidth;\n\t\tvec3 halfHeight = rectAreaLight.halfHeight;\n\t\tvec3 lightColor = rectAreaLight.color;\n\t\tfloat roughness = BlinnExponentToGGXRoughness( material.specularShininess );\n\t\tvec3 rectCoords[ 4 ];\n\t\trectCoords[ 0 ] = lightPos - halfWidth - halfHeight;\t\trectCoords[ 1 ] = lightPos + halfWidth - halfHeight;\n\t\trectCoords[ 2 ] = lightPos + halfWidth + halfHeight;\n\t\trectCoords[ 3 ] = lightPos - halfWidth + halfHeight;\n\t\tvec2 uv = LTC_Uv( normal, viewDir, roughness );\n\t\tfloat norm = texture2D( ltcMag, uv ).a;\n\t\tvec4 t = texture2D( ltcMat, uv );\n\t\tmat3 mInv = mat3(\n\t\t\tvec3(   1,   0, t.y ),\n\t\t\tvec3(   0, t.z,   0 ),\n\t\t\tvec3( t.w,   0, t.x )\n\t\t);\n\t\treflectedLight.directSpecular += lightColor * material.specularColor * norm * LTC_Evaluate( normal, viewDir, position, mInv, rectCoords );\n\t\treflectedLight.directDiffuse += lightColor * material.diffuseColor * LTC_Evaluate( normal, viewDir, position, mat3( 1 ), rectCoords );\n\t}\n#endif\nvoid RE_Direct_BlinnPhong( const in IncidentLight directLight, const in GeometricContext geometry, const in BlinnPhongMaterial material, inout ReflectedLight reflectedLight ) {\n\t#ifdef TOON\n\t\tvec3 irradiance = getGradientIrradiance( geometry.normal, directLight.direction ) * directLight.color;\n\t#else\n\t\tfloat dotNL = saturate( dot( geometry.normal, directLight.direction ) );\n\t\tvec3 irradiance = dotNL * directLight.color;\n\t#endif\n\t#ifndef PHYSICALLY_CORRECT_LIGHTS\n\t\tirradiance *= PI;\n\t#endif\n\treflectedLight.directDiffuse += irradiance * BRDF_Diffuse_Lambert( material.diffuseColor );\n\treflectedLight.directSpecular += irradiance * BRDF_Specular_BlinnPhong( directLight, geometry, material.specularColor, material.specularShininess ) * material.specularStrength;\n}\nvoid RE_IndirectDiffuse_BlinnPhong( const in vec3 irradiance, const in GeometricContext geometry, const in BlinnPhongMaterial material, inout ReflectedLight reflectedLight ) {\n\treflectedLight.indirectDiffuse += irradiance * BRDF_Diffuse_Lambert( material.diffuseColor );\n}\n#define RE_Direct\t\t\t\tRE_Direct_BlinnPhong\n#define RE_Direct_RectArea\t\tRE_Direct_RectArea_BlinnPhong\n#define RE_IndirectDiffuse\t\tRE_IndirectDiffuse_BlinnPhong\n#define Material_LightProbeLOD( material )\t(0)\n";
+	var lights_phong_pars_fragment = "varying vec3 vViewPosition;\n#ifndef FLAT_SHADED\n\tvarying vec3 vNormal;\n#endif\nstruct BlinnPhongMaterial {\n\tvec3\tdiffuseColor;\n\tvec3\tspecularColor;\n\tfloat\tspecularShininess;\n\tfloat\tspecularStrength;\n};\nvoid RE_Direct_BlinnPhong( const in IncidentLight directLight, const in GeometricContext geometry, const in BlinnPhongMaterial material, inout ReflectedLight reflectedLight ) {\n\t#ifdef TOON\n\t\tvec3 irradiance = getGradientIrradiance( geometry.normal, directLight.direction ) * directLight.color;\n\t#else\n\t\tfloat dotNL = saturate( dot( geometry.normal, directLight.direction ) );\n\t\tvec3 irradiance = dotNL * directLight.color;\n\t#endif\n\t#ifndef PHYSICALLY_CORRECT_LIGHTS\n\t\tirradiance *= PI;\n\t#endif\n\treflectedLight.directDiffuse += irradiance * BRDF_Diffuse_Lambert( material.diffuseColor );\n\treflectedLight.directSpecular += irradiance * BRDF_Specular_BlinnPhong( directLight, geometry, material.specularColor, material.specularShininess ) * material.specularStrength;\n}\nvoid RE_IndirectDiffuse_BlinnPhong( const in vec3 irradiance, const in GeometricContext geometry, const in BlinnPhongMaterial material, inout ReflectedLight reflectedLight ) {\n\treflectedLight.indirectDiffuse += irradiance * BRDF_Diffuse_Lambert( material.diffuseColor );\n}\n#define RE_Direct\t\t\t\tRE_Direct_BlinnPhong\n#define RE_IndirectDiffuse\t\tRE_IndirectDiffuse_BlinnPhong\n#define Material_LightProbeLOD( material )\t(0)\n";
 
 	var lights_physical_fragment = "PhysicalMaterial material;\nmaterial.diffuseColor = diffuseColor.rgb * ( 1.0 - metalnessFactor );\nmaterial.specularRoughness = clamp( roughnessFactor, 0.04, 1.0 );\n#ifdef STANDARD\n\tmaterial.specularColor = mix( vec3( DEFAULT_SPECULAR_COEFFICIENT ), diffuseColor.rgb, metalnessFactor );\n#else\n\tmaterial.specularColor = mix( vec3( MAXIMUM_SPECULAR_COEFFICIENT * pow2( reflectivity ) ), diffuseColor.rgb, metalnessFactor );\n\tmaterial.clearCoat = saturate( clearCoat );\tmaterial.clearCoatRoughness = clamp( clearCoatRoughness, 0.04, 1.0 );\n#endif\n";
 
@@ -21137,13 +25347,13 @@ module.exports = function(THREE, EffectComposer) {
 
 	var normal_fragment = "#ifdef FLAT_SHADED\n\tvec3 fdx = vec3( dFdx( vViewPosition.x ), dFdx( vViewPosition.y ), dFdx( vViewPosition.z ) );\n\tvec3 fdy = vec3( dFdy( vViewPosition.x ), dFdy( vViewPosition.y ), dFdy( vViewPosition.z ) );\n\tvec3 normal = normalize( cross( fdx, fdy ) );\n#else\n\tvec3 normal = normalize( vNormal ) * flipNormal;\n#endif\n#ifdef USE_NORMALMAP\n\tnormal = perturbNormal2Arb( -vViewPosition, normal );\n#elif defined( USE_BUMPMAP )\n\tnormal = perturbNormalArb( -vViewPosition, normal, dHdxy_fwd() );\n#endif\n";
 
-	var normalmap_pars_fragment = "#ifdef USE_NORMALMAP\n\tuniform sampler2D normalMap;\n\tuniform vec2 normalScale;\n\tvec3 perturbNormal2Arb( vec3 eye_pos, vec3 surf_norm ) {\n\t\tvec3 q0 = dFdx( eye_pos.xyz );\n\t\tvec3 q1 = dFdy( eye_pos.xyz );\n\t\tvec2 st0 = dFdx( vUv.st );\n\t\tvec2 st1 = dFdy( vUv.st );\n\t\tvec3 S = normalize( q0 * st1.t - q1 * st0.t );\n\t\tvec3 T = normalize( -q0 * st1.s + q1 * st0.s );\n\t\tvec3 N = normalize( surf_norm );\n\t\tvec3 mapN = texture2D( normalMap, vUv ).xyz * 2.0 - 1.0;\n\t\tmapN.xy = normalScale * mapN.xy;\n\t\tmat3 tsn = mat3( S, T, N );\n\t\treturn normalize( tsn * mapN );\n\t}\n#endif\n";
+	var normalmap_pars_fragment = "#ifdef USE_NORMALMAP\n\tuniform sampler2D normalMap;\n\tuniform vec2 normalScale;\n\tvec3 perturbNormal2Arb( vec3 eye_pos, vec3 surf_norm ) {\n\t\tvec3 q0 = vec3( dFdx( eye_pos.x ), dFdx( eye_pos.y ), dFdx( eye_pos.z ) );\n\t\tvec3 q1 = vec3( dFdy( eye_pos.x ), dFdy( eye_pos.y ), dFdy( eye_pos.z ) );\n\t\tvec2 st0 = dFdx( vUv.st );\n\t\tvec2 st1 = dFdy( vUv.st );\n\t\tvec3 S = normalize( q0 * st1.t - q1 * st0.t );\n\t\tvec3 T = normalize( -q0 * st1.s + q1 * st0.s );\n\t\tvec3 N = normalize( surf_norm );\n\t\tvec3 mapN = texture2D( normalMap, vUv ).xyz * 2.0 - 1.0;\n\t\tmapN.xy = normalScale * mapN.xy;\n\t\tmat3 tsn = mat3( S, T, N );\n\t\treturn normalize( tsn * mapN );\n\t}\n#endif\n";
 
 	var packing = "vec3 packNormalToRGB( const in vec3 normal ) {\n\treturn normalize( normal ) * 0.5 + 0.5;\n}\nvec3 unpackRGBToNormal( const in vec3 rgb ) {\n\treturn 1.0 - 2.0 * rgb.xyz;\n}\nconst float PackUpscale = 256. / 255.;const float UnpackDownscale = 255. / 256.;\nconst vec3 PackFactors = vec3( 256. * 256. * 256., 256. * 256.,  256. );\nconst vec4 UnpackFactors = UnpackDownscale / vec4( PackFactors, 1. );\nconst float ShiftRight8 = 1. / 256.;\nvec4 packDepthToRGBA( const in float v ) {\n\tvec4 r = vec4( fract( v * PackFactors ), v );\n\tr.yzw -= r.xyz * ShiftRight8;\treturn r * PackUpscale;\n}\nfloat unpackRGBAToDepth( const in vec4 v ) {\n\treturn dot( v, UnpackFactors );\n}\nfloat viewZToOrthographicDepth( const in float viewZ, const in float near, const in float far ) {\n\treturn ( viewZ + near ) / ( near - far );\n}\nfloat orthographicDepthToViewZ( const in float linearClipZ, const in float near, const in float far ) {\n\treturn linearClipZ * ( near - far ) - near;\n}\nfloat viewZToPerspectiveDepth( const in float viewZ, const in float near, const in float far ) {\n\treturn (( near + viewZ ) * far ) / (( far - near ) * viewZ );\n}\nfloat perspectiveDepthToViewZ( const in float invClipZ, const in float near, const in float far ) {\n\treturn ( near * far ) / ( ( far - near ) * invClipZ - far );\n}\n";
 
 	var premultiplied_alpha_fragment = "#ifdef PREMULTIPLIED_ALPHA\n\tgl_FragColor.rgb *= gl_FragColor.a;\n#endif\n";
 
-	var project_vertex = "#ifdef USE_SKINNING\n\tvec4 mvPosition = modelViewMatrix * skinned;\n#else\n\tvec4 mvPosition = modelViewMatrix * vec4( transformed, 1.0 );\n#endif\ngl_Position = projectionMatrix * mvPosition;\n";
+	var project_vertex = "vec4 mvPosition = modelViewMatrix * vec4( transformed, 1.0 );\ngl_Position = projectionMatrix * mvPosition;\n";
 
 	var dithering_fragment = "#if defined( DITHERING )\n  gl_FragColor.rgb = dithering( gl_FragColor.rgb );\n#endif\n";
 
@@ -21153,7 +25363,7 @@ module.exports = function(THREE, EffectComposer) {
 
 	var roughnessmap_pars_fragment = "#ifdef USE_ROUGHNESSMAP\n\tuniform sampler2D roughnessMap;\n#endif";
 
-	var shadowmap_pars_fragment = "#ifdef USE_SHADOWMAP\n\t#if NUM_DIR_LIGHTS > 0\n\t\tuniform sampler2D directionalShadowMap[ NUM_DIR_LIGHTS ];\n\t\tvarying vec4 vDirectionalShadowCoord[ NUM_DIR_LIGHTS ];\n\t#endif\n\t#if NUM_SPOT_LIGHTS > 0\n\t\tuniform sampler2D spotShadowMap[ NUM_SPOT_LIGHTS ];\n\t\tvarying vec4 vSpotShadowCoord[ NUM_SPOT_LIGHTS ];\n\t#endif\n\t#if NUM_POINT_LIGHTS > 0\n\t\tuniform sampler2D pointShadowMap[ NUM_POINT_LIGHTS ];\n\t\tvarying vec4 vPointShadowCoord[ NUM_POINT_LIGHTS ];\n\t#endif\n\tfloat texture2DCompare( sampler2D depths, vec2 uv, float compare ) {\n\t\treturn step( compare, unpackRGBAToDepth( texture2D( depths, uv ) ) );\n\t}\n\tfloat texture2DShadowLerp( sampler2D depths, vec2 size, vec2 uv, float compare ) {\n\t\tconst vec2 offset = vec2( 0.0, 1.0 );\n\t\tvec2 texelSize = vec2( 1.0 ) / size;\n\t\tvec2 centroidUV = floor( uv * size + 0.5 ) / size;\n\t\tfloat lb = texture2DCompare( depths, centroidUV + texelSize * offset.xx, compare );\n\t\tfloat lt = texture2DCompare( depths, centroidUV + texelSize * offset.xy, compare );\n\t\tfloat rb = texture2DCompare( depths, centroidUV + texelSize * offset.yx, compare );\n\t\tfloat rt = texture2DCompare( depths, centroidUV + texelSize * offset.yy, compare );\n\t\tvec2 f = fract( uv * size + 0.5 );\n\t\tfloat a = mix( lb, lt, f.y );\n\t\tfloat b = mix( rb, rt, f.y );\n\t\tfloat c = mix( a, b, f.x );\n\t\treturn c;\n\t}\n\tfloat getShadow( sampler2D shadowMap, vec2 shadowMapSize, float shadowBias, float shadowRadius, vec4 shadowCoord ) {\n\t\tshadowCoord.xyz /= shadowCoord.w;\n\t\tshadowCoord.z += shadowBias;\n\t\tbvec4 inFrustumVec = bvec4 ( shadowCoord.x >= 0.0, shadowCoord.x <= 1.0, shadowCoord.y >= 0.0, shadowCoord.y <= 1.0 );\n\t\tbool inFrustum = all( inFrustumVec );\n\t\tbvec2 frustumTestVec = bvec2( inFrustum, shadowCoord.z <= 1.0 );\n\t\tbool frustumTest = all( frustumTestVec );\n\t\tif ( frustumTest ) {\n\t\t#if defined( SHADOWMAP_TYPE_PCF )\n\t\t\tvec2 texelSize = vec2( 1.0 ) / shadowMapSize;\n\t\t\tfloat dx0 = - texelSize.x * shadowRadius;\n\t\t\tfloat dy0 = - texelSize.y * shadowRadius;\n\t\t\tfloat dx1 = + texelSize.x * shadowRadius;\n\t\t\tfloat dy1 = + texelSize.y * shadowRadius;\n\t\t\treturn (\n\t\t\t\ttexture2DCompare( shadowMap, shadowCoord.xy + vec2( dx0, dy0 ), shadowCoord.z ) +\n\t\t\t\ttexture2DCompare( shadowMap, shadowCoord.xy + vec2( 0.0, dy0 ), shadowCoord.z ) +\n\t\t\t\ttexture2DCompare( shadowMap, shadowCoord.xy + vec2( dx1, dy0 ), shadowCoord.z ) +\n\t\t\t\ttexture2DCompare( shadowMap, shadowCoord.xy + vec2( dx0, 0.0 ), shadowCoord.z ) +\n\t\t\t\ttexture2DCompare( shadowMap, shadowCoord.xy, shadowCoord.z ) +\n\t\t\t\ttexture2DCompare( shadowMap, shadowCoord.xy + vec2( dx1, 0.0 ), shadowCoord.z ) +\n\t\t\t\ttexture2DCompare( shadowMap, shadowCoord.xy + vec2( dx0, dy1 ), shadowCoord.z ) +\n\t\t\t\ttexture2DCompare( shadowMap, shadowCoord.xy + vec2( 0.0, dy1 ), shadowCoord.z ) +\n\t\t\t\ttexture2DCompare( shadowMap, shadowCoord.xy + vec2( dx1, dy1 ), shadowCoord.z )\n\t\t\t) * ( 1.0 / 9.0 );\n\t\t#elif defined( SHADOWMAP_TYPE_PCF_SOFT )\n\t\t\tvec2 texelSize = vec2( 1.0 ) / shadowMapSize;\n\t\t\tfloat dx0 = - texelSize.x * shadowRadius;\n\t\t\tfloat dy0 = - texelSize.y * shadowRadius;\n\t\t\tfloat dx1 = + texelSize.x * shadowRadius;\n\t\t\tfloat dy1 = + texelSize.y * shadowRadius;\n\t\t\treturn (\n\t\t\t\ttexture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx0, dy0 ), shadowCoord.z ) +\n\t\t\t\ttexture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( 0.0, dy0 ), shadowCoord.z ) +\n\t\t\t\ttexture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx1, dy0 ), shadowCoord.z ) +\n\t\t\t\ttexture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx0, 0.0 ), shadowCoord.z ) +\n\t\t\t\ttexture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy, shadowCoord.z ) +\n\t\t\t\ttexture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx1, 0.0 ), shadowCoord.z ) +\n\t\t\t\ttexture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx0, dy1 ), shadowCoord.z ) +\n\t\t\t\ttexture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( 0.0, dy1 ), shadowCoord.z ) +\n\t\t\t\ttexture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx1, dy1 ), shadowCoord.z )\n\t\t\t) * ( 1.0 / 9.0 );\n\t\t#else\n\t\t\treturn texture2DCompare( shadowMap, shadowCoord.xy, shadowCoord.z );\n\t\t#endif\n\t\t}\n\t\treturn 1.0;\n\t}\n\tvec2 cubeToUV( vec3 v, float texelSizeY ) {\n\t\tvec3 absV = abs( v );\n\t\tfloat scaleToCube = 1.0 / max( absV.x, max( absV.y, absV.z ) );\n\t\tabsV *= scaleToCube;\n\t\tv *= scaleToCube * ( 1.0 - 2.0 * texelSizeY );\n\t\tvec2 planar = v.xy;\n\t\tfloat almostATexel = 1.5 * texelSizeY;\n\t\tfloat almostOne = 1.0 - almostATexel;\n\t\tif ( absV.z >= almostOne ) {\n\t\t\tif ( v.z > 0.0 )\n\t\t\t\tplanar.x = 4.0 - v.x;\n\t\t} else if ( absV.x >= almostOne ) {\n\t\t\tfloat signX = sign( v.x );\n\t\t\tplanar.x = v.z * signX + 2.0 * signX;\n\t\t} else if ( absV.y >= almostOne ) {\n\t\t\tfloat signY = sign( v.y );\n\t\t\tplanar.x = v.x + 2.0 * signY + 2.0;\n\t\t\tplanar.y = v.z * signY - 2.0;\n\t\t}\n\t\treturn vec2( 0.125, 0.25 ) * planar + vec2( 0.375, 0.75 );\n\t}\n\tfloat getPointShadow( sampler2D shadowMap, vec2 shadowMapSize, float shadowBias, float shadowRadius, vec4 shadowCoord ) {\n\t\tvec2 texelSize = vec2( 1.0 ) / ( shadowMapSize * vec2( 4.0, 2.0 ) );\n\t\tvec3 lightToPosition = shadowCoord.xyz;\n\t\tvec3 bd3D = normalize( lightToPosition );\n\t\tfloat dp = ( length( lightToPosition ) - shadowBias ) / 1000.0;\n\t\t#if defined( SHADOWMAP_TYPE_PCF ) || defined( SHADOWMAP_TYPE_PCF_SOFT )\n\t\t\tvec2 offset = vec2( - 1, 1 ) * shadowRadius * texelSize.y;\n\t\t\treturn (\n\t\t\t\ttexture2DCompare( shadowMap, cubeToUV( bd3D + offset.xyy, texelSize.y ), dp ) +\n\t\t\t\ttexture2DCompare( shadowMap, cubeToUV( bd3D + offset.yyy, texelSize.y ), dp ) +\n\t\t\t\ttexture2DCompare( shadowMap, cubeToUV( bd3D + offset.xyx, texelSize.y ), dp ) +\n\t\t\t\ttexture2DCompare( shadowMap, cubeToUV( bd3D + offset.yyx, texelSize.y ), dp ) +\n\t\t\t\ttexture2DCompare( shadowMap, cubeToUV( bd3D, texelSize.y ), dp ) +\n\t\t\t\ttexture2DCompare( shadowMap, cubeToUV( bd3D + offset.xxy, texelSize.y ), dp ) +\n\t\t\t\ttexture2DCompare( shadowMap, cubeToUV( bd3D + offset.yxy, texelSize.y ), dp ) +\n\t\t\t\ttexture2DCompare( shadowMap, cubeToUV( bd3D + offset.xxx, texelSize.y ), dp ) +\n\t\t\t\ttexture2DCompare( shadowMap, cubeToUV( bd3D + offset.yxx, texelSize.y ), dp )\n\t\t\t) * ( 1.0 / 9.0 );\n\t\t#else\n\t\t\treturn texture2DCompare( shadowMap, cubeToUV( bd3D, texelSize.y ), dp );\n\t\t#endif\n\t}\n#endif\n";
+	var shadowmap_pars_fragment = "#ifdef USE_SHADOWMAP\n\t#if NUM_DIR_LIGHTS > 0\n\t\tuniform sampler2D directionalShadowMap[ NUM_DIR_LIGHTS ];\n\t\tvarying vec4 vDirectionalShadowCoord[ NUM_DIR_LIGHTS ];\n\t#endif\n\t#if NUM_SPOT_LIGHTS > 0\n\t\tuniform sampler2D spotShadowMap[ NUM_SPOT_LIGHTS ];\n\t\tvarying vec4 vSpotShadowCoord[ NUM_SPOT_LIGHTS ];\n\t#endif\n\t#if NUM_POINT_LIGHTS > 0\n\t\tuniform sampler2D pointShadowMap[ NUM_POINT_LIGHTS ];\n\t\tvarying vec4 vPointShadowCoord[ NUM_POINT_LIGHTS ];\n\t#endif\n\tfloat texture2DCompare( sampler2D depths, vec2 uv, float compare ) {\n\t\treturn step( compare, unpackRGBAToDepth( texture2D( depths, uv ) ) );\n\t}\n\tfloat texture2DShadowLerp( sampler2D depths, vec2 size, vec2 uv, float compare ) {\n\t\tconst vec2 offset = vec2( 0.0, 1.0 );\n\t\tvec2 texelSize = vec2( 1.0 ) / size;\n\t\tvec2 centroidUV = floor( uv * size + 0.5 ) / size;\n\t\tfloat lb = texture2DCompare( depths, centroidUV + texelSize * offset.xx, compare );\n\t\tfloat lt = texture2DCompare( depths, centroidUV + texelSize * offset.xy, compare );\n\t\tfloat rb = texture2DCompare( depths, centroidUV + texelSize * offset.yx, compare );\n\t\tfloat rt = texture2DCompare( depths, centroidUV + texelSize * offset.yy, compare );\n\t\tvec2 f = fract( uv * size + 0.5 );\n\t\tfloat a = mix( lb, lt, f.y );\n\t\tfloat b = mix( rb, rt, f.y );\n\t\tfloat c = mix( a, b, f.x );\n\t\treturn c;\n\t}\n\tfloat getShadow( sampler2D shadowMap, vec2 shadowMapSize, float shadowBias, float shadowRadius, vec4 shadowCoord ) {\n\t\tfloat shadow = 1.0;\n\t\tshadowCoord.xyz /= shadowCoord.w;\n\t\tshadowCoord.z += shadowBias;\n\t\tbvec4 inFrustumVec = bvec4 ( shadowCoord.x >= 0.0, shadowCoord.x <= 1.0, shadowCoord.y >= 0.0, shadowCoord.y <= 1.0 );\n\t\tbool inFrustum = all( inFrustumVec );\n\t\tbvec2 frustumTestVec = bvec2( inFrustum, shadowCoord.z <= 1.0 );\n\t\tbool frustumTest = all( frustumTestVec );\n\t\tif ( frustumTest ) {\n\t\t#if defined( SHADOWMAP_TYPE_PCF )\n\t\t\tvec2 texelSize = vec2( 1.0 ) / shadowMapSize;\n\t\t\tfloat dx0 = - texelSize.x * shadowRadius;\n\t\t\tfloat dy0 = - texelSize.y * shadowRadius;\n\t\t\tfloat dx1 = + texelSize.x * shadowRadius;\n\t\t\tfloat dy1 = + texelSize.y * shadowRadius;\n\t\t\tshadow = (\n\t\t\t\ttexture2DCompare( shadowMap, shadowCoord.xy + vec2( dx0, dy0 ), shadowCoord.z ) +\n\t\t\t\ttexture2DCompare( shadowMap, shadowCoord.xy + vec2( 0.0, dy0 ), shadowCoord.z ) +\n\t\t\t\ttexture2DCompare( shadowMap, shadowCoord.xy + vec2( dx1, dy0 ), shadowCoord.z ) +\n\t\t\t\ttexture2DCompare( shadowMap, shadowCoord.xy + vec2( dx0, 0.0 ), shadowCoord.z ) +\n\t\t\t\ttexture2DCompare( shadowMap, shadowCoord.xy, shadowCoord.z ) +\n\t\t\t\ttexture2DCompare( shadowMap, shadowCoord.xy + vec2( dx1, 0.0 ), shadowCoord.z ) +\n\t\t\t\ttexture2DCompare( shadowMap, shadowCoord.xy + vec2( dx0, dy1 ), shadowCoord.z ) +\n\t\t\t\ttexture2DCompare( shadowMap, shadowCoord.xy + vec2( 0.0, dy1 ), shadowCoord.z ) +\n\t\t\t\ttexture2DCompare( shadowMap, shadowCoord.xy + vec2( dx1, dy1 ), shadowCoord.z )\n\t\t\t) * ( 1.0 / 9.0 );\n\t\t#elif defined( SHADOWMAP_TYPE_PCF_SOFT )\n\t\t\tvec2 texelSize = vec2( 1.0 ) / shadowMapSize;\n\t\t\tfloat dx0 = - texelSize.x * shadowRadius;\n\t\t\tfloat dy0 = - texelSize.y * shadowRadius;\n\t\t\tfloat dx1 = + texelSize.x * shadowRadius;\n\t\t\tfloat dy1 = + texelSize.y * shadowRadius;\n\t\t\tshadow = (\n\t\t\t\ttexture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx0, dy0 ), shadowCoord.z ) +\n\t\t\t\ttexture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( 0.0, dy0 ), shadowCoord.z ) +\n\t\t\t\ttexture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx1, dy0 ), shadowCoord.z ) +\n\t\t\t\ttexture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx0, 0.0 ), shadowCoord.z ) +\n\t\t\t\ttexture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy, shadowCoord.z ) +\n\t\t\t\ttexture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx1, 0.0 ), shadowCoord.z ) +\n\t\t\t\ttexture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx0, dy1 ), shadowCoord.z ) +\n\t\t\t\ttexture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( 0.0, dy1 ), shadowCoord.z ) +\n\t\t\t\ttexture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx1, dy1 ), shadowCoord.z )\n\t\t\t) * ( 1.0 / 9.0 );\n\t\t#else\n\t\t\tshadow = texture2DCompare( shadowMap, shadowCoord.xy, shadowCoord.z );\n\t\t#endif\n\t\t}\n\t\treturn shadow;\n\t}\n\tvec2 cubeToUV( vec3 v, float texelSizeY ) {\n\t\tvec3 absV = abs( v );\n\t\tfloat scaleToCube = 1.0 / max( absV.x, max( absV.y, absV.z ) );\n\t\tabsV *= scaleToCube;\n\t\tv *= scaleToCube * ( 1.0 - 2.0 * texelSizeY );\n\t\tvec2 planar = v.xy;\n\t\tfloat almostATexel = 1.5 * texelSizeY;\n\t\tfloat almostOne = 1.0 - almostATexel;\n\t\tif ( absV.z >= almostOne ) {\n\t\t\tif ( v.z > 0.0 )\n\t\t\t\tplanar.x = 4.0 - v.x;\n\t\t} else if ( absV.x >= almostOne ) {\n\t\t\tfloat signX = sign( v.x );\n\t\t\tplanar.x = v.z * signX + 2.0 * signX;\n\t\t} else if ( absV.y >= almostOne ) {\n\t\t\tfloat signY = sign( v.y );\n\t\t\tplanar.x = v.x + 2.0 * signY + 2.0;\n\t\t\tplanar.y = v.z * signY - 2.0;\n\t\t}\n\t\treturn vec2( 0.125, 0.25 ) * planar + vec2( 0.375, 0.75 );\n\t}\n\tfloat getPointShadow( sampler2D shadowMap, vec2 shadowMapSize, float shadowBias, float shadowRadius, vec4 shadowCoord ) {\n\t\tvec2 texelSize = vec2( 1.0 ) / ( shadowMapSize * vec2( 4.0, 2.0 ) );\n\t\tvec3 lightToPosition = shadowCoord.xyz;\n\t\tvec3 bd3D = normalize( lightToPosition );\n\t\tfloat dp = ( length( lightToPosition ) - shadowBias ) / 1000.0;\n\t\t#if defined( SHADOWMAP_TYPE_PCF ) || defined( SHADOWMAP_TYPE_PCF_SOFT )\n\t\t\tvec2 offset = vec2( - 1, 1 ) * shadowRadius * texelSize.y;\n\t\t\treturn (\n\t\t\t\ttexture2DCompare( shadowMap, cubeToUV( bd3D + offset.xyy, texelSize.y ), dp ) +\n\t\t\t\ttexture2DCompare( shadowMap, cubeToUV( bd3D + offset.yyy, texelSize.y ), dp ) +\n\t\t\t\ttexture2DCompare( shadowMap, cubeToUV( bd3D + offset.xyx, texelSize.y ), dp ) +\n\t\t\t\ttexture2DCompare( shadowMap, cubeToUV( bd3D + offset.yyx, texelSize.y ), dp ) +\n\t\t\t\ttexture2DCompare( shadowMap, cubeToUV( bd3D, texelSize.y ), dp ) +\n\t\t\t\ttexture2DCompare( shadowMap, cubeToUV( bd3D + offset.xxy, texelSize.y ), dp ) +\n\t\t\t\ttexture2DCompare( shadowMap, cubeToUV( bd3D + offset.yxy, texelSize.y ), dp ) +\n\t\t\t\ttexture2DCompare( shadowMap, cubeToUV( bd3D + offset.xxx, texelSize.y ), dp ) +\n\t\t\t\ttexture2DCompare( shadowMap, cubeToUV( bd3D + offset.yxx, texelSize.y ), dp )\n\t\t\t) * ( 1.0 / 9.0 );\n\t\t#else\n\t\t\treturn texture2DCompare( shadowMap, cubeToUV( bd3D, texelSize.y ), dp );\n\t\t#endif\n\t}\n#endif\n";
 
 	var shadowmap_pars_vertex = "#ifdef USE_SHADOWMAP\n\t#if NUM_DIR_LIGHTS > 0\n\t\tuniform mat4 directionalShadowMatrix[ NUM_DIR_LIGHTS ];\n\t\tvarying vec4 vDirectionalShadowCoord[ NUM_DIR_LIGHTS ];\n\t#endif\n\t#if NUM_SPOT_LIGHTS > 0\n\t\tuniform mat4 spotShadowMatrix[ NUM_SPOT_LIGHTS ];\n\t\tvarying vec4 vSpotShadowCoord[ NUM_SPOT_LIGHTS ];\n\t#endif\n\t#if NUM_POINT_LIGHTS > 0\n\t\tuniform mat4 pointShadowMatrix[ NUM_POINT_LIGHTS ];\n\t\tvarying vec4 vPointShadowCoord[ NUM_POINT_LIGHTS ];\n\t#endif\n#endif\n";
 
@@ -21165,7 +25375,7 @@ module.exports = function(THREE, EffectComposer) {
 
 	var skinning_pars_vertex = "#ifdef USE_SKINNING\n\tuniform mat4 bindMatrix;\n\tuniform mat4 bindMatrixInverse;\n\t#ifdef BONE_TEXTURE\n\t\tuniform sampler2D boneTexture;\n\t\tuniform int boneTextureSize;\n\t\tmat4 getBoneMatrix( const in float i ) {\n\t\t\tfloat j = i * 4.0;\n\t\t\tfloat x = mod( j, float( boneTextureSize ) );\n\t\t\tfloat y = floor( j / float( boneTextureSize ) );\n\t\t\tfloat dx = 1.0 / float( boneTextureSize );\n\t\t\tfloat dy = 1.0 / float( boneTextureSize );\n\t\t\ty = dy * ( y + 0.5 );\n\t\t\tvec4 v1 = texture2D( boneTexture, vec2( dx * ( x + 0.5 ), y ) );\n\t\t\tvec4 v2 = texture2D( boneTexture, vec2( dx * ( x + 1.5 ), y ) );\n\t\t\tvec4 v3 = texture2D( boneTexture, vec2( dx * ( x + 2.5 ), y ) );\n\t\t\tvec4 v4 = texture2D( boneTexture, vec2( dx * ( x + 3.5 ), y ) );\n\t\t\tmat4 bone = mat4( v1, v2, v3, v4 );\n\t\t\treturn bone;\n\t\t}\n\t#else\n\t\tuniform mat4 boneMatrices[ MAX_BONES ];\n\t\tmat4 getBoneMatrix( const in float i ) {\n\t\t\tmat4 bone = boneMatrices[ int(i) ];\n\t\t\treturn bone;\n\t\t}\n\t#endif\n#endif\n";
 
-	var skinning_vertex = "#ifdef USE_SKINNING\n\tvec4 skinVertex = bindMatrix * vec4( transformed, 1.0 );\n\tvec4 skinned = vec4( 0.0 );\n\tskinned += boneMatX * skinVertex * skinWeight.x;\n\tskinned += boneMatY * skinVertex * skinWeight.y;\n\tskinned += boneMatZ * skinVertex * skinWeight.z;\n\tskinned += boneMatW * skinVertex * skinWeight.w;\n\tskinned  = bindMatrixInverse * skinned;\n#endif\n";
+	var skinning_vertex = "#ifdef USE_SKINNING\n\tvec4 skinVertex = bindMatrix * vec4( transformed, 1.0 );\n\tvec4 skinned = vec4( 0.0 );\n\tskinned += boneMatX * skinVertex * skinWeight.x;\n\tskinned += boneMatY * skinVertex * skinWeight.y;\n\tskinned += boneMatZ * skinVertex * skinWeight.z;\n\tskinned += boneMatW * skinVertex * skinWeight.w;\n\ttransformed = ( bindMatrixInverse * skinned ).xyz;\n#endif\n";
 
 	var skinnormal_vertex = "#ifdef USE_SKINNING\n\tmat4 skinMatrix = mat4( 0.0 );\n\tskinMatrix += skinWeight.x * boneMatX;\n\tskinMatrix += skinWeight.y * boneMatY;\n\tskinMatrix += skinWeight.z * boneMatZ;\n\tskinMatrix += skinWeight.w * boneMatW;\n\tskinMatrix  = bindMatrixInverse * skinMatrix * bindMatrix;\n\tobjectNormal = vec4( skinMatrix * vec4( objectNormal, 0.0 ) ).xyz;\n#endif\n";
 
@@ -21189,7 +25399,7 @@ module.exports = function(THREE, EffectComposer) {
 
 	var uv2_vertex = "#if defined( USE_LIGHTMAP ) || defined( USE_AOMAP )\n\tvUv2 = uv2;\n#endif";
 
-	var worldpos_vertex = "#if defined( USE_ENVMAP ) || defined( PHONG ) || defined( PHYSICAL ) || defined( LAMBERT ) || defined ( USE_SHADOWMAP )\n\t#ifdef USE_SKINNING\n\t\tvec4 worldPosition = modelMatrix * skinned;\n\t#else\n\t\tvec4 worldPosition = modelMatrix * vec4( transformed, 1.0 );\n\t#endif\n#endif\n";
+	var worldpos_vertex = "#if defined( USE_ENVMAP ) || defined( PHONG ) || defined( PHYSICAL ) || defined( LAMBERT ) || defined ( USE_SHADOWMAP )\n\tvec4 worldPosition = modelMatrix * vec4( transformed, 1.0 );\n#endif\n";
 
 	var cube_frag = "uniform samplerCube tCube;\nuniform float tFlip;\nuniform float opacity;\nvarying vec3 vWorldPosition;\n#include <common>\nvoid main() {\n\tgl_FragColor = textureCube( tCube, vec3( tFlip * vWorldPosition.x, vWorldPosition.yz ) );\n\tgl_FragColor.a *= opacity;\n}\n";
 
@@ -21197,7 +25407,7 @@ module.exports = function(THREE, EffectComposer) {
 
 	var depth_frag = "#if DEPTH_PACKING == 3200\n\tuniform float opacity;\n#endif\n#include <common>\n#include <packing>\n#include <uv_pars_fragment>\n#include <map_pars_fragment>\n#include <alphamap_pars_fragment>\n#include <logdepthbuf_pars_fragment>\n#include <clipping_planes_pars_fragment>\nvoid main() {\n\t#include <clipping_planes_fragment>\n\tvec4 diffuseColor = vec4( 1.0 );\n\t#if DEPTH_PACKING == 3200\n\t\tdiffuseColor.a = opacity;\n\t#endif\n\t#include <map_fragment>\n\t#include <alphamap_fragment>\n\t#include <alphatest_fragment>\n\t#include <logdepthbuf_fragment>\n\t#if DEPTH_PACKING == 3200\n\t\tgl_FragColor = vec4( vec3( gl_FragCoord.z ), opacity );\n\t#elif DEPTH_PACKING == 3201\n\t\tgl_FragColor = packDepthToRGBA( gl_FragCoord.z );\n\t#endif\n}\n";
 
-	var depth_vert = "#include <common>\n#include <uv_pars_vertex>\n#include <displacementmap_pars_vertex>\n#include <morphtarget_pars_vertex>\n#include <skinning_pars_vertex>\n#include <logdepthbuf_pars_vertex>\n#include <clipping_planes_pars_vertex>\nvoid main() {\n\t#include <uv_vertex>\n\t#include <skinbase_vertex>\n\t#include <begin_vertex>\n\t#include <displacementmap_vertex>\n\t#include <morphtarget_vertex>\n\t#include <skinning_vertex>\n\t#include <project_vertex>\n\t#include <logdepthbuf_vertex>\n\t#include <clipping_planes_vertex>\n}\n";
+	var depth_vert = "#include <common>\n#include <uv_pars_vertex>\n#include <displacementmap_pars_vertex>\n#include <morphtarget_pars_vertex>\n#include <skinning_pars_vertex>\n#include <logdepthbuf_pars_vertex>\n#include <clipping_planes_pars_vertex>\nvoid main() {\n\t#include <uv_vertex>\n\t#include <skinbase_vertex>\n\t#ifdef USE_DISPLACEMENTMAP\n\t\t#include <beginnormal_vertex>\n\t\t#include <morphnormal_vertex>\n\t\t#include <skinnormal_vertex>\n\t#endif\n\t#include <begin_vertex>\n\t#include <morphtarget_vertex>\n\t#include <skinning_vertex>\n\t#include <displacementmap_vertex>\n\t#include <project_vertex>\n\t#include <logdepthbuf_vertex>\n\t#include <clipping_planes_vertex>\n}\n";
 
 	var distanceRGBA_frag = "uniform vec3 lightPos;\nvarying vec4 vWorldPosition;\n#include <common>\n#include <packing>\n#include <clipping_planes_pars_fragment>\nvoid main () {\n\t#include <clipping_planes_fragment>\n\tgl_FragColor = packDepthToRGBA( length( vWorldPosition.xyz - lightPos.xyz ) / 1000.0 );\n}\n";
 
@@ -21221,15 +25431,15 @@ module.exports = function(THREE, EffectComposer) {
 
 	var meshphong_frag = "#define PHONG\nuniform vec3 diffuse;\nuniform vec3 emissive;\nuniform vec3 specular;\nuniform float shininess;\nuniform float opacity;\n#include <common>\n#include <packing>\n#include <dithering_pars_fragment>\n#include <color_pars_fragment>\n#include <uv_pars_fragment>\n#include <uv2_pars_fragment>\n#include <map_pars_fragment>\n#include <alphamap_pars_fragment>\n#include <aomap_pars_fragment>\n#include <lightmap_pars_fragment>\n#include <emissivemap_pars_fragment>\n#include <envmap_pars_fragment>\n#include <gradientmap_pars_fragment>\n#include <fog_pars_fragment>\n#include <bsdfs>\n#include <lights_pars>\n#include <lights_phong_pars_fragment>\n#include <shadowmap_pars_fragment>\n#include <bumpmap_pars_fragment>\n#include <normalmap_pars_fragment>\n#include <specularmap_pars_fragment>\n#include <logdepthbuf_pars_fragment>\n#include <clipping_planes_pars_fragment>\nvoid main() {\n\t#include <clipping_planes_fragment>\n\tvec4 diffuseColor = vec4( diffuse, opacity );\n\tReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );\n\tvec3 totalEmissiveRadiance = emissive;\n\t#include <logdepthbuf_fragment>\n\t#include <map_fragment>\n\t#include <color_fragment>\n\t#include <alphamap_fragment>\n\t#include <alphatest_fragment>\n\t#include <specularmap_fragment>\n\t#include <normal_flip>\n\t#include <normal_fragment>\n\t#include <emissivemap_fragment>\n\t#include <lights_phong_fragment>\n\t#include <lights_template>\n\t#include <aomap_fragment>\n\tvec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveRadiance;\n\t#include <envmap_fragment>\n\tgl_FragColor = vec4( outgoingLight, diffuseColor.a );\n\t#include <tonemapping_fragment>\n\t#include <encodings_fragment>\n\t#include <fog_fragment>\n\t#include <premultiplied_alpha_fragment>\n\t#include <dithering_fragment>\n}\n";
 
-	var meshphong_vert = "#define PHONG\nvarying vec3 vViewPosition;\n#ifndef FLAT_SHADED\n\tvarying vec3 vNormal;\n#endif\n#include <common>\n#include <uv_pars_vertex>\n#include <uv2_pars_vertex>\n#include <displacementmap_pars_vertex>\n#include <envmap_pars_vertex>\n#include <color_pars_vertex>\n#include <fog_pars_vertex>\n#include <morphtarget_pars_vertex>\n#include <skinning_pars_vertex>\n#include <shadowmap_pars_vertex>\n#include <logdepthbuf_pars_vertex>\n#include <clipping_planes_pars_vertex>\nvoid main() {\n\t#include <uv_vertex>\n\t#include <uv2_vertex>\n\t#include <color_vertex>\n\t#include <beginnormal_vertex>\n\t#include <morphnormal_vertex>\n\t#include <skinbase_vertex>\n\t#include <skinnormal_vertex>\n\t#include <defaultnormal_vertex>\n#ifndef FLAT_SHADED\n\tvNormal = normalize( transformedNormal );\n#endif\n\t#include <begin_vertex>\n\t#include <displacementmap_vertex>\n\t#include <morphtarget_vertex>\n\t#include <skinning_vertex>\n\t#include <project_vertex>\n\t#include <logdepthbuf_vertex>\n\t#include <clipping_planes_vertex>\n\tvViewPosition = - mvPosition.xyz;\n\t#include <worldpos_vertex>\n\t#include <envmap_vertex>\n\t#include <shadowmap_vertex>\n\t#include <fog_vertex>\n}\n";
+	var meshphong_vert = "#define PHONG\nvarying vec3 vViewPosition;\n#ifndef FLAT_SHADED\n\tvarying vec3 vNormal;\n#endif\n#include <common>\n#include <uv_pars_vertex>\n#include <uv2_pars_vertex>\n#include <displacementmap_pars_vertex>\n#include <envmap_pars_vertex>\n#include <color_pars_vertex>\n#include <fog_pars_vertex>\n#include <morphtarget_pars_vertex>\n#include <skinning_pars_vertex>\n#include <shadowmap_pars_vertex>\n#include <logdepthbuf_pars_vertex>\n#include <clipping_planes_pars_vertex>\nvoid main() {\n\t#include <uv_vertex>\n\t#include <uv2_vertex>\n\t#include <color_vertex>\n\t#include <beginnormal_vertex>\n\t#include <morphnormal_vertex>\n\t#include <skinbase_vertex>\n\t#include <skinnormal_vertex>\n\t#include <defaultnormal_vertex>\n#ifndef FLAT_SHADED\n\tvNormal = normalize( transformedNormal );\n#endif\n\t#include <begin_vertex>\n\t#include <morphtarget_vertex>\n\t#include <skinning_vertex>\n\t#include <displacementmap_vertex>\n\t#include <project_vertex>\n\t#include <logdepthbuf_vertex>\n\t#include <clipping_planes_vertex>\n\tvViewPosition = - mvPosition.xyz;\n\t#include <worldpos_vertex>\n\t#include <envmap_vertex>\n\t#include <shadowmap_vertex>\n\t#include <fog_vertex>\n}\n";
 
-	var meshphysical_frag = "#define PHYSICAL\nuniform vec3 diffuse;\nuniform vec3 emissive;\nuniform float roughness;\nuniform float metalness;\nuniform float opacity;\n#ifndef STANDARD\n\tuniform float clearCoat;\n\tuniform float clearCoatRoughness;\n#endif\nvarying vec3 vViewPosition;\n#ifndef FLAT_SHADED\n\tvarying vec3 vNormal;\n#endif\n#include <common>\n#include <packing>\n#include <dithering_pars_fragment>\n#include <color_pars_fragment>\n#include <uv_pars_fragment>\n#include <uv2_pars_fragment>\n#include <map_pars_fragment>\n#include <alphamap_pars_fragment>\n#include <aomap_pars_fragment>\n#include <lightmap_pars_fragment>\n#include <emissivemap_pars_fragment>\n#include <envmap_pars_fragment>\n#include <fog_pars_fragment>\n#include <bsdfs>\n#include <cube_uv_reflection_fragment>\n#include <lights_pars>\n#include <lights_physical_pars_fragment>\n#include <shadowmap_pars_fragment>\n#include <bumpmap_pars_fragment>\n#include <normalmap_pars_fragment>\n#include <roughnessmap_pars_fragment>\n#include <metalnessmap_pars_fragment>\n#include <logdepthbuf_pars_fragment>\n#include <clipping_planes_pars_fragment>\nvoid main() {\n\t#include <clipping_planes_fragment>\n\tvec4 diffuseColor = vec4( diffuse, opacity );\n\tReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );\n\tvec3 totalEmissiveRadiance = emissive;\n\t#include <logdepthbuf_fragment>\n\t#include <map_fragment>\n\t#include <color_fragment>\n\t#include <alphamap_fragment>\n\t#include <alphatest_fragment>\n\t#include <specularmap_fragment>\n\t#include <roughnessmap_fragment>\n\t#include <metalnessmap_fragment>\n\t#include <normal_flip>\n\t#include <normal_fragment>\n\t#include <emissivemap_fragment>\n\t#include <lights_physical_fragment>\n\t#include <lights_template>\n\t#include <aomap_fragment>\n\tvec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveRadiance;\n\tgl_FragColor = vec4( outgoingLight, diffuseColor.a );\n\t#include <tonemapping_fragment>\n\t#include <encodings_fragment>\n\t#include <fog_fragment>\n\t#include <premultiplied_alpha_fragment>\n\t#include <dithering_fragment>\n}\n";
+	var meshphysical_frag = "#define PHYSICAL\nuniform vec3 diffuse;\nuniform vec3 emissive;\nuniform float roughness;\nuniform float metalness;\nuniform float opacity;\n#ifndef STANDARD\n\tuniform float clearCoat;\n\tuniform float clearCoatRoughness;\n#endif\nvarying vec3 vViewPosition;\n#ifndef FLAT_SHADED\n\tvarying vec3 vNormal;\n#endif\n#include <common>\n#include <packing>\n#include <dithering_pars_fragment>\n#include <color_pars_fragment>\n#include <uv_pars_fragment>\n#include <uv2_pars_fragment>\n#include <map_pars_fragment>\n#include <alphamap_pars_fragment>\n#include <aomap_pars_fragment>\n#include <lightmap_pars_fragment>\n#include <emissivemap_pars_fragment>\n#include <envmap_pars_fragment>\n#include <fog_pars_fragment>\n#include <bsdfs>\n#include <cube_uv_reflection_fragment>\n#include <lights_pars>\n#include <lights_physical_pars_fragment>\n#include <shadowmap_pars_fragment>\n#include <bumpmap_pars_fragment>\n#include <normalmap_pars_fragment>\n#include <roughnessmap_pars_fragment>\n#include <metalnessmap_pars_fragment>\n#include <logdepthbuf_pars_fragment>\n#include <clipping_planes_pars_fragment>\nvoid main() {\n\t#include <clipping_planes_fragment>\n\tvec4 diffuseColor = vec4( diffuse, opacity );\n\tReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );\n\tvec3 totalEmissiveRadiance = emissive;\n\t#include <logdepthbuf_fragment>\n\t#include <map_fragment>\n\t#include <color_fragment>\n\t#include <alphamap_fragment>\n\t#include <alphatest_fragment>\n\t#include <roughnessmap_fragment>\n\t#include <metalnessmap_fragment>\n\t#include <normal_flip>\n\t#include <normal_fragment>\n\t#include <emissivemap_fragment>\n\t#include <lights_physical_fragment>\n\t#include <lights_template>\n\t#include <aomap_fragment>\n\tvec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveRadiance;\n\tgl_FragColor = vec4( outgoingLight, diffuseColor.a );\n\t#include <tonemapping_fragment>\n\t#include <encodings_fragment>\n\t#include <fog_fragment>\n\t#include <premultiplied_alpha_fragment>\n\t#include <dithering_fragment>\n}\n";
 
-	var meshphysical_vert = "#define PHYSICAL\nvarying vec3 vViewPosition;\n#ifndef FLAT_SHADED\n\tvarying vec3 vNormal;\n#endif\n#include <common>\n#include <uv_pars_vertex>\n#include <uv2_pars_vertex>\n#include <displacementmap_pars_vertex>\n#include <color_pars_vertex>\n#include <fog_pars_vertex>\n#include <morphtarget_pars_vertex>\n#include <skinning_pars_vertex>\n#include <shadowmap_pars_vertex>\n#include <specularmap_pars_fragment>\n#include <logdepthbuf_pars_vertex>\n#include <clipping_planes_pars_vertex>\nvoid main() {\n\t#include <uv_vertex>\n\t#include <uv2_vertex>\n\t#include <color_vertex>\n\t#include <beginnormal_vertex>\n\t#include <morphnormal_vertex>\n\t#include <skinbase_vertex>\n\t#include <skinnormal_vertex>\n\t#include <defaultnormal_vertex>\n#ifndef FLAT_SHADED\n\tvNormal = normalize( transformedNormal );\n#endif\n\t#include <begin_vertex>\n\t#include <displacementmap_vertex>\n\t#include <morphtarget_vertex>\n\t#include <skinning_vertex>\n\t#include <project_vertex>\n\t#include <logdepthbuf_vertex>\n\t#include <clipping_planes_vertex>\n\tvViewPosition = - mvPosition.xyz;\n\t#include <worldpos_vertex>\n\t#include <shadowmap_vertex>\n\t#include <fog_vertex>\n}\n";
+	var meshphysical_vert = "#define PHYSICAL\nvarying vec3 vViewPosition;\n#ifndef FLAT_SHADED\n\tvarying vec3 vNormal;\n#endif\n#include <common>\n#include <uv_pars_vertex>\n#include <uv2_pars_vertex>\n#include <displacementmap_pars_vertex>\n#include <color_pars_vertex>\n#include <fog_pars_vertex>\n#include <morphtarget_pars_vertex>\n#include <skinning_pars_vertex>\n#include <shadowmap_pars_vertex>\n#include <logdepthbuf_pars_vertex>\n#include <clipping_planes_pars_vertex>\nvoid main() {\n\t#include <uv_vertex>\n\t#include <uv2_vertex>\n\t#include <color_vertex>\n\t#include <beginnormal_vertex>\n\t#include <morphnormal_vertex>\n\t#include <skinbase_vertex>\n\t#include <skinnormal_vertex>\n\t#include <defaultnormal_vertex>\n#ifndef FLAT_SHADED\n\tvNormal = normalize( transformedNormal );\n#endif\n\t#include <begin_vertex>\n\t#include <morphtarget_vertex>\n\t#include <skinning_vertex>\n\t#include <displacementmap_vertex>\n\t#include <project_vertex>\n\t#include <logdepthbuf_vertex>\n\t#include <clipping_planes_vertex>\n\tvViewPosition = - mvPosition.xyz;\n\t#include <worldpos_vertex>\n\t#include <shadowmap_vertex>\n\t#include <fog_vertex>\n}\n";
 
 	var normal_frag = "#define NORMAL\nuniform float opacity;\n#if defined( FLAT_SHADED ) || defined( USE_BUMPMAP ) || defined( USE_NORMALMAP )\n\tvarying vec3 vViewPosition;\n#endif\n#ifndef FLAT_SHADED\n\tvarying vec3 vNormal;\n#endif\n#include <packing>\n#include <uv_pars_fragment>\n#include <bumpmap_pars_fragment>\n#include <normalmap_pars_fragment>\n#include <logdepthbuf_pars_fragment>\nvoid main() {\n\t#include <logdepthbuf_fragment>\n\t#include <normal_flip>\n\t#include <normal_fragment>\n\tgl_FragColor = vec4( packNormalToRGB( normal ), opacity );\n}\n";
 
-	var normal_vert = "#define NORMAL\n#if defined( FLAT_SHADED ) || defined( USE_BUMPMAP ) || defined( USE_NORMALMAP )\n\tvarying vec3 vViewPosition;\n#endif\n#ifndef FLAT_SHADED\n\tvarying vec3 vNormal;\n#endif\n#include <uv_pars_vertex>\n#include <displacementmap_pars_vertex>\n#include <morphtarget_pars_vertex>\n#include <skinning_pars_vertex>\n#include <logdepthbuf_pars_vertex>\nvoid main() {\n\t#include <uv_vertex>\n\t#include <beginnormal_vertex>\n\t#include <morphnormal_vertex>\n\t#include <skinbase_vertex>\n\t#include <skinnormal_vertex>\n\t#include <defaultnormal_vertex>\n#ifndef FLAT_SHADED\n\tvNormal = normalize( transformedNormal );\n#endif\n\t#include <begin_vertex>\n\t#include <displacementmap_vertex>\n\t#include <morphtarget_vertex>\n\t#include <skinning_vertex>\n\t#include <project_vertex>\n\t#include <logdepthbuf_vertex>\n#if defined( FLAT_SHADED ) || defined( USE_BUMPMAP ) || defined( USE_NORMALMAP )\n\tvViewPosition = - mvPosition.xyz;\n#endif\n}\n";
+	var normal_vert = "#define NORMAL\n#if defined( FLAT_SHADED ) || defined( USE_BUMPMAP ) || defined( USE_NORMALMAP )\n\tvarying vec3 vViewPosition;\n#endif\n#ifndef FLAT_SHADED\n\tvarying vec3 vNormal;\n#endif\n#include <uv_pars_vertex>\n#include <displacementmap_pars_vertex>\n#include <morphtarget_pars_vertex>\n#include <skinning_pars_vertex>\n#include <logdepthbuf_pars_vertex>\nvoid main() {\n\t#include <uv_vertex>\n\t#include <beginnormal_vertex>\n\t#include <morphnormal_vertex>\n\t#include <skinbase_vertex>\n\t#include <skinnormal_vertex>\n\t#include <defaultnormal_vertex>\n#ifndef FLAT_SHADED\n\tvNormal = normalize( transformedNormal );\n#endif\n\t#include <begin_vertex>\n\t#include <morphtarget_vertex>\n\t#include <skinning_vertex>\n\t#include <displacementmap_vertex>\n\t#include <project_vertex>\n\t#include <logdepthbuf_vertex>\n#if defined( FLAT_SHADED ) || defined( USE_BUMPMAP ) || defined( USE_NORMALMAP )\n\tvViewPosition = - mvPosition.xyz;\n#endif\n}\n";
 
 	var points_frag = "uniform vec3 diffuse;\nuniform float opacity;\n#include <common>\n#include <packing>\n#include <color_pars_fragment>\n#include <map_particle_pars_fragment>\n#include <fog_pars_fragment>\n#include <shadowmap_pars_fragment>\n#include <logdepthbuf_pars_fragment>\n#include <clipping_planes_pars_fragment>\nvoid main() {\n\t#include <clipping_planes_fragment>\n\tvec3 outgoingLight = vec3( 0.0 );\n\tvec4 diffuseColor = vec4( diffuse, opacity );\n\t#include <logdepthbuf_fragment>\n\t#include <map_particle_fragment>\n\t#include <color_fragment>\n\t#include <alphatest_fragment>\n\toutgoingLight = diffuseColor.rgb;\n\tgl_FragColor = vec4( outgoingLight, diffuseColor.a );\n\t#include <premultiplied_alpha_fragment>\n\t#include <tonemapping_fragment>\n\t#include <encodings_fragment>\n\t#include <fog_fragment>\n}\n";
 
@@ -22345,6 +26555,8 @@ module.exports = function(THREE, EffectComposer) {
 
 				if ( material.visible === false ) continue;
 
+				sprite.onBeforeRender( renderer, scene, camera, undefined, material, undefined );
+
 				gl.uniform1f( uniforms.alphaTest, material.alphaTest );
 				gl.uniformMatrix4fv( uniforms.modelViewMatrix, false, sprite.modelViewMatrix.elements );
 
@@ -22386,7 +26598,7 @@ module.exports = function(THREE, EffectComposer) {
 				gl.uniform1f( uniforms.rotation, material.rotation );
 				gl.uniform2fv( uniforms.scale, scale );
 
-				state.setBlending( material.blending, material.blendEquation, material.blendSrc, material.blendDst );
+				state.setBlending( material.blending, material.blendEquation, material.blendSrc, material.blendDst, material.blendEquationAlpha, material.blendSrcAlpha, material.blendDstAlpha, material.premultipliedAlpha );
 				state.buffers.depth.setTest( material.depthTest );
 				state.buffers.depth.setMask( material.depthWrite );
 
@@ -22401,6 +26613,8 @@ module.exports = function(THREE, EffectComposer) {
 				}
 
 				gl.drawElements( gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0 );
+
+				sprite.onAfterRender( renderer, scene, camera, undefined, material, undefined );
 
 			}
 
@@ -22422,6 +26636,8 @@ module.exports = function(THREE, EffectComposer) {
 			gl.shaderSource( vertexShader, [
 
 				'precision ' + renderer.getPrecision() + ' float;',
+
+				'#define SHADER_NAME ' + 'SpriteMaterial',
 
 				'uniform mat4 modelViewMatrix;',
 				'uniform mat4 projectionMatrix;',
@@ -22460,6 +26676,8 @@ module.exports = function(THREE, EffectComposer) {
 			gl.shaderSource( fragmentShader, [
 
 				'precision ' + renderer.getPrecision() + ' float;',
+
+				'#define SHADER_NAME ' + 'SpriteMaterial',
 
 				'uniform vec3 color;',
 				'uniform sampler2D map;',
@@ -22605,6 +26823,8 @@ module.exports = function(THREE, EffectComposer) {
 	Object.assign( Material.prototype, EventDispatcher.prototype, {
 
 		isMaterial: true,
+
+		onBeforeCompile: function () {},
 
 		setValues: function ( values ) {
 
@@ -24589,12 +28809,13 @@ module.exports = function(THREE, EffectComposer) {
 
 			// render depth map
 
-			var faceCount, isPointLight;
+			var faceCount;
 
 			for ( var i = 0, il = _lightShadows.length; i < il; i ++ ) {
 
 				var light = _lightShadows[ i ];
 				var shadow = light.shadow;
+				var isPointLight = light && light.isPointLight;
 
 				if ( shadow === undefined ) {
 
@@ -24604,18 +28825,11 @@ module.exports = function(THREE, EffectComposer) {
 				}
 
 				var shadowCamera = shadow.camera;
-				var shadowMatrix = shadow.matrix;
-
-				_lightPositionWorld.setFromMatrixPosition( light.matrixWorld );
-				shadowCamera.position.copy( _lightPositionWorld );
 
 				_shadowMapSize.copy( shadow.mapSize );
 				_shadowMapSize.min( _maxShadowMapSize );
 
-				if ( light && light.isPointLight ) {
-
-					faceCount = 6;
-					isPointLight = true;
+				if ( isPointLight ) {
 
 					var vpWidth = _shadowMapSize.x;
 					var vpHeight = _shadowMapSize.y;
@@ -24649,34 +28863,6 @@ module.exports = function(THREE, EffectComposer) {
 					_shadowMapSize.x *= 4.0;
 					_shadowMapSize.y *= 2.0;
 
-
-					// for point lights we set the shadow matrix to be a translation-only matrix
-					// equal to inverse of the light's position
-
-					shadowMatrix.makeTranslation( - _lightPositionWorld.x, - _lightPositionWorld.y, - _lightPositionWorld.z );
-
-				} else {
-
-					faceCount = 1;
-					isPointLight = false;
-
-					_lookTarget.setFromMatrixPosition( light.target.matrixWorld );
-					shadowCamera.lookAt( _lookTarget );
-					shadowCamera.updateMatrixWorld();
-					shadowCamera.matrixWorldInverse.getInverse( shadowCamera.matrixWorld );
-
-					// compute shadow matrix
-
-					shadowMatrix.set(
-						0.5, 0.0, 0.0, 0.5,
-						0.0, 0.5, 0.0, 0.5,
-						0.0, 0.0, 0.5, 0.5,
-						0.0, 0.0, 0.0, 1.0
-					);
-
-					shadowMatrix.multiply( shadowCamera.projectionMatrix );
-					shadowMatrix.multiply( shadowCamera.matrixWorldInverse );
-
 				}
 
 				if ( shadow.map === null ) {
@@ -24697,6 +28883,41 @@ module.exports = function(THREE, EffectComposer) {
 				}
 
 				var shadowMap = shadow.map;
+				var shadowMatrix = shadow.matrix;
+
+				_lightPositionWorld.setFromMatrixPosition( light.matrixWorld );
+				shadowCamera.position.copy( _lightPositionWorld );
+
+				if ( isPointLight ) {
+
+					faceCount = 6;
+
+					// for point lights we set the shadow matrix to be a translation-only matrix
+					// equal to inverse of the light's position
+
+					shadowMatrix.makeTranslation( - _lightPositionWorld.x, - _lightPositionWorld.y, - _lightPositionWorld.z );
+
+				} else {
+
+					faceCount = 1;
+
+					_lookTarget.setFromMatrixPosition( light.target.matrixWorld );
+					shadowCamera.lookAt( _lookTarget );
+					shadowCamera.updateMatrixWorld();
+
+					// compute shadow matrix
+
+					shadowMatrix.set(
+						0.5, 0.0, 0.0, 0.5,
+						0.0, 0.5, 0.0, 0.5,
+						0.0, 0.0, 0.5, 0.5,
+						0.0, 0.0, 0.0, 1.0
+					);
+
+					shadowMatrix.multiply( shadowCamera.projectionMatrix );
+					shadowMatrix.multiply( shadowCamera.matrixWorldInverse );
+
+				}
 
 				_renderer.setRenderTarget( shadowMap );
 				_renderer.clear();
@@ -24713,7 +28934,6 @@ module.exports = function(THREE, EffectComposer) {
 						shadowCamera.up.copy( cubeUps[ face ] );
 						shadowCamera.lookAt( _lookTarget );
 						shadowCamera.updateMatrixWorld();
-						shadowCamera.matrixWorldInverse.getInverse( shadowCamera.matrixWorld );
 
 						var vpDimensions = cube2DViewPorts[ face ];
 						_state.viewport( vpDimensions );
@@ -24921,536 +29141,157 @@ module.exports = function(THREE, EffectComposer) {
 	}
 
 	/**
-	 * @author bhouston / http://clara.io
+	 * @author mrdoob / http://mrdoob.com/
 	 */
 
-	function Ray( origin, direction ) {
+	function WebGLAttributes( gl ) {
 
-		this.origin = ( origin !== undefined ) ? origin : new Vector3();
-		this.direction = ( direction !== undefined ) ? direction : new Vector3();
+		var buffers = {};
 
-	}
+		function createBuffer( attribute, bufferType ) {
 
-	Object.assign( Ray.prototype, {
+			var array = attribute.array;
+			var usage = attribute.dynamic ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW;
 
-		set: function ( origin, direction ) {
+			var buffer = gl.createBuffer();
 
-			this.origin.copy( origin );
-			this.direction.copy( direction );
+			gl.bindBuffer( bufferType, buffer );
+			gl.bufferData( bufferType, array, usage );
 
-			return this;
+			attribute.onUploadCallback();
 
-		},
+			var type = gl.FLOAT;
 
-		clone: function () {
+			if ( array instanceof Float32Array ) {
 
-			return new this.constructor().copy( this );
+				type = gl.FLOAT;
 
-		},
+			} else if ( array instanceof Float64Array ) {
 
-		copy: function ( ray ) {
+				console.warn( 'THREE.WebGLAttributes: Unsupported data buffer format: Float64Array.' );
 
-			this.origin.copy( ray.origin );
-			this.direction.copy( ray.direction );
+			} else if ( array instanceof Uint16Array ) {
 
-			return this;
+				type = gl.UNSIGNED_SHORT;
 
-		},
+			} else if ( array instanceof Int16Array ) {
 
-		at: function ( t, optionalTarget ) {
+				type = gl.SHORT;
 
-			var result = optionalTarget || new Vector3();
+			} else if ( array instanceof Uint32Array ) {
 
-			return result.copy( this.direction ).multiplyScalar( t ).add( this.origin );
+				type = gl.UNSIGNED_INT;
 
-		},
+			} else if ( array instanceof Int32Array ) {
 
-		lookAt: function ( v ) {
+				type = gl.INT;
 
-			this.direction.copy( v ).sub( this.origin ).normalize();
+			} else if ( array instanceof Int8Array ) {
 
-			return this;
+				type = gl.BYTE;
 
-		},
+			} else if ( array instanceof Uint8Array ) {
 
-		recast: function () {
+				type = gl.UNSIGNED_BYTE;
 
-			var v1 = new Vector3();
+			}
 
-			return function recast( t ) {
-
-				this.origin.copy( this.at( t, v1 ) );
-
-				return this;
-
+			return {
+				buffer: buffer,
+				type: type,
+				bytesPerElement: array.BYTES_PER_ELEMENT,
+				version: attribute.version
 			};
-
-		}(),
-
-		closestPointToPoint: function ( point, optionalTarget ) {
-
-			var result = optionalTarget || new Vector3();
-			result.subVectors( point, this.origin );
-			var directionDistance = result.dot( this.direction );
-
-			if ( directionDistance < 0 ) {
-
-				return result.copy( this.origin );
-
-			}
-
-			return result.copy( this.direction ).multiplyScalar( directionDistance ).add( this.origin );
-
-		},
-
-		distanceToPoint: function ( point ) {
-
-			return Math.sqrt( this.distanceSqToPoint( point ) );
-
-		},
-
-		distanceSqToPoint: function () {
-
-			var v1 = new Vector3();
-
-			return function distanceSqToPoint( point ) {
-
-				var directionDistance = v1.subVectors( point, this.origin ).dot( this.direction );
-
-				// point behind the ray
-
-				if ( directionDistance < 0 ) {
-
-					return this.origin.distanceToSquared( point );
-
-				}
-
-				v1.copy( this.direction ).multiplyScalar( directionDistance ).add( this.origin );
-
-				return v1.distanceToSquared( point );
-
-			};
-
-		}(),
-
-		distanceSqToSegment: function () {
-
-			var segCenter = new Vector3();
-			var segDir = new Vector3();
-			var diff = new Vector3();
-
-			return function distanceSqToSegment( v0, v1, optionalPointOnRay, optionalPointOnSegment ) {
-
-				// from http://www.geometrictools.com/GTEngine/Include/Mathematics/GteDistRaySegment.h
-				// It returns the min distance between the ray and the segment
-				// defined by v0 and v1
-				// It can also set two optional targets :
-				// - The closest point on the ray
-				// - The closest point on the segment
-
-				segCenter.copy( v0 ).add( v1 ).multiplyScalar( 0.5 );
-				segDir.copy( v1 ).sub( v0 ).normalize();
-				diff.copy( this.origin ).sub( segCenter );
-
-				var segExtent = v0.distanceTo( v1 ) * 0.5;
-				var a01 = - this.direction.dot( segDir );
-				var b0 = diff.dot( this.direction );
-				var b1 = - diff.dot( segDir );
-				var c = diff.lengthSq();
-				var det = Math.abs( 1 - a01 * a01 );
-				var s0, s1, sqrDist, extDet;
-
-				if ( det > 0 ) {
-
-					// The ray and segment are not parallel.
-
-					s0 = a01 * b1 - b0;
-					s1 = a01 * b0 - b1;
-					extDet = segExtent * det;
-
-					if ( s0 >= 0 ) {
-
-						if ( s1 >= - extDet ) {
-
-							if ( s1 <= extDet ) {
-
-								// region 0
-								// Minimum at interior points of ray and segment.
-
-								var invDet = 1 / det;
-								s0 *= invDet;
-								s1 *= invDet;
-								sqrDist = s0 * ( s0 + a01 * s1 + 2 * b0 ) + s1 * ( a01 * s0 + s1 + 2 * b1 ) + c;
-
-							} else {
-
-								// region 1
-
-								s1 = segExtent;
-								s0 = Math.max( 0, - ( a01 * s1 + b0 ) );
-								sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
-
-							}
-
-						} else {
-
-							// region 5
-
-							s1 = - segExtent;
-							s0 = Math.max( 0, - ( a01 * s1 + b0 ) );
-							sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
-
-						}
-
-					} else {
-
-						if ( s1 <= - extDet ) {
-
-							// region 4
-
-							s0 = Math.max( 0, - ( - a01 * segExtent + b0 ) );
-							s1 = ( s0 > 0 ) ? - segExtent : Math.min( Math.max( - segExtent, - b1 ), segExtent );
-							sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
-
-						} else if ( s1 <= extDet ) {
-
-							// region 3
-
-							s0 = 0;
-							s1 = Math.min( Math.max( - segExtent, - b1 ), segExtent );
-							sqrDist = s1 * ( s1 + 2 * b1 ) + c;
-
-						} else {
-
-							// region 2
-
-							s0 = Math.max( 0, - ( a01 * segExtent + b0 ) );
-							s1 = ( s0 > 0 ) ? segExtent : Math.min( Math.max( - segExtent, - b1 ), segExtent );
-							sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
-
-						}
-
-					}
-
-				} else {
-
-					// Ray and segment are parallel.
-
-					s1 = ( a01 > 0 ) ? - segExtent : segExtent;
-					s0 = Math.max( 0, - ( a01 * s1 + b0 ) );
-					sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
-
-				}
-
-				if ( optionalPointOnRay ) {
-
-					optionalPointOnRay.copy( this.direction ).multiplyScalar( s0 ).add( this.origin );
-
-				}
-
-				if ( optionalPointOnSegment ) {
-
-					optionalPointOnSegment.copy( segDir ).multiplyScalar( s1 ).add( segCenter );
-
-				}
-
-				return sqrDist;
-
-			};
-
-		}(),
-
-		intersectSphere: function () {
-
-			var v1 = new Vector3();
-
-			return function intersectSphere( sphere, optionalTarget ) {
-
-				v1.subVectors( sphere.center, this.origin );
-				var tca = v1.dot( this.direction );
-				var d2 = v1.dot( v1 ) - tca * tca;
-				var radius2 = sphere.radius * sphere.radius;
-
-				if ( d2 > radius2 ) return null;
-
-				var thc = Math.sqrt( radius2 - d2 );
-
-				// t0 = first intersect point - entrance on front of sphere
-				var t0 = tca - thc;
-
-				// t1 = second intersect point - exit point on back of sphere
-				var t1 = tca + thc;
-
-				// test to see if both t0 and t1 are behind the ray - if so, return null
-				if ( t0 < 0 && t1 < 0 ) return null;
-
-				// test to see if t0 is behind the ray:
-				// if it is, the ray is inside the sphere, so return the second exit point scaled by t1,
-				// in order to always return an intersect point that is in front of the ray.
-				if ( t0 < 0 ) return this.at( t1, optionalTarget );
-
-				// else t0 is in front of the ray, so return the first collision point scaled by t0
-				return this.at( t0, optionalTarget );
-
-			};
-
-		}(),
-
-		intersectsSphere: function ( sphere ) {
-
-			return this.distanceToPoint( sphere.center ) <= sphere.radius;
-
-		},
-
-		distanceToPlane: function ( plane ) {
-
-			var denominator = plane.normal.dot( this.direction );
-
-			if ( denominator === 0 ) {
-
-				// line is coplanar, return origin
-				if ( plane.distanceToPoint( this.origin ) === 0 ) {
-
-					return 0;
-
-				}
-
-				// Null is preferable to undefined since undefined means.... it is undefined
-
-				return null;
-
-			}
-
-			var t = - ( this.origin.dot( plane.normal ) + plane.constant ) / denominator;
-
-			// Return if the ray never intersects the plane
-
-			return t >= 0 ? t :  null;
-
-		},
-
-		intersectPlane: function ( plane, optionalTarget ) {
-
-			var t = this.distanceToPlane( plane );
-
-			if ( t === null ) {
-
-				return null;
-
-			}
-
-			return this.at( t, optionalTarget );
-
-		},
-
-		intersectsPlane: function ( plane ) {
-
-			// check if the ray lies on the plane first
-
-			var distToPoint = plane.distanceToPoint( this.origin );
-
-			if ( distToPoint === 0 ) {
-
-				return true;
-
-			}
-
-			var denominator = plane.normal.dot( this.direction );
-
-			if ( denominator * distToPoint < 0 ) {
-
-				return true;
-
-			}
-
-			// ray origin is behind the plane (and is pointing behind it)
-
-			return false;
-
-		},
-
-		intersectBox: function ( box, optionalTarget ) {
-
-			var tmin, tmax, tymin, tymax, tzmin, tzmax;
-
-			var invdirx = 1 / this.direction.x,
-				invdiry = 1 / this.direction.y,
-				invdirz = 1 / this.direction.z;
-
-			var origin = this.origin;
-
-			if ( invdirx >= 0 ) {
-
-				tmin = ( box.min.x - origin.x ) * invdirx;
-				tmax = ( box.max.x - origin.x ) * invdirx;
-
-			} else {
-
-				tmin = ( box.max.x - origin.x ) * invdirx;
-				tmax = ( box.min.x - origin.x ) * invdirx;
-
-			}
-
-			if ( invdiry >= 0 ) {
-
-				tymin = ( box.min.y - origin.y ) * invdiry;
-				tymax = ( box.max.y - origin.y ) * invdiry;
-
-			} else {
-
-				tymin = ( box.max.y - origin.y ) * invdiry;
-				tymax = ( box.min.y - origin.y ) * invdiry;
-
-			}
-
-			if ( ( tmin > tymax ) || ( tymin > tmax ) ) return null;
-
-			// These lines also handle the case where tmin or tmax is NaN
-			// (result of 0 * Infinity). x !== x returns true if x is NaN
-
-			if ( tymin > tmin || tmin !== tmin ) tmin = tymin;
-
-			if ( tymax < tmax || tmax !== tmax ) tmax = tymax;
-
-			if ( invdirz >= 0 ) {
-
-				tzmin = ( box.min.z - origin.z ) * invdirz;
-				tzmax = ( box.max.z - origin.z ) * invdirz;
-
-			} else {
-
-				tzmin = ( box.max.z - origin.z ) * invdirz;
-				tzmax = ( box.min.z - origin.z ) * invdirz;
-
-			}
-
-			if ( ( tmin > tzmax ) || ( tzmin > tmax ) ) return null;
-
-			if ( tzmin > tmin || tmin !== tmin ) tmin = tzmin;
-
-			if ( tzmax < tmax || tmax !== tmax ) tmax = tzmax;
-
-			//return point closest to the ray (positive side)
-
-			if ( tmax < 0 ) return null;
-
-			return this.at( tmin >= 0 ? tmin : tmax, optionalTarget );
-
-		},
-
-		intersectsBox: ( function () {
-
-			var v = new Vector3();
-
-			return function intersectsBox( box ) {
-
-				return this.intersectBox( box, v ) !== null;
-
-			};
-
-		} )(),
-
-		intersectTriangle: function () {
-
-			// Compute the offset origin, edges, and normal.
-			var diff = new Vector3();
-			var edge1 = new Vector3();
-			var edge2 = new Vector3();
-			var normal = new Vector3();
-
-			return function intersectTriangle( a, b, c, backfaceCulling, optionalTarget ) {
-
-				// from http://www.geometrictools.com/GTEngine/Include/Mathematics/GteIntrRay3Triangle3.h
-
-				edge1.subVectors( b, a );
-				edge2.subVectors( c, a );
-				normal.crossVectors( edge1, edge2 );
-
-				// Solve Q + t*D = b1*E1 + b2*E2 (Q = kDiff, D = ray direction,
-				// E1 = kEdge1, E2 = kEdge2, N = Cross(E1,E2)) by
-				//   |Dot(D,N)|*b1 = sign(Dot(D,N))*Dot(D,Cross(Q,E2))
-				//   |Dot(D,N)|*b2 = sign(Dot(D,N))*Dot(D,Cross(E1,Q))
-				//   |Dot(D,N)|*t = -sign(Dot(D,N))*Dot(Q,N)
-				var DdN = this.direction.dot( normal );
-				var sign;
-
-				if ( DdN > 0 ) {
-
-					if ( backfaceCulling ) return null;
-					sign = 1;
-
-				} else if ( DdN < 0 ) {
-
-					sign = - 1;
-					DdN = - DdN;
-
-				} else {
-
-					return null;
-
-				}
-
-				diff.subVectors( this.origin, a );
-				var DdQxE2 = sign * this.direction.dot( edge2.crossVectors( diff, edge2 ) );
-
-				// b1 < 0, no intersection
-				if ( DdQxE2 < 0 ) {
-
-					return null;
-
-				}
-
-				var DdE1xQ = sign * this.direction.dot( edge1.cross( diff ) );
-
-				// b2 < 0, no intersection
-				if ( DdE1xQ < 0 ) {
-
-					return null;
-
-				}
-
-				// b1+b2 > 1, no intersection
-				if ( DdQxE2 + DdE1xQ > DdN ) {
-
-					return null;
-
-				}
-
-				// Line intersects triangle, check if ray does.
-				var QdN = - sign * diff.dot( normal );
-
-				// t < 0, no intersection
-				if ( QdN < 0 ) {
-
-					return null;
-
-				}
-
-				// Ray intersects triangle.
-				return this.at( QdN / DdN, optionalTarget );
-
-			};
-
-		}(),
-
-		applyMatrix4: function ( matrix4 ) {
-
-			this.direction.add( this.origin ).applyMatrix4( matrix4 );
-			this.origin.applyMatrix4( matrix4 );
-			this.direction.sub( this.origin );
-			this.direction.normalize();
-
-			return this;
-
-		},
-
-		equals: function ( ray ) {
-
-			return ray.origin.equals( this.origin ) && ray.direction.equals( this.direction );
 
 		}
 
-	} );
+		function updateBuffer( buffer, attribute, bufferType ) {
+
+			var array = attribute.array;
+			var updateRange = attribute.updateRange;
+
+			gl.bindBuffer( bufferType, buffer );
+
+			if ( attribute.dynamic === false ) {
+
+				gl.bufferData( bufferType, array, gl.STATIC_DRAW );
+
+			} else if ( updateRange.count === - 1 ) {
+
+				// Not using update ranges
+
+				gl.bufferSubData( bufferType, 0, array );
+
+			} else if ( updateRange.count === 0 ) {
+
+				console.error( 'THREE.WebGLObjects.updateBuffer: dynamic THREE.BufferAttribute marked as needsUpdate but updateRange.count is 0, ensure you are using set methods or updating manually.' );
+
+			} else {
+
+				gl.bufferSubData( bufferType, updateRange.offset * array.BYTES_PER_ELEMENT,
+					array.subarray( updateRange.offset, updateRange.offset + updateRange.count ) );
+
+				updateRange.count = -1; // reset range
+
+			}
+
+		}
+
+		//
+
+		function get( attribute ) {
+
+			if ( attribute.isInterleavedBufferAttribute ) attribute = attribute.data;
+
+			return buffers[ attribute.uuid ];
+
+		}
+
+		function remove( attribute ) {
+
+			if ( attribute.isInterleavedBufferAttribute ) attribute = attribute.data;
+			
+			var data = buffers[ attribute.uuid ];
+
+			if ( data ) {
+
+				gl.deleteBuffer( data.buffer );
+
+				delete buffers[ attribute.uuid ];
+
+			}
+
+		}
+
+		function update( attribute, bufferType ) {
+
+			if ( attribute.isInterleavedBufferAttribute ) attribute = attribute.data;
+
+			var data = buffers[ attribute.uuid ];
+
+			if ( data === undefined ) {
+
+				buffers[ attribute.uuid ] = createBuffer( attribute, bufferType );
+
+			} else if ( data.version < attribute.version ) {
+
+				updateBuffer( data.buffer, attribute, bufferType );
+
+				data.version = attribute.version;
+
+			}
+
+		}
+
+		return {
+
+			get: get,
+			remove: remove,
+			update: update
+
+		};
+
+	}
 
 	/**
 	 * @author mrdoob / http://mrdoob.com/
@@ -25926,10 +29767,6 @@ module.exports = function(THREE, EffectComposer) {
 		this.renderOrder = 0;
 
 		this.userData = {};
-
-		this.onBeforeRender = function () {};
-		this.onAfterRender = function () {};
-
 	}
 
 	Object3D.DefaultUp = new Vector3( 0, 1, 0 );
@@ -25939,11 +29776,22 @@ module.exports = function(THREE, EffectComposer) {
 
 		isObject3D: true,
 
+		onBeforeRender: function () {},
+		onAfterRender: function () {},
+
 		applyMatrix: function ( matrix ) {
 
 			this.matrix.multiplyMatrices( matrix, this.matrix );
 
 			this.matrix.decompose( this.position, this.quaternion, this.scale );
+
+		},
+
+		applyQuaternion: function ( q ) {
+
+			this.quaternion.premultiply( q );
+
+			return this;
 
 		},
 
@@ -26107,7 +29955,7 @@ module.exports = function(THREE, EffectComposer) {
 
 		lookAt: function () {
 
-			// This routine does not support objects with rotated and/or translated parent(s)
+			// This method does not support objects with rotated and/or translated parent(s)
 
 			var m1 = new Matrix4();
 
@@ -26183,6 +30031,8 @@ module.exports = function(THREE, EffectComposer) {
 
 				}
 
+				return this;
+
 			}
 
 			var index = this.children.indexOf( object );
@@ -26197,6 +30047,8 @@ module.exports = function(THREE, EffectComposer) {
 
 			}
 
+			return this;
+			
 		},
 
 		getObjectById: function ( id ) {
@@ -26589,377 +30441,407 @@ module.exports = function(THREE, EffectComposer) {
 	} );
 
 	/**
-	 * @author bhouston / http://clara.io
-	 */
+	 * @author mrdoob / http://mrdoob.com/
+	 * @author mikael emtinger / http://gomo.se/
+	 * @author WestLangley / http://github.com/WestLangley
+	*/
 
-	function Line3( start, end ) {
+	function Camera() {
 
-		this.start = ( start !== undefined ) ? start : new Vector3();
-		this.end = ( end !== undefined ) ? end : new Vector3();
+		Object3D.call( this );
+
+		this.type = 'Camera';
+
+		this.matrixWorldInverse = new Matrix4();
+		this.projectionMatrix = new Matrix4();
 
 	}
 
-	Object.assign( Line3.prototype, {
+	Camera.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
-		set: function ( start, end ) {
+		constructor: Camera,
 
-			this.start.copy( start );
-			this.end.copy( end );
+		isCamera: true,
+
+		copy: function ( source, recursive ) {
+
+			Object3D.prototype.copy.call( this, source, recursive );
+
+			this.matrixWorldInverse.copy( source.matrixWorldInverse );
+			this.projectionMatrix.copy( source.projectionMatrix );
 
 			return this;
+
+		},
+
+		getWorldDirection: function () {
+
+			var quaternion = new Quaternion();
+
+			return function getWorldDirection( optionalTarget ) {
+
+				var result = optionalTarget || new Vector3();
+
+				this.getWorldQuaternion( quaternion );
+
+				return result.set( 0, 0, - 1 ).applyQuaternion( quaternion );
+
+			};
+
+		}(),
+
+		updateMatrixWorld: function ( force ) {
+
+			Object3D.prototype.updateMatrixWorld.call( this, force );
+
+			this.matrixWorldInverse.getInverse( this.matrixWorld );
 
 		},
 
 		clone: function () {
 
 			return new this.constructor().copy( this );
-
-		},
-
-		copy: function ( line ) {
-
-			this.start.copy( line.start );
-			this.end.copy( line.end );
-
-			return this;
-
-		},
-
-		getCenter: function ( optionalTarget ) {
-
-			var result = optionalTarget || new Vector3();
-			return result.addVectors( this.start, this.end ).multiplyScalar( 0.5 );
-
-		},
-
-		delta: function ( optionalTarget ) {
-
-			var result = optionalTarget || new Vector3();
-			return result.subVectors( this.end, this.start );
-
-		},
-
-		distanceSq: function () {
-
-			return this.start.distanceToSquared( this.end );
-
-		},
-
-		distance: function () {
-
-			return this.start.distanceTo( this.end );
-
-		},
-
-		at: function ( t, optionalTarget ) {
-
-			var result = optionalTarget || new Vector3();
-
-			return this.delta( result ).multiplyScalar( t ).add( this.start );
-
-		},
-
-		closestPointToPointParameter: function () {
-
-			var startP = new Vector3();
-			var startEnd = new Vector3();
-
-			return function closestPointToPointParameter( point, clampToLine ) {
-
-				startP.subVectors( point, this.start );
-				startEnd.subVectors( this.end, this.start );
-
-				var startEnd2 = startEnd.dot( startEnd );
-				var startEnd_startP = startEnd.dot( startP );
-
-				var t = startEnd_startP / startEnd2;
-
-				if ( clampToLine ) {
-
-					t = _Math.clamp( t, 0, 1 );
-
-				}
-
-				return t;
-
-			};
-
-		}(),
-
-		closestPointToPoint: function ( point, clampToLine, optionalTarget ) {
-
-			var t = this.closestPointToPointParameter( point, clampToLine );
-
-			var result = optionalTarget || new Vector3();
-
-			return this.delta( result ).multiplyScalar( t ).add( this.start );
-
-		},
-
-		applyMatrix4: function ( matrix ) {
-
-			this.start.applyMatrix4( matrix );
-			this.end.applyMatrix4( matrix );
-
-			return this;
-
-		},
-
-		equals: function ( line ) {
-
-			return line.start.equals( this.start ) && line.end.equals( this.end );
 
 		}
 
 	} );
 
 	/**
-	 * @author bhouston / http://clara.io
-	 * @author mrdoob / http://mrdoob.com/
+	 * @author alteredq / http://alteredqualia.com/
+	 * @author arose / http://github.com/arose
 	 */
 
-	function Triangle( a, b, c ) {
+	function OrthographicCamera( left, right, top, bottom, near, far ) {
 
-		this.a = ( a !== undefined ) ? a : new Vector3();
-		this.b = ( b !== undefined ) ? b : new Vector3();
-		this.c = ( c !== undefined ) ? c : new Vector3();
+		Camera.call( this );
+
+		this.type = 'OrthographicCamera';
+
+		this.zoom = 1;
+		this.view = null;
+
+		this.left = left;
+		this.right = right;
+		this.top = top;
+		this.bottom = bottom;
+
+		this.near = ( near !== undefined ) ? near : 0.1;
+		this.far = ( far !== undefined ) ? far : 2000;
+
+		this.updateProjectionMatrix();
 
 	}
 
-	Object.assign( Triangle, {
+	OrthographicCamera.prototype = Object.assign( Object.create( Camera.prototype ), {
 
-		normal: function () {
+		constructor: OrthographicCamera,
 
-			var v0 = new Vector3();
+		isOrthographicCamera: true,
 
-			return function normal( a, b, c, optionalTarget ) {
+		copy: function ( source, recursive ) {
 
-				var result = optionalTarget || new Vector3();
+			Camera.prototype.copy.call( this, source, recursive );
 
-				result.subVectors( c, b );
-				v0.subVectors( a, b );
-				result.cross( v0 );
+			this.left = source.left;
+			this.right = source.right;
+			this.top = source.top;
+			this.bottom = source.bottom;
+			this.near = source.near;
+			this.far = source.far;
 
-				var resultLengthSq = result.lengthSq();
-				if ( resultLengthSq > 0 ) {
+			this.zoom = source.zoom;
+			this.view = source.view === null ? null : Object.assign( {}, source.view );
 
-					return result.multiplyScalar( 1 / Math.sqrt( resultLengthSq ) );
+			return this;
 
-				}
+		},
 
-				return result.set( 0, 0, 0 );
+		setViewOffset: function( fullWidth, fullHeight, x, y, width, height ) {
 
+			this.view = {
+				fullWidth: fullWidth,
+				fullHeight: fullHeight,
+				offsetX: x,
+				offsetY: y,
+				width: width,
+				height: height
 			};
 
-		}(),
+			this.updateProjectionMatrix();
 
-		// static/instance method to calculate barycentric coordinates
-		// based on: http://www.blackpawn.com/texts/pointinpoly/default.html
-		barycoordFromPoint: function () {
+		},
 
-			var v0 = new Vector3();
-			var v1 = new Vector3();
-			var v2 = new Vector3();
+		clearViewOffset: function() {
 
-			return function barycoordFromPoint( point, a, b, c, optionalTarget ) {
+			this.view = null;
+			this.updateProjectionMatrix();
 
-				v0.subVectors( c, a );
-				v1.subVectors( b, a );
-				v2.subVectors( point, a );
+		},
 
-				var dot00 = v0.dot( v0 );
-				var dot01 = v0.dot( v1 );
-				var dot02 = v0.dot( v2 );
-				var dot11 = v1.dot( v1 );
-				var dot12 = v1.dot( v2 );
+		updateProjectionMatrix: function () {
 
-				var denom = ( dot00 * dot11 - dot01 * dot01 );
+			var dx = ( this.right - this.left ) / ( 2 * this.zoom );
+			var dy = ( this.top - this.bottom ) / ( 2 * this.zoom );
+			var cx = ( this.right + this.left ) / 2;
+			var cy = ( this.top + this.bottom ) / 2;
 
-				var result = optionalTarget || new Vector3();
+			var left = cx - dx;
+			var right = cx + dx;
+			var top = cy + dy;
+			var bottom = cy - dy;
 
-				// collinear or singular triangle
-				if ( denom === 0 ) {
+			if ( this.view !== null ) {
 
-					// arbitrary location outside of triangle?
-					// not sure if this is the best idea, maybe should be returning undefined
-					return result.set( - 2, - 1, - 1 );
+				var zoomW = this.zoom / ( this.view.width / this.view.fullWidth );
+				var zoomH = this.zoom / ( this.view.height / this.view.fullHeight );
+				var scaleW = ( this.right - this.left ) / this.view.width;
+				var scaleH = ( this.top - this.bottom ) / this.view.height;
 
-				}
+				left += scaleW * ( this.view.offsetX / zoomW );
+				right = left + scaleW * ( this.view.width / zoomW );
+				top -= scaleH * ( this.view.offsetY / zoomH );
+				bottom = top - scaleH * ( this.view.height / zoomH );
 
-				var invDenom = 1 / denom;
-				var u = ( dot11 * dot02 - dot01 * dot12 ) * invDenom;
-				var v = ( dot00 * dot12 - dot01 * dot02 ) * invDenom;
+			}
 
-				// barycentric coordinates must always sum to 1
-				return result.set( 1 - u - v, v, u );
+			this.projectionMatrix.makeOrthographic( left, right, top, bottom, this.near, this.far );
 
-			};
+		},
 
-		}(),
+		toJSON: function ( meta ) {
 
-		containsPoint: function () {
+			var data = Object3D.prototype.toJSON.call( this, meta );
 
-			var v1 = new Vector3();
+			data.object.zoom = this.zoom;
+			data.object.left = this.left;
+			data.object.right = this.right;
+			data.object.top = this.top;
+			data.object.bottom = this.bottom;
+			data.object.near = this.near;
+			data.object.far = this.far;
 
-			return function containsPoint( point, a, b, c ) {
+			if ( this.view !== null ) data.object.view = Object.assign( {}, this.view );
 
-				var result = Triangle.barycoordFromPoint( point, a, b, c, v1 );
+			return data;
 
-				return ( result.x >= 0 ) && ( result.y >= 0 ) && ( ( result.x + result.y ) <= 1 );
-
-			};
-
-		}()
+		}
 
 	} );
 
-	Object.assign( Triangle.prototype, {
+	/**
+	 * @author mrdoob / http://mrdoob.com/
+	 * @author greggman / http://games.greggman.com/
+	 * @author zz85 / http://www.lab4games.net/zz85/blog
+	 * @author tschw
+	 */
 
-		set: function ( a, b, c ) {
+	function PerspectiveCamera( fov, aspect, near, far ) {
 
-			this.a.copy( a );
-			this.b.copy( b );
-			this.c.copy( c );
+		Camera.call( this );
+
+		this.type = 'PerspectiveCamera';
+
+		this.fov = fov !== undefined ? fov : 50;
+		this.zoom = 1;
+
+		this.near = near !== undefined ? near : 0.1;
+		this.far = far !== undefined ? far : 2000;
+		this.focus = 10;
+
+		this.aspect = aspect !== undefined ? aspect : 1;
+		this.view = null;
+
+		this.filmGauge = 35;	// width of the film (default in millimeters)
+		this.filmOffset = 0;	// horizontal film offset (same unit as gauge)
+
+		this.updateProjectionMatrix();
+
+	}
+
+	PerspectiveCamera.prototype = Object.assign( Object.create( Camera.prototype ), {
+
+		constructor: PerspectiveCamera,
+
+		isPerspectiveCamera: true,
+
+		copy: function ( source, recursive ) {
+
+			Camera.prototype.copy.call( this, source, recursive );
+
+			this.fov = source.fov;
+			this.zoom = source.zoom;
+
+			this.near = source.near;
+			this.far = source.far;
+			this.focus = source.focus;
+
+			this.aspect = source.aspect;
+			this.view = source.view === null ? null : Object.assign( {}, source.view );
+
+			this.filmGauge = source.filmGauge;
+			this.filmOffset = source.filmOffset;
 
 			return this;
 
 		},
 
-		setFromPointsAndIndices: function ( points, i0, i1, i2 ) {
+		/**
+		 * Sets the FOV by focal length in respect to the current .filmGauge.
+		 *
+		 * The default film gauge is 35, so that the focal length can be specified for
+		 * a 35mm (full frame) camera.
+		 *
+		 * Values for focal length and film gauge must have the same unit.
+		 */
+		setFocalLength: function ( focalLength ) {
 
-			this.a.copy( points[ i0 ] );
-			this.b.copy( points[ i1 ] );
-			this.c.copy( points[ i2 ] );
+			// see http://www.bobatkins.com/photography/technical/field_of_view.html
+			var vExtentSlope = 0.5 * this.getFilmHeight() / focalLength;
 
-			return this;
-
-		},
-
-		clone: function () {
-
-			return new this.constructor().copy( this );
-
-		},
-
-		copy: function ( triangle ) {
-
-			this.a.copy( triangle.a );
-			this.b.copy( triangle.b );
-			this.c.copy( triangle.c );
-
-			return this;
+			this.fov = _Math.RAD2DEG * 2 * Math.atan( vExtentSlope );
+			this.updateProjectionMatrix();
 
 		},
 
-		area: function () {
+		/**
+		 * Calculates the focal length from the current .fov and .filmGauge.
+		 */
+		getFocalLength: function () {
 
-			var v0 = new Vector3();
-			var v1 = new Vector3();
+			var vExtentSlope = Math.tan( _Math.DEG2RAD * 0.5 * this.fov );
 
-			return function area() {
+			return 0.5 * this.getFilmHeight() / vExtentSlope;
 
-				v0.subVectors( this.c, this.b );
-				v1.subVectors( this.a, this.b );
+		},
 
-				return v0.cross( v1 ).length() * 0.5;
+		getEffectiveFOV: function () {
 
+			return _Math.RAD2DEG * 2 * Math.atan(
+					Math.tan( _Math.DEG2RAD * 0.5 * this.fov ) / this.zoom );
+
+		},
+
+		getFilmWidth: function () {
+
+			// film not completely covered in portrait format (aspect < 1)
+			return this.filmGauge * Math.min( this.aspect, 1 );
+
+		},
+
+		getFilmHeight: function () {
+
+			// film not completely covered in landscape format (aspect > 1)
+			return this.filmGauge / Math.max( this.aspect, 1 );
+
+		},
+
+		/**
+		 * Sets an offset in a larger frustum. This is useful for multi-window or
+		 * multi-monitor/multi-machine setups.
+		 *
+		 * For example, if you have 3x2 monitors and each monitor is 1920x1080 and
+		 * the monitors are in grid like this
+		 *
+		 *   +---+---+---+
+		 *   | A | B | C |
+		 *   +---+---+---+
+		 *   | D | E | F |
+		 *   +---+---+---+
+		 *
+		 * then for each monitor you would call it like this
+		 *
+		 *   var w = 1920;
+		 *   var h = 1080;
+		 *   var fullWidth = w * 3;
+		 *   var fullHeight = h * 2;
+		 *
+		 *   --A--
+		 *   camera.setOffset( fullWidth, fullHeight, w * 0, h * 0, w, h );
+		 *   --B--
+		 *   camera.setOffset( fullWidth, fullHeight, w * 1, h * 0, w, h );
+		 *   --C--
+		 *   camera.setOffset( fullWidth, fullHeight, w * 2, h * 0, w, h );
+		 *   --D--
+		 *   camera.setOffset( fullWidth, fullHeight, w * 0, h * 1, w, h );
+		 *   --E--
+		 *   camera.setOffset( fullWidth, fullHeight, w * 1, h * 1, w, h );
+		 *   --F--
+		 *   camera.setOffset( fullWidth, fullHeight, w * 2, h * 1, w, h );
+		 *
+		 *   Note there is no reason monitors have to be the same size or in a grid.
+		 */
+		setViewOffset: function ( fullWidth, fullHeight, x, y, width, height ) {
+
+			this.aspect = fullWidth / fullHeight;
+
+			this.view = {
+				fullWidth: fullWidth,
+				fullHeight: fullHeight,
+				offsetX: x,
+				offsetY: y,
+				width: width,
+				height: height
 			};
 
-		}(),
-
-		midpoint: function ( optionalTarget ) {
-
-			var result = optionalTarget || new Vector3();
-			return result.addVectors( this.a, this.b ).add( this.c ).multiplyScalar( 1 / 3 );
+			this.updateProjectionMatrix();
 
 		},
 
-		normal: function ( optionalTarget ) {
+		clearViewOffset: function () {
 
-			return Triangle.normal( this.a, this.b, this.c, optionalTarget );
-
-		},
-
-		plane: function ( optionalTarget ) {
-
-			var result = optionalTarget || new Plane();
-
-			return result.setFromCoplanarPoints( this.a, this.b, this.c );
+			this.view = null;
+			this.updateProjectionMatrix();
 
 		},
 
-		barycoordFromPoint: function ( point, optionalTarget ) {
+		updateProjectionMatrix: function () {
 
-			return Triangle.barycoordFromPoint( point, this.a, this.b, this.c, optionalTarget );
+			var near = this.near,
+				top = near * Math.tan(
+						_Math.DEG2RAD * 0.5 * this.fov ) / this.zoom,
+				height = 2 * top,
+				width = this.aspect * height,
+				left = - 0.5 * width,
+				view = this.view;
+
+			if ( view !== null ) {
+
+				var fullWidth = view.fullWidth,
+					fullHeight = view.fullHeight;
+
+				left += view.offsetX * width / fullWidth;
+				top -= view.offsetY * height / fullHeight;
+				width *= view.width / fullWidth;
+				height *= view.height / fullHeight;
+
+			}
+
+			var skew = this.filmOffset;
+			if ( skew !== 0 ) left += near * skew / this.getFilmWidth();
+
+			this.projectionMatrix.makePerspective( left, left + width, top, top - height, near, this.far );
 
 		},
 
-		containsPoint: function ( point ) {
+		toJSON: function ( meta ) {
 
-			return Triangle.containsPoint( point, this.a, this.b, this.c );
+			var data = Object3D.prototype.toJSON.call( this, meta );
 
-		},
+			data.object.fov = this.fov;
+			data.object.zoom = this.zoom;
 
-		closestPointToPoint: function () {
+			data.object.near = this.near;
+			data.object.far = this.far;
+			data.object.focus = this.focus;
 
-			var plane = new Plane();
-			var edgeList = [ new Line3(), new Line3(), new Line3() ];
-			var projectedPoint = new Vector3();
-			var closestPoint = new Vector3();
+			data.object.aspect = this.aspect;
 
-			return function closestPointToPoint( point, optionalTarget ) {
+			if ( this.view !== null ) data.object.view = Object.assign( {}, this.view );
 
-				var result = optionalTarget || new Vector3();
-				var minDistance = Infinity;
+			data.object.filmGauge = this.filmGauge;
+			data.object.filmOffset = this.filmOffset;
 
-				// project the point onto the plane of the triangle
-
-				plane.setFromCoplanarPoints( this.a, this.b, this.c );
-				plane.projectPoint( point, projectedPoint );
-
-				// check if the projection lies within the triangle
-
-				if( this.containsPoint( projectedPoint ) === true ) {
-
-					// if so, this is the closest point
-
-					result.copy( projectedPoint );
-
-				} else {
-
-					// if not, the point falls outside the triangle. the result is the closest point to the triangle's edges or vertices
-
-					edgeList[ 0 ].set( this.a, this.b );
-					edgeList[ 1 ].set( this.b, this.c );
-					edgeList[ 2 ].set( this.c, this.a );
-
-					for( var i = 0; i < edgeList.length; i ++ ) {
-
-						edgeList[ i ].closestPointToPoint( projectedPoint, true, closestPoint );
-
-						var distance = projectedPoint.distanceToSquared( closestPoint );
-
-						if( distance < minDistance ) {
-
-							minDistance = distance;
-
-							result.copy( closestPoint );
-
-						}
-
-					}
-
-				}
-
-				return result;
-
-			};
-
-		}(),
-
-		equals: function ( triangle ) {
-
-			return triangle.a.equals( this.a ) && triangle.b.equals( this.b ) && triangle.c.equals( this.c );
+			return data;
 
 		}
 
@@ -27022,822 +30904,6 @@ module.exports = function(THREE, EffectComposer) {
 		}
 
 	} );
-
-	/**
-	 * @author mrdoob / http://mrdoob.com/
-	 * @author alteredq / http://alteredqualia.com/
-	 *
-	 * parameters = {
-	 *  color: <hex>,
-	 *  opacity: <float>,
-	 *  map: new THREE.Texture( <Image> ),
-	 *
-	 *  lightMap: new THREE.Texture( <Image> ),
-	 *  lightMapIntensity: <float>
-	 *
-	 *  aoMap: new THREE.Texture( <Image> ),
-	 *  aoMapIntensity: <float>
-	 *
-	 *  specularMap: new THREE.Texture( <Image> ),
-	 *
-	 *  alphaMap: new THREE.Texture( <Image> ),
-	 *
-	 *  envMap: new THREE.TextureCube( [posx, negx, posy, negy, posz, negz] ),
-	 *  combine: THREE.Multiply,
-	 *  reflectivity: <float>,
-	 *  refractionRatio: <float>,
-	 *
-	 *  shading: THREE.SmoothShading,
-	 *  depthTest: <bool>,
-	 *  depthWrite: <bool>,
-	 *
-	 *  wireframe: <boolean>,
-	 *  wireframeLinewidth: <float>,
-	 *
-	 *  skinning: <bool>,
-	 *  morphTargets: <bool>
-	 * }
-	 */
-
-	function MeshBasicMaterial( parameters ) {
-
-		Material.call( this );
-
-		this.type = 'MeshBasicMaterial';
-
-		this.color = new Color( 0xffffff ); // emissive
-
-		this.map = null;
-
-		this.lightMap = null;
-		this.lightMapIntensity = 1.0;
-
-		this.aoMap = null;
-		this.aoMapIntensity = 1.0;
-
-		this.specularMap = null;
-
-		this.alphaMap = null;
-
-		this.envMap = null;
-		this.combine = MultiplyOperation;
-		this.reflectivity = 1;
-		this.refractionRatio = 0.98;
-
-		this.wireframe = false;
-		this.wireframeLinewidth = 1;
-		this.wireframeLinecap = 'round';
-		this.wireframeLinejoin = 'round';
-
-		this.skinning = false;
-		this.morphTargets = false;
-
-		this.lights = false;
-
-		this.setValues( parameters );
-
-	}
-
-	MeshBasicMaterial.prototype = Object.create( Material.prototype );
-	MeshBasicMaterial.prototype.constructor = MeshBasicMaterial;
-
-	MeshBasicMaterial.prototype.isMeshBasicMaterial = true;
-
-	MeshBasicMaterial.prototype.copy = function ( source ) {
-
-		Material.prototype.copy.call( this, source );
-
-		this.color.copy( source.color );
-
-		this.map = source.map;
-
-		this.lightMap = source.lightMap;
-		this.lightMapIntensity = source.lightMapIntensity;
-
-		this.aoMap = source.aoMap;
-		this.aoMapIntensity = source.aoMapIntensity;
-
-		this.specularMap = source.specularMap;
-
-		this.alphaMap = source.alphaMap;
-
-		this.envMap = source.envMap;
-		this.combine = source.combine;
-		this.reflectivity = source.reflectivity;
-		this.refractionRatio = source.refractionRatio;
-
-		this.wireframe = source.wireframe;
-		this.wireframeLinewidth = source.wireframeLinewidth;
-		this.wireframeLinecap = source.wireframeLinecap;
-		this.wireframeLinejoin = source.wireframeLinejoin;
-
-		this.skinning = source.skinning;
-		this.morphTargets = source.morphTargets;
-
-		return this;
-
-	};
-
-	/**
-	 * @author mrdoob / http://mrdoob.com/
-	 */
-
-	function BufferAttribute( array, itemSize, normalized ) {
-
-		if ( Array.isArray( array ) ) {
-
-			throw new TypeError( 'THREE.BufferAttribute: array should be a Typed Array.' );
-
-		}
-
-		this.uuid = _Math.generateUUID();
-
-		this.array = array;
-		this.itemSize = itemSize;
-		this.count = array !== undefined ? array.length / itemSize : 0;
-		this.normalized = normalized === true;
-
-		this.dynamic = false;
-		this.updateRange = { offset: 0, count: - 1 };
-
-		this.onUploadCallback = function () {};
-
-		this.version = 0;
-
-	}
-
-	Object.defineProperty( BufferAttribute.prototype, 'needsUpdate', {
-
-		set: function ( value ) {
-
-			if ( value === true ) this.version ++;
-
-		}
-
-	} );
-
-	Object.assign( BufferAttribute.prototype, {
-
-		isBufferAttribute: true,
-
-		setArray: function ( array ) {
-
-			if ( Array.isArray( array ) ) {
-
-				throw new TypeError( 'THREE.BufferAttribute: array should be a Typed Array.' );
-
-			}
-
-			this.count = array !== undefined ? array.length / this.itemSize : 0;
-			this.array = array;
-
-		},
-
-		setDynamic: function ( value ) {
-
-			this.dynamic = value;
-
-			return this;
-
-		},
-
-		copy: function ( source ) {
-
-			this.array = new source.array.constructor( source.array );
-			this.itemSize = source.itemSize;
-			this.count = source.count;
-			this.normalized = source.normalized;
-
-			this.dynamic = source.dynamic;
-
-			return this;
-
-		},
-
-		copyAt: function ( index1, attribute, index2 ) {
-
-			index1 *= this.itemSize;
-			index2 *= attribute.itemSize;
-
-			for ( var i = 0, l = this.itemSize; i < l; i ++ ) {
-
-				this.array[ index1 + i ] = attribute.array[ index2 + i ];
-
-			}
-
-			return this;
-
-		},
-
-		copyArray: function ( array ) {
-
-			this.array.set( array );
-
-			return this;
-
-		},
-
-		copyColorsArray: function ( colors ) {
-
-			var array = this.array, offset = 0;
-
-			for ( var i = 0, l = colors.length; i < l; i ++ ) {
-
-				var color = colors[ i ];
-
-				if ( color === undefined ) {
-
-					console.warn( 'THREE.BufferAttribute.copyColorsArray(): color is undefined', i );
-					color = new Color();
-
-				}
-
-				array[ offset ++ ] = color.r;
-				array[ offset ++ ] = color.g;
-				array[ offset ++ ] = color.b;
-
-			}
-
-			return this;
-
-		},
-
-		copyIndicesArray: function ( indices ) {
-
-			var array = this.array, offset = 0;
-
-			for ( var i = 0, l = indices.length; i < l; i ++ ) {
-
-				var index = indices[ i ];
-
-				array[ offset ++ ] = index.a;
-				array[ offset ++ ] = index.b;
-				array[ offset ++ ] = index.c;
-
-			}
-
-			return this;
-
-		},
-
-		copyVector2sArray: function ( vectors ) {
-
-			var array = this.array, offset = 0;
-
-			for ( var i = 0, l = vectors.length; i < l; i ++ ) {
-
-				var vector = vectors[ i ];
-
-				if ( vector === undefined ) {
-
-					console.warn( 'THREE.BufferAttribute.copyVector2sArray(): vector is undefined', i );
-					vector = new Vector2();
-
-				}
-
-				array[ offset ++ ] = vector.x;
-				array[ offset ++ ] = vector.y;
-
-			}
-
-			return this;
-
-		},
-
-		copyVector3sArray: function ( vectors ) {
-
-			var array = this.array, offset = 0;
-
-			for ( var i = 0, l = vectors.length; i < l; i ++ ) {
-
-				var vector = vectors[ i ];
-
-				if ( vector === undefined ) {
-
-					console.warn( 'THREE.BufferAttribute.copyVector3sArray(): vector is undefined', i );
-					vector = new Vector3();
-
-				}
-
-				array[ offset ++ ] = vector.x;
-				array[ offset ++ ] = vector.y;
-				array[ offset ++ ] = vector.z;
-
-			}
-
-			return this;
-
-		},
-
-		copyVector4sArray: function ( vectors ) {
-
-			var array = this.array, offset = 0;
-
-			for ( var i = 0, l = vectors.length; i < l; i ++ ) {
-
-				var vector = vectors[ i ];
-
-				if ( vector === undefined ) {
-
-					console.warn( 'THREE.BufferAttribute.copyVector4sArray(): vector is undefined', i );
-					vector = new Vector4();
-
-				}
-
-				array[ offset ++ ] = vector.x;
-				array[ offset ++ ] = vector.y;
-				array[ offset ++ ] = vector.z;
-				array[ offset ++ ] = vector.w;
-
-			}
-
-			return this;
-
-		},
-
-		set: function ( value, offset ) {
-
-			if ( offset === undefined ) offset = 0;
-
-			this.array.set( value, offset );
-
-			return this;
-
-		},
-
-		getX: function ( index ) {
-
-			return this.array[ index * this.itemSize ];
-
-		},
-
-		setX: function ( index, x ) {
-
-			this.array[ index * this.itemSize ] = x;
-
-			return this;
-
-		},
-
-		getY: function ( index ) {
-
-			return this.array[ index * this.itemSize + 1 ];
-
-		},
-
-		setY: function ( index, y ) {
-
-			this.array[ index * this.itemSize + 1 ] = y;
-
-			return this;
-
-		},
-
-		getZ: function ( index ) {
-
-			return this.array[ index * this.itemSize + 2 ];
-
-		},
-
-		setZ: function ( index, z ) {
-
-			this.array[ index * this.itemSize + 2 ] = z;
-
-			return this;
-
-		},
-
-		getW: function ( index ) {
-
-			return this.array[ index * this.itemSize + 3 ];
-
-		},
-
-		setW: function ( index, w ) {
-
-			this.array[ index * this.itemSize + 3 ] = w;
-
-			return this;
-
-		},
-
-		setXY: function ( index, x, y ) {
-
-			index *= this.itemSize;
-
-			this.array[ index + 0 ] = x;
-			this.array[ index + 1 ] = y;
-
-			return this;
-
-		},
-
-		setXYZ: function ( index, x, y, z ) {
-
-			index *= this.itemSize;
-
-			this.array[ index + 0 ] = x;
-			this.array[ index + 1 ] = y;
-			this.array[ index + 2 ] = z;
-
-			return this;
-
-		},
-
-		setXYZW: function ( index, x, y, z, w ) {
-
-			index *= this.itemSize;
-
-			this.array[ index + 0 ] = x;
-			this.array[ index + 1 ] = y;
-			this.array[ index + 2 ] = z;
-			this.array[ index + 3 ] = w;
-
-			return this;
-
-		},
-
-		onUpload: function ( callback ) {
-
-			this.onUploadCallback = callback;
-
-			return this;
-
-		},
-
-		clone: function () {
-
-			return new this.constructor( this.array, this.itemSize ).copy( this );
-
-		}
-
-	} );
-
-	//
-
-	function Int8BufferAttribute( array, itemSize ) {
-
-		BufferAttribute.call( this, new Int8Array( array ), itemSize );
-
-	}
-
-	Int8BufferAttribute.prototype = Object.create( BufferAttribute.prototype );
-	Int8BufferAttribute.prototype.constructor = Int8BufferAttribute;
-
-
-	function Uint8BufferAttribute( array, itemSize ) {
-
-		BufferAttribute.call( this, new Uint8Array( array ), itemSize );
-
-	}
-
-	Uint8BufferAttribute.prototype = Object.create( BufferAttribute.prototype );
-	Uint8BufferAttribute.prototype.constructor = Uint8BufferAttribute;
-
-
-	function Uint8ClampedBufferAttribute( array, itemSize ) {
-
-		BufferAttribute.call( this, new Uint8ClampedArray( array ), itemSize );
-
-	}
-
-	Uint8ClampedBufferAttribute.prototype = Object.create( BufferAttribute.prototype );
-	Uint8ClampedBufferAttribute.prototype.constructor = Uint8ClampedBufferAttribute;
-
-
-	function Int16BufferAttribute( array, itemSize ) {
-
-		BufferAttribute.call( this, new Int16Array( array ), itemSize );
-
-	}
-
-	Int16BufferAttribute.prototype = Object.create( BufferAttribute.prototype );
-	Int16BufferAttribute.prototype.constructor = Int16BufferAttribute;
-
-
-	function Uint16BufferAttribute( array, itemSize ) {
-
-		BufferAttribute.call( this, new Uint16Array( array ), itemSize );
-
-	}
-
-	Uint16BufferAttribute.prototype = Object.create( BufferAttribute.prototype );
-	Uint16BufferAttribute.prototype.constructor = Uint16BufferAttribute;
-
-
-	function Int32BufferAttribute( array, itemSize ) {
-
-		BufferAttribute.call( this, new Int32Array( array ), itemSize );
-
-	}
-
-	Int32BufferAttribute.prototype = Object.create( BufferAttribute.prototype );
-	Int32BufferAttribute.prototype.constructor = Int32BufferAttribute;
-
-
-	function Uint32BufferAttribute( array, itemSize ) {
-
-		BufferAttribute.call( this, new Uint32Array( array ), itemSize );
-
-	}
-
-	Uint32BufferAttribute.prototype = Object.create( BufferAttribute.prototype );
-	Uint32BufferAttribute.prototype.constructor = Uint32BufferAttribute;
-
-
-	function Float32BufferAttribute( array, itemSize ) {
-
-		BufferAttribute.call( this, new Float32Array( array ), itemSize );
-
-	}
-
-	Float32BufferAttribute.prototype = Object.create( BufferAttribute.prototype );
-	Float32BufferAttribute.prototype.constructor = Float32BufferAttribute;
-
-
-	function Float64BufferAttribute( array, itemSize ) {
-
-		BufferAttribute.call( this, new Float64Array( array ), itemSize );
-
-	}
-
-	Float64BufferAttribute.prototype = Object.create( BufferAttribute.prototype );
-	Float64BufferAttribute.prototype.constructor = Float64BufferAttribute;
-
-	/**
-	 * @author mrdoob / http://mrdoob.com/
-	 */
-
-	function DirectGeometry() {
-
-		this.indices = [];
-		this.vertices = [];
-		this.normals = [];
-		this.colors = [];
-		this.uvs = [];
-		this.uvs2 = [];
-
-		this.groups = [];
-
-		this.morphTargets = {};
-
-		this.skinWeights = [];
-		this.skinIndices = [];
-
-		// this.lineDistances = [];
-
-		this.boundingBox = null;
-		this.boundingSphere = null;
-
-		// update flags
-
-		this.verticesNeedUpdate = false;
-		this.normalsNeedUpdate = false;
-		this.colorsNeedUpdate = false;
-		this.uvsNeedUpdate = false;
-		this.groupsNeedUpdate = false;
-
-	}
-
-	Object.assign( DirectGeometry.prototype, {
-
-		computeGroups: function ( geometry ) {
-
-			var group;
-			var groups = [];
-			var materialIndex = undefined;
-
-			var faces = geometry.faces;
-
-			for ( var i = 0; i < faces.length; i ++ ) {
-
-				var face = faces[ i ];
-
-				// materials
-
-				if ( face.materialIndex !== materialIndex ) {
-
-					materialIndex = face.materialIndex;
-
-					if ( group !== undefined ) {
-
-						group.count = ( i * 3 ) - group.start;
-						groups.push( group );
-
-					}
-
-					group = {
-						start: i * 3,
-						materialIndex: materialIndex
-					};
-
-				}
-
-			}
-
-			if ( group !== undefined ) {
-
-				group.count = ( i * 3 ) - group.start;
-				groups.push( group );
-
-			}
-
-			this.groups = groups;
-
-		},
-
-		fromGeometry: function ( geometry ) {
-
-			var faces = geometry.faces;
-			var vertices = geometry.vertices;
-			var faceVertexUvs = geometry.faceVertexUvs;
-
-			var hasFaceVertexUv = faceVertexUvs[ 0 ] && faceVertexUvs[ 0 ].length > 0;
-			var hasFaceVertexUv2 = faceVertexUvs[ 1 ] && faceVertexUvs[ 1 ].length > 0;
-
-			// morphs
-
-			var morphTargets = geometry.morphTargets;
-			var morphTargetsLength = morphTargets.length;
-
-			var morphTargetsPosition;
-
-			if ( morphTargetsLength > 0 ) {
-
-				morphTargetsPosition = [];
-
-				for ( var i = 0; i < morphTargetsLength; i ++ ) {
-
-					morphTargetsPosition[ i ] = [];
-
-				}
-
-				this.morphTargets.position = morphTargetsPosition;
-
-			}
-
-			var morphNormals = geometry.morphNormals;
-			var morphNormalsLength = morphNormals.length;
-
-			var morphTargetsNormal;
-
-			if ( morphNormalsLength > 0 ) {
-
-				morphTargetsNormal = [];
-
-				for ( var i = 0; i < morphNormalsLength; i ++ ) {
-
-					morphTargetsNormal[ i ] = [];
-
-				}
-
-				this.morphTargets.normal = morphTargetsNormal;
-
-			}
-
-			// skins
-
-			var skinIndices = geometry.skinIndices;
-			var skinWeights = geometry.skinWeights;
-
-			var hasSkinIndices = skinIndices.length === vertices.length;
-			var hasSkinWeights = skinWeights.length === vertices.length;
-
-			//
-
-			for ( var i = 0; i < faces.length; i ++ ) {
-
-				var face = faces[ i ];
-
-				this.vertices.push( vertices[ face.a ], vertices[ face.b ], vertices[ face.c ] );
-
-				var vertexNormals = face.vertexNormals;
-
-				if ( vertexNormals.length === 3 ) {
-
-					this.normals.push( vertexNormals[ 0 ], vertexNormals[ 1 ], vertexNormals[ 2 ] );
-
-				} else {
-
-					var normal = face.normal;
-
-					this.normals.push( normal, normal, normal );
-
-				}
-
-				var vertexColors = face.vertexColors;
-
-				if ( vertexColors.length === 3 ) {
-
-					this.colors.push( vertexColors[ 0 ], vertexColors[ 1 ], vertexColors[ 2 ] );
-
-				} else {
-
-					var color = face.color;
-
-					this.colors.push( color, color, color );
-
-				}
-
-				if ( hasFaceVertexUv === true ) {
-
-					var vertexUvs = faceVertexUvs[ 0 ][ i ];
-
-					if ( vertexUvs !== undefined ) {
-
-						this.uvs.push( vertexUvs[ 0 ], vertexUvs[ 1 ], vertexUvs[ 2 ] );
-
-					} else {
-
-						console.warn( 'THREE.DirectGeometry.fromGeometry(): Undefined vertexUv ', i );
-
-						this.uvs.push( new Vector2(), new Vector2(), new Vector2() );
-
-					}
-
-				}
-
-				if ( hasFaceVertexUv2 === true ) {
-
-					var vertexUvs = faceVertexUvs[ 1 ][ i ];
-
-					if ( vertexUvs !== undefined ) {
-
-						this.uvs2.push( vertexUvs[ 0 ], vertexUvs[ 1 ], vertexUvs[ 2 ] );
-
-					} else {
-
-						console.warn( 'THREE.DirectGeometry.fromGeometry(): Undefined vertexUv2 ', i );
-
-						this.uvs2.push( new Vector2(), new Vector2(), new Vector2() );
-
-					}
-
-				}
-
-				// morphs
-
-				for ( var j = 0; j < morphTargetsLength; j ++ ) {
-
-					var morphTarget = morphTargets[ j ].vertices;
-
-					morphTargetsPosition[ j ].push( morphTarget[ face.a ], morphTarget[ face.b ], morphTarget[ face.c ] );
-
-				}
-
-				for ( var j = 0; j < morphNormalsLength; j ++ ) {
-
-					var morphNormal = morphNormals[ j ].vertexNormals[ i ];
-
-					morphTargetsNormal[ j ].push( morphNormal.a, morphNormal.b, morphNormal.c );
-
-				}
-
-				// skins
-
-				if ( hasSkinIndices ) {
-
-					this.skinIndices.push( skinIndices[ face.a ], skinIndices[ face.b ], skinIndices[ face.c ] );
-
-				}
-
-				if ( hasSkinWeights ) {
-
-					this.skinWeights.push( skinWeights[ face.a ], skinWeights[ face.b ], skinWeights[ face.c ] );
-
-				}
-
-			}
-
-			this.computeGroups( geometry );
-
-			this.verticesNeedUpdate = geometry.verticesNeedUpdate;
-			this.normalsNeedUpdate = geometry.normalsNeedUpdate;
-			this.colorsNeedUpdate = geometry.colorsNeedUpdate;
-			this.uvsNeedUpdate = geometry.uvsNeedUpdate;
-			this.groupsNeedUpdate = geometry.groupsNeedUpdate;
-
-			return this;
-
-		}
-
-	} );
-
-	function arrayMax( array ) {
-
-		if ( array.length === 0 ) return - Infinity;
-
-		var max = array[ 0 ];
-
-		for ( var i = 1, l = array.length; i < l; ++ i ) {
-
-			if ( array[ i ] > max ) max = array[ i ];
-
-		}
-
-		return max;
-
-	}
 
 	/**
 	 * @author mrdoob / http://mrdoob.com/
@@ -28529,7 +31595,7 @@ module.exports = function(THREE, EffectComposer) {
 
 		merge: function ( geometry, matrix, materialIndexOffset ) {
 
-			if ( ( geometry && geometry.isGeometry ) === false ) {
+			if ( ! ( geometry && geometry.isGeometry ) ) {
 
 				console.error( 'THREE.Geometry.merge(): geometry not an instance of THREE.Geometry.', geometry );
 				return;
@@ -28649,7 +31715,7 @@ module.exports = function(THREE, EffectComposer) {
 
 		mergeMesh: function ( mesh ) {
 
-			if ( ( mesh && mesh.isMesh ) === false ) {
+			if ( ! ( mesh && mesh.isMesh ) ) {
 
 				console.error( 'THREE.Geometry.mergeMesh(): mesh not an instance of THREE.Mesh.', mesh );
 				return;
@@ -29264,6 +32330,708 @@ module.exports = function(THREE, EffectComposer) {
 	} );
 
 	/**
+	 * @author mrdoob / http://mrdoob.com/
+	 */
+
+	function BufferAttribute( array, itemSize, normalized ) {
+
+		if ( Array.isArray( array ) ) {
+
+			throw new TypeError( 'THREE.BufferAttribute: array should be a Typed Array.' );
+
+		}
+
+		this.uuid = _Math.generateUUID();
+		this.name = '';
+
+		this.array = array;
+		this.itemSize = itemSize;
+		this.count = array !== undefined ? array.length / itemSize : 0;
+		this.normalized = normalized === true;
+
+		this.dynamic = false;
+		this.updateRange = { offset: 0, count: - 1 };
+
+		this.onUploadCallback = function () {};
+
+		this.version = 0;
+
+	}
+
+	Object.defineProperty( BufferAttribute.prototype, 'needsUpdate', {
+
+		set: function ( value ) {
+
+			if ( value === true ) this.version ++;
+
+		}
+
+	} );
+
+	Object.assign( BufferAttribute.prototype, {
+
+		isBufferAttribute: true,
+
+		setArray: function ( array ) {
+
+			if ( Array.isArray( array ) ) {
+
+				throw new TypeError( 'THREE.BufferAttribute: array should be a Typed Array.' );
+
+			}
+
+			this.count = array !== undefined ? array.length / this.itemSize : 0;
+			this.array = array;
+
+		},
+
+		setDynamic: function ( value ) {
+
+			this.dynamic = value;
+
+			return this;
+
+		},
+
+		copy: function ( source ) {
+
+			this.array = new source.array.constructor( source.array );
+			this.itemSize = source.itemSize;
+			this.count = source.count;
+			this.normalized = source.normalized;
+
+			this.dynamic = source.dynamic;
+
+			return this;
+
+		},
+
+		copyAt: function ( index1, attribute, index2 ) {
+
+			index1 *= this.itemSize;
+			index2 *= attribute.itemSize;
+
+			for ( var i = 0, l = this.itemSize; i < l; i ++ ) {
+
+				this.array[ index1 + i ] = attribute.array[ index2 + i ];
+
+			}
+
+			return this;
+
+		},
+
+		copyArray: function ( array ) {
+
+			this.array.set( array );
+
+			return this;
+
+		},
+
+		copyColorsArray: function ( colors ) {
+
+			var array = this.array, offset = 0;
+
+			for ( var i = 0, l = colors.length; i < l; i ++ ) {
+
+				var color = colors[ i ];
+
+				if ( color === undefined ) {
+
+					console.warn( 'THREE.BufferAttribute.copyColorsArray(): color is undefined', i );
+					color = new Color();
+
+				}
+
+				array[ offset ++ ] = color.r;
+				array[ offset ++ ] = color.g;
+				array[ offset ++ ] = color.b;
+
+			}
+
+			return this;
+
+		},
+
+		copyIndicesArray: function ( indices ) {
+
+			var array = this.array, offset = 0;
+
+			for ( var i = 0, l = indices.length; i < l; i ++ ) {
+
+				var index = indices[ i ];
+
+				array[ offset ++ ] = index.a;
+				array[ offset ++ ] = index.b;
+				array[ offset ++ ] = index.c;
+
+			}
+
+			return this;
+
+		},
+
+		copyVector2sArray: function ( vectors ) {
+
+			var array = this.array, offset = 0;
+
+			for ( var i = 0, l = vectors.length; i < l; i ++ ) {
+
+				var vector = vectors[ i ];
+
+				if ( vector === undefined ) {
+
+					console.warn( 'THREE.BufferAttribute.copyVector2sArray(): vector is undefined', i );
+					vector = new Vector2();
+
+				}
+
+				array[ offset ++ ] = vector.x;
+				array[ offset ++ ] = vector.y;
+
+			}
+
+			return this;
+
+		},
+
+		copyVector3sArray: function ( vectors ) {
+
+			var array = this.array, offset = 0;
+
+			for ( var i = 0, l = vectors.length; i < l; i ++ ) {
+
+				var vector = vectors[ i ];
+
+				if ( vector === undefined ) {
+
+					console.warn( 'THREE.BufferAttribute.copyVector3sArray(): vector is undefined', i );
+					vector = new Vector3();
+
+				}
+
+				array[ offset ++ ] = vector.x;
+				array[ offset ++ ] = vector.y;
+				array[ offset ++ ] = vector.z;
+
+			}
+
+			return this;
+
+		},
+
+		copyVector4sArray: function ( vectors ) {
+
+			var array = this.array, offset = 0;
+
+			for ( var i = 0, l = vectors.length; i < l; i ++ ) {
+
+				var vector = vectors[ i ];
+
+				if ( vector === undefined ) {
+
+					console.warn( 'THREE.BufferAttribute.copyVector4sArray(): vector is undefined', i );
+					vector = new Vector4();
+
+				}
+
+				array[ offset ++ ] = vector.x;
+				array[ offset ++ ] = vector.y;
+				array[ offset ++ ] = vector.z;
+				array[ offset ++ ] = vector.w;
+
+			}
+
+			return this;
+
+		},
+
+		set: function ( value, offset ) {
+
+			if ( offset === undefined ) offset = 0;
+
+			this.array.set( value, offset );
+
+			return this;
+
+		},
+
+		getX: function ( index ) {
+
+			return this.array[ index * this.itemSize ];
+
+		},
+
+		setX: function ( index, x ) {
+
+			this.array[ index * this.itemSize ] = x;
+
+			return this;
+
+		},
+
+		getY: function ( index ) {
+
+			return this.array[ index * this.itemSize + 1 ];
+
+		},
+
+		setY: function ( index, y ) {
+
+			this.array[ index * this.itemSize + 1 ] = y;
+
+			return this;
+
+		},
+
+		getZ: function ( index ) {
+
+			return this.array[ index * this.itemSize + 2 ];
+
+		},
+
+		setZ: function ( index, z ) {
+
+			this.array[ index * this.itemSize + 2 ] = z;
+
+			return this;
+
+		},
+
+		getW: function ( index ) {
+
+			return this.array[ index * this.itemSize + 3 ];
+
+		},
+
+		setW: function ( index, w ) {
+
+			this.array[ index * this.itemSize + 3 ] = w;
+
+			return this;
+
+		},
+
+		setXY: function ( index, x, y ) {
+
+			index *= this.itemSize;
+
+			this.array[ index + 0 ] = x;
+			this.array[ index + 1 ] = y;
+
+			return this;
+
+		},
+
+		setXYZ: function ( index, x, y, z ) {
+
+			index *= this.itemSize;
+
+			this.array[ index + 0 ] = x;
+			this.array[ index + 1 ] = y;
+			this.array[ index + 2 ] = z;
+
+			return this;
+
+		},
+
+		setXYZW: function ( index, x, y, z, w ) {
+
+			index *= this.itemSize;
+
+			this.array[ index + 0 ] = x;
+			this.array[ index + 1 ] = y;
+			this.array[ index + 2 ] = z;
+			this.array[ index + 3 ] = w;
+
+			return this;
+
+		},
+
+		onUpload: function ( callback ) {
+
+			this.onUploadCallback = callback;
+
+			return this;
+
+		},
+
+		clone: function () {
+
+			return new this.constructor( this.array, this.itemSize ).copy( this );
+
+		}
+
+	} );
+
+	//
+
+	function Int8BufferAttribute( array, itemSize ) {
+
+		BufferAttribute.call( this, new Int8Array( array ), itemSize );
+
+	}
+
+	Int8BufferAttribute.prototype = Object.create( BufferAttribute.prototype );
+	Int8BufferAttribute.prototype.constructor = Int8BufferAttribute;
+
+
+	function Uint8BufferAttribute( array, itemSize ) {
+
+		BufferAttribute.call( this, new Uint8Array( array ), itemSize );
+
+	}
+
+	Uint8BufferAttribute.prototype = Object.create( BufferAttribute.prototype );
+	Uint8BufferAttribute.prototype.constructor = Uint8BufferAttribute;
+
+
+	function Uint8ClampedBufferAttribute( array, itemSize ) {
+
+		BufferAttribute.call( this, new Uint8ClampedArray( array ), itemSize );
+
+	}
+
+	Uint8ClampedBufferAttribute.prototype = Object.create( BufferAttribute.prototype );
+	Uint8ClampedBufferAttribute.prototype.constructor = Uint8ClampedBufferAttribute;
+
+
+	function Int16BufferAttribute( array, itemSize ) {
+
+		BufferAttribute.call( this, new Int16Array( array ), itemSize );
+
+	}
+
+	Int16BufferAttribute.prototype = Object.create( BufferAttribute.prototype );
+	Int16BufferAttribute.prototype.constructor = Int16BufferAttribute;
+
+
+	function Uint16BufferAttribute( array, itemSize ) {
+
+		BufferAttribute.call( this, new Uint16Array( array ), itemSize );
+
+	}
+
+	Uint16BufferAttribute.prototype = Object.create( BufferAttribute.prototype );
+	Uint16BufferAttribute.prototype.constructor = Uint16BufferAttribute;
+
+
+	function Int32BufferAttribute( array, itemSize ) {
+
+		BufferAttribute.call( this, new Int32Array( array ), itemSize );
+
+	}
+
+	Int32BufferAttribute.prototype = Object.create( BufferAttribute.prototype );
+	Int32BufferAttribute.prototype.constructor = Int32BufferAttribute;
+
+
+	function Uint32BufferAttribute( array, itemSize ) {
+
+		BufferAttribute.call( this, new Uint32Array( array ), itemSize );
+
+	}
+
+	Uint32BufferAttribute.prototype = Object.create( BufferAttribute.prototype );
+	Uint32BufferAttribute.prototype.constructor = Uint32BufferAttribute;
+
+
+	function Float32BufferAttribute( array, itemSize ) {
+
+		BufferAttribute.call( this, new Float32Array( array ), itemSize );
+
+	}
+
+	Float32BufferAttribute.prototype = Object.create( BufferAttribute.prototype );
+	Float32BufferAttribute.prototype.constructor = Float32BufferAttribute;
+
+
+	function Float64BufferAttribute( array, itemSize ) {
+
+		BufferAttribute.call( this, new Float64Array( array ), itemSize );
+
+	}
+
+	Float64BufferAttribute.prototype = Object.create( BufferAttribute.prototype );
+	Float64BufferAttribute.prototype.constructor = Float64BufferAttribute;
+
+	/**
+	 * @author mrdoob / http://mrdoob.com/
+	 */
+
+	function DirectGeometry() {
+
+		this.indices = [];
+		this.vertices = [];
+		this.normals = [];
+		this.colors = [];
+		this.uvs = [];
+		this.uvs2 = [];
+
+		this.groups = [];
+
+		this.morphTargets = {};
+
+		this.skinWeights = [];
+		this.skinIndices = [];
+
+		// this.lineDistances = [];
+
+		this.boundingBox = null;
+		this.boundingSphere = null;
+
+		// update flags
+
+		this.verticesNeedUpdate = false;
+		this.normalsNeedUpdate = false;
+		this.colorsNeedUpdate = false;
+		this.uvsNeedUpdate = false;
+		this.groupsNeedUpdate = false;
+
+	}
+
+	Object.assign( DirectGeometry.prototype, {
+
+		computeGroups: function ( geometry ) {
+
+			var group;
+			var groups = [];
+			var materialIndex = undefined;
+
+			var faces = geometry.faces;
+
+			for ( var i = 0; i < faces.length; i ++ ) {
+
+				var face = faces[ i ];
+
+				// materials
+
+				if ( face.materialIndex !== materialIndex ) {
+
+					materialIndex = face.materialIndex;
+
+					if ( group !== undefined ) {
+
+						group.count = ( i * 3 ) - group.start;
+						groups.push( group );
+
+					}
+
+					group = {
+						start: i * 3,
+						materialIndex: materialIndex
+					};
+
+				}
+
+			}
+
+			if ( group !== undefined ) {
+
+				group.count = ( i * 3 ) - group.start;
+				groups.push( group );
+
+			}
+
+			this.groups = groups;
+
+		},
+
+		fromGeometry: function ( geometry ) {
+
+			var faces = geometry.faces;
+			var vertices = geometry.vertices;
+			var faceVertexUvs = geometry.faceVertexUvs;
+
+			var hasFaceVertexUv = faceVertexUvs[ 0 ] && faceVertexUvs[ 0 ].length > 0;
+			var hasFaceVertexUv2 = faceVertexUvs[ 1 ] && faceVertexUvs[ 1 ].length > 0;
+
+			// morphs
+
+			var morphTargets = geometry.morphTargets;
+			var morphTargetsLength = morphTargets.length;
+
+			var morphTargetsPosition;
+
+			if ( morphTargetsLength > 0 ) {
+
+				morphTargetsPosition = [];
+
+				for ( var i = 0; i < morphTargetsLength; i ++ ) {
+
+					morphTargetsPosition[ i ] = [];
+
+				}
+
+				this.morphTargets.position = morphTargetsPosition;
+
+			}
+
+			var morphNormals = geometry.morphNormals;
+			var morphNormalsLength = morphNormals.length;
+
+			var morphTargetsNormal;
+
+			if ( morphNormalsLength > 0 ) {
+
+				morphTargetsNormal = [];
+
+				for ( var i = 0; i < morphNormalsLength; i ++ ) {
+
+					morphTargetsNormal[ i ] = [];
+
+				}
+
+				this.morphTargets.normal = morphTargetsNormal;
+
+			}
+
+			// skins
+
+			var skinIndices = geometry.skinIndices;
+			var skinWeights = geometry.skinWeights;
+
+			var hasSkinIndices = skinIndices.length === vertices.length;
+			var hasSkinWeights = skinWeights.length === vertices.length;
+
+			//
+
+			for ( var i = 0; i < faces.length; i ++ ) {
+
+				var face = faces[ i ];
+
+				this.vertices.push( vertices[ face.a ], vertices[ face.b ], vertices[ face.c ] );
+
+				var vertexNormals = face.vertexNormals;
+
+				if ( vertexNormals.length === 3 ) {
+
+					this.normals.push( vertexNormals[ 0 ], vertexNormals[ 1 ], vertexNormals[ 2 ] );
+
+				} else {
+
+					var normal = face.normal;
+
+					this.normals.push( normal, normal, normal );
+
+				}
+
+				var vertexColors = face.vertexColors;
+
+				if ( vertexColors.length === 3 ) {
+
+					this.colors.push( vertexColors[ 0 ], vertexColors[ 1 ], vertexColors[ 2 ] );
+
+				} else {
+
+					var color = face.color;
+
+					this.colors.push( color, color, color );
+
+				}
+
+				if ( hasFaceVertexUv === true ) {
+
+					var vertexUvs = faceVertexUvs[ 0 ][ i ];
+
+					if ( vertexUvs !== undefined ) {
+
+						this.uvs.push( vertexUvs[ 0 ], vertexUvs[ 1 ], vertexUvs[ 2 ] );
+
+					} else {
+
+						console.warn( 'THREE.DirectGeometry.fromGeometry(): Undefined vertexUv ', i );
+
+						this.uvs.push( new Vector2(), new Vector2(), new Vector2() );
+
+					}
+
+				}
+
+				if ( hasFaceVertexUv2 === true ) {
+
+					var vertexUvs = faceVertexUvs[ 1 ][ i ];
+
+					if ( vertexUvs !== undefined ) {
+
+						this.uvs2.push( vertexUvs[ 0 ], vertexUvs[ 1 ], vertexUvs[ 2 ] );
+
+					} else {
+
+						console.warn( 'THREE.DirectGeometry.fromGeometry(): Undefined vertexUv2 ', i );
+
+						this.uvs2.push( new Vector2(), new Vector2(), new Vector2() );
+
+					}
+
+				}
+
+				// morphs
+
+				for ( var j = 0; j < morphTargetsLength; j ++ ) {
+
+					var morphTarget = morphTargets[ j ].vertices;
+
+					morphTargetsPosition[ j ].push( morphTarget[ face.a ], morphTarget[ face.b ], morphTarget[ face.c ] );
+
+				}
+
+				for ( var j = 0; j < morphNormalsLength; j ++ ) {
+
+					var morphNormal = morphNormals[ j ].vertexNormals[ i ];
+
+					morphTargetsNormal[ j ].push( morphNormal.a, morphNormal.b, morphNormal.c );
+
+				}
+
+				// skins
+
+				if ( hasSkinIndices ) {
+
+					this.skinIndices.push( skinIndices[ face.a ], skinIndices[ face.b ], skinIndices[ face.c ] );
+
+				}
+
+				if ( hasSkinWeights ) {
+
+					this.skinWeights.push( skinWeights[ face.a ], skinWeights[ face.b ], skinWeights[ face.c ] );
+
+				}
+
+			}
+
+			this.computeGroups( geometry );
+
+			this.verticesNeedUpdate = geometry.verticesNeedUpdate;
+			this.normalsNeedUpdate = geometry.normalsNeedUpdate;
+			this.colorsNeedUpdate = geometry.colorsNeedUpdate;
+			this.uvsNeedUpdate = geometry.uvsNeedUpdate;
+			this.groupsNeedUpdate = geometry.groupsNeedUpdate;
+
+			return this;
+
+		}
+
+	} );
+
+	function arrayMax( array ) {
+
+		if ( array.length === 0 ) return - Infinity;
+
+		var max = array[ 0 ];
+
+		for ( var i = 1, l = array.length; i < l; ++ i ) {
+
+			if ( array[ i ] > max ) max = array[ i ];
+
+		}
+
+		return max;
+
+	}
+
+	/**
 	 * @author alteredq / http://alteredqualia.com/
 	 * @author mrdoob / http://mrdoob.com/
 	 */
@@ -29319,7 +33087,7 @@ module.exports = function(THREE, EffectComposer) {
 
 		addAttribute: function ( name, attribute ) {
 
-			if ( ( attribute && attribute.isBufferAttribute ) === false && ( attribute && attribute.isInterleavedBufferAttribute ) === false ) {
+			if ( ! ( attribute && attribute.isBufferAttribute ) && ! ( attribute && attribute.isInterleavedBufferAttribute ) ) {
 
 				console.warn( 'THREE.BufferGeometry: .addAttribute() now expects ( name, attribute ).' );
 
@@ -30029,7 +33797,7 @@ module.exports = function(THREE, EffectComposer) {
 
 		merge: function ( geometry, offset ) {
 
-			if ( ( geometry && geometry.isBufferGeometry ) === false ) {
+			if ( ! ( geometry && geometry.isBufferGeometry ) ) {
 
 				console.error( 'THREE.BufferGeometry.merge(): geometry not an instance of THREE.BufferGeometry.', geometry );
 				return;
@@ -30351,345 +34119,6 @@ module.exports = function(THREE, EffectComposer) {
 
 	/**
 	 * @author mrdoob / http://mrdoob.com/
-	 * @author alteredq / http://alteredqualia.com/
-	 * @author mikael emtinger / http://gomo.se/
-	 * @author jonobr1 / http://jonobr1.com/
-	 */
-
-	function Mesh( geometry, material ) {
-
-		Object3D.call( this );
-
-		this.type = 'Mesh';
-
-		this.geometry = geometry !== undefined ? geometry : new BufferGeometry();
-		this.material = material !== undefined ? material : new MeshBasicMaterial( { color: Math.random() * 0xffffff } );
-
-		this.drawMode = TrianglesDrawMode;
-
-		this.updateMorphTargets();
-
-	}
-
-	Mesh.prototype = Object.assign( Object.create( Object3D.prototype ), {
-
-		constructor: Mesh,
-
-		isMesh: true,
-
-		setDrawMode: function ( value ) {
-
-			this.drawMode = value;
-
-		},
-
-		copy: function ( source ) {
-
-			Object3D.prototype.copy.call( this, source );
-
-			this.drawMode = source.drawMode;
-
-			return this;
-
-		},
-
-		updateMorphTargets: function () {
-
-			var morphTargets = this.geometry.morphTargets;
-
-			if ( morphTargets !== undefined && morphTargets.length > 0 ) {
-
-				this.morphTargetInfluences = [];
-				this.morphTargetDictionary = {};
-
-				for ( var m = 0, ml = morphTargets.length; m < ml; m ++ ) {
-
-					this.morphTargetInfluences.push( 0 );
-					this.morphTargetDictionary[ morphTargets[ m ].name ] = m;
-
-				}
-
-			}
-
-		},
-
-		raycast: ( function () {
-
-			var inverseMatrix = new Matrix4();
-			var ray = new Ray();
-			var sphere = new Sphere();
-
-			var vA = new Vector3();
-			var vB = new Vector3();
-			var vC = new Vector3();
-
-			var tempA = new Vector3();
-			var tempB = new Vector3();
-			var tempC = new Vector3();
-
-			var uvA = new Vector2();
-			var uvB = new Vector2();
-			var uvC = new Vector2();
-
-			var barycoord = new Vector3();
-
-			var intersectionPoint = new Vector3();
-			var intersectionPointWorld = new Vector3();
-
-			function uvIntersection( point, p1, p2, p3, uv1, uv2, uv3 ) {
-
-				Triangle.barycoordFromPoint( point, p1, p2, p3, barycoord );
-
-				uv1.multiplyScalar( barycoord.x );
-				uv2.multiplyScalar( barycoord.y );
-				uv3.multiplyScalar( barycoord.z );
-
-				uv1.add( uv2 ).add( uv3 );
-
-				return uv1.clone();
-
-			}
-
-			function checkIntersection( object, raycaster, ray, pA, pB, pC, point ) {
-
-				var intersect;
-				var material = object.material;
-
-				if ( material.side === BackSide ) {
-
-					intersect = ray.intersectTriangle( pC, pB, pA, true, point );
-
-				} else {
-
-					intersect = ray.intersectTriangle( pA, pB, pC, material.side !== DoubleSide, point );
-
-				}
-
-				if ( intersect === null ) return null;
-
-				intersectionPointWorld.copy( point );
-				intersectionPointWorld.applyMatrix4( object.matrixWorld );
-
-				var distance = raycaster.ray.origin.distanceTo( intersectionPointWorld );
-
-				if ( distance < raycaster.near || distance > raycaster.far ) return null;
-
-				return {
-					distance: distance,
-					point: intersectionPointWorld.clone(),
-					object: object
-				};
-
-			}
-
-			function checkBufferGeometryIntersection( object, raycaster, ray, position, uv, a, b, c ) {
-
-				vA.fromBufferAttribute( position, a );
-				vB.fromBufferAttribute( position, b );
-				vC.fromBufferAttribute( position, c );
-
-				var intersection = checkIntersection( object, raycaster, ray, vA, vB, vC, intersectionPoint );
-
-				if ( intersection ) {
-
-					if ( uv ) {
-
-						uvA.fromBufferAttribute( uv, a );
-						uvB.fromBufferAttribute( uv, b );
-						uvC.fromBufferAttribute( uv, c );
-
-						intersection.uv = uvIntersection( intersectionPoint, vA, vB, vC, uvA, uvB, uvC );
-
-					}
-
-					intersection.face = new Face3( a, b, c, Triangle.normal( vA, vB, vC ) );
-					intersection.faceIndex = a;
-
-				}
-
-				return intersection;
-
-			}
-
-			return function raycast( raycaster, intersects ) {
-
-				var geometry = this.geometry;
-				var material = this.material;
-				var matrixWorld = this.matrixWorld;
-
-				if ( material === undefined ) return;
-
-				// Checking boundingSphere distance to ray
-
-				if ( geometry.boundingSphere === null ) geometry.computeBoundingSphere();
-
-				sphere.copy( geometry.boundingSphere );
-				sphere.applyMatrix4( matrixWorld );
-
-				if ( raycaster.ray.intersectsSphere( sphere ) === false ) return;
-
-				//
-
-				inverseMatrix.getInverse( matrixWorld );
-				ray.copy( raycaster.ray ).applyMatrix4( inverseMatrix );
-
-				// Check boundingBox before continuing
-
-				if ( geometry.boundingBox !== null ) {
-
-					if ( ray.intersectsBox( geometry.boundingBox ) === false ) return;
-
-				}
-
-				var intersection;
-
-				if ( geometry.isBufferGeometry ) {
-
-					var a, b, c;
-					var index = geometry.index;
-					var position = geometry.attributes.position;
-					var uv = geometry.attributes.uv;
-					var i, l;
-
-					if ( index !== null ) {
-
-						// indexed buffer geometry
-
-						for ( i = 0, l = index.count; i < l; i += 3 ) {
-
-							a = index.getX( i );
-							b = index.getX( i + 1 );
-							c = index.getX( i + 2 );
-
-							intersection = checkBufferGeometryIntersection( this, raycaster, ray, position, uv, a, b, c );
-
-							if ( intersection ) {
-
-								intersection.faceIndex = Math.floor( i / 3 ); // triangle number in indices buffer semantics
-								intersects.push( intersection );
-
-							}
-
-						}
-
-					} else {
-
-						// non-indexed buffer geometry
-
-						for ( i = 0, l = position.count; i < l; i += 3 ) {
-
-							a = i;
-							b = i + 1;
-							c = i + 2;
-
-							intersection = checkBufferGeometryIntersection( this, raycaster, ray, position, uv, a, b, c );
-
-							if ( intersection ) {
-
-								intersection.index = a; // triangle number in positions buffer semantics
-								intersects.push( intersection );
-
-							}
-
-						}
-
-					}
-
-				} else if ( geometry.isGeometry ) {
-
-					var fvA, fvB, fvC;
-					var isMultiMaterial = Array.isArray( material );
-
-					var vertices = geometry.vertices;
-					var faces = geometry.faces;
-					var uvs;
-
-					var faceVertexUvs = geometry.faceVertexUvs[ 0 ];
-					if ( faceVertexUvs.length > 0 ) uvs = faceVertexUvs;
-
-					for ( var f = 0, fl = faces.length; f < fl; f ++ ) {
-
-						var face = faces[ f ];
-						var faceMaterial = isMultiMaterial ? material[ face.materialIndex ] : material;
-
-						if ( faceMaterial === undefined ) continue;
-
-						fvA = vertices[ face.a ];
-						fvB = vertices[ face.b ];
-						fvC = vertices[ face.c ];
-
-						if ( faceMaterial.morphTargets === true ) {
-
-							var morphTargets = geometry.morphTargets;
-							var morphInfluences = this.morphTargetInfluences;
-
-							vA.set( 0, 0, 0 );
-							vB.set( 0, 0, 0 );
-							vC.set( 0, 0, 0 );
-
-							for ( var t = 0, tl = morphTargets.length; t < tl; t ++ ) {
-
-								var influence = morphInfluences[ t ];
-
-								if ( influence === 0 ) continue;
-
-								var targets = morphTargets[ t ].vertices;
-
-								vA.addScaledVector( tempA.subVectors( targets[ face.a ], fvA ), influence );
-								vB.addScaledVector( tempB.subVectors( targets[ face.b ], fvB ), influence );
-								vC.addScaledVector( tempC.subVectors( targets[ face.c ], fvC ), influence );
-
-							}
-
-							vA.add( fvA );
-							vB.add( fvB );
-							vC.add( fvC );
-
-							fvA = vA;
-							fvB = vB;
-							fvC = vC;
-
-						}
-
-						intersection = checkIntersection( this, raycaster, ray, fvA, fvB, fvC, intersectionPoint );
-
-						if ( intersection ) {
-
-							if ( uvs && uvs[ f ] ) {
-
-								var uvs_f = uvs[ f ];
-								uvA.copy( uvs_f[ 0 ] );
-								uvB.copy( uvs_f[ 1 ] );
-								uvC.copy( uvs_f[ 2 ] );
-
-								intersection.uv = uvIntersection( intersectionPoint, fvA, fvB, fvC, uvA, uvB, uvC );
-
-							}
-
-							intersection.face = face;
-							intersection.faceIndex = f;
-							intersects.push( intersection );
-
-						}
-
-					}
-
-				}
-
-			};
-
-		}() ),
-
-		clone: function () {
-
-			return new this.constructor( this.geometry, this.material ).copy( this );
-
-		}
-
-	} );
-
-	/**
-	 * @author mrdoob / http://mrdoob.com/
 	 * @author Mugen87 / https://github.com/Mugen87
 	 */
 
@@ -30999,549 +34428,1522 @@ module.exports = function(THREE, EffectComposer) {
 
 	/**
 	 * @author mrdoob / http://mrdoob.com/
-	 * @author mikael emtinger / http://gomo.se/
-	 * @author WestLangley / http://github.com/WestLangley
-	*/
+	 * @author alteredq / http://alteredqualia.com/
+	 *
+	 * parameters = {
+	 *  color: <hex>,
+	 *  opacity: <float>,
+	 *  map: new THREE.Texture( <Image> ),
+	 *
+	 *  lightMap: new THREE.Texture( <Image> ),
+	 *  lightMapIntensity: <float>
+	 *
+	 *  aoMap: new THREE.Texture( <Image> ),
+	 *  aoMapIntensity: <float>
+	 *
+	 *  specularMap: new THREE.Texture( <Image> ),
+	 *
+	 *  alphaMap: new THREE.Texture( <Image> ),
+	 *
+	 *  envMap: new THREE.TextureCube( [posx, negx, posy, negy, posz, negz] ),
+	 *  combine: THREE.Multiply,
+	 *  reflectivity: <float>,
+	 *  refractionRatio: <float>,
+	 *
+	 *  shading: THREE.SmoothShading,
+	 *  depthTest: <bool>,
+	 *  depthWrite: <bool>,
+	 *
+	 *  wireframe: <boolean>,
+	 *  wireframeLinewidth: <float>,
+	 *
+	 *  skinning: <bool>,
+	 *  morphTargets: <bool>
+	 * }
+	 */
 
-	function Camera() {
+	function MeshBasicMaterial( parameters ) {
 
-		Object3D.call( this );
+		Material.call( this );
 
-		this.type = 'Camera';
+		this.type = 'MeshBasicMaterial';
 
-		this.matrixWorldInverse = new Matrix4();
-		this.projectionMatrix = new Matrix4();
+		this.color = new Color( 0xffffff ); // emissive
+
+		this.map = null;
+
+		this.lightMap = null;
+		this.lightMapIntensity = 1.0;
+
+		this.aoMap = null;
+		this.aoMapIntensity = 1.0;
+
+		this.specularMap = null;
+
+		this.alphaMap = null;
+
+		this.envMap = null;
+		this.combine = MultiplyOperation;
+		this.reflectivity = 1;
+		this.refractionRatio = 0.98;
+
+		this.wireframe = false;
+		this.wireframeLinewidth = 1;
+		this.wireframeLinecap = 'round';
+		this.wireframeLinejoin = 'round';
+
+		this.skinning = false;
+		this.morphTargets = false;
+
+		this.lights = false;
+
+		this.setValues( parameters );
 
 	}
 
-	Camera.prototype = Object.assign( Object.create( Object3D.prototype ), {
+	MeshBasicMaterial.prototype = Object.create( Material.prototype );
+	MeshBasicMaterial.prototype.constructor = MeshBasicMaterial;
 
-		constructor: Camera,
+	MeshBasicMaterial.prototype.isMeshBasicMaterial = true;
 
-		isCamera: true,
+	MeshBasicMaterial.prototype.copy = function ( source ) {
 
-		copy: function ( source ) {
+		Material.prototype.copy.call( this, source );
 
-			Object3D.prototype.copy.call( this, source );
+		this.color.copy( source.color );
 
-			this.matrixWorldInverse.copy( source.matrixWorldInverse );
-			this.projectionMatrix.copy( source.projectionMatrix );
+		this.map = source.map;
+
+		this.lightMap = source.lightMap;
+		this.lightMapIntensity = source.lightMapIntensity;
+
+		this.aoMap = source.aoMap;
+		this.aoMapIntensity = source.aoMapIntensity;
+
+		this.specularMap = source.specularMap;
+
+		this.alphaMap = source.alphaMap;
+
+		this.envMap = source.envMap;
+		this.combine = source.combine;
+		this.reflectivity = source.reflectivity;
+		this.refractionRatio = source.refractionRatio;
+
+		this.wireframe = source.wireframe;
+		this.wireframeLinewidth = source.wireframeLinewidth;
+		this.wireframeLinecap = source.wireframeLinecap;
+		this.wireframeLinejoin = source.wireframeLinejoin;
+
+		this.skinning = source.skinning;
+		this.morphTargets = source.morphTargets;
+
+		return this;
+
+	};
+
+	/**
+	 * @author bhouston / http://clara.io
+	 */
+
+	function Ray( origin, direction ) {
+
+		this.origin = ( origin !== undefined ) ? origin : new Vector3();
+		this.direction = ( direction !== undefined ) ? direction : new Vector3();
+
+	}
+
+	Object.assign( Ray.prototype, {
+
+		set: function ( origin, direction ) {
+
+			this.origin.copy( origin );
+			this.direction.copy( direction );
 
 			return this;
 
 		},
-
-		getWorldDirection: function () {
-
-			var quaternion = new Quaternion();
-
-			return function getWorldDirection( optionalTarget ) {
-
-				var result = optionalTarget || new Vector3();
-
-				this.getWorldQuaternion( quaternion );
-
-				return result.set( 0, 0, - 1 ).applyQuaternion( quaternion );
-
-			};
-
-		}(),
 
 		clone: function () {
 
 			return new this.constructor().copy( this );
 
-		}
+		},
 
-	} );
+		copy: function ( ray ) {
 
-	/**
-	 * @author mrdoob / http://mrdoob.com/
-	 * @author greggman / http://games.greggman.com/
-	 * @author zz85 / http://www.lab4games.net/zz85/blog
-	 * @author tschw
-	 */
-
-	function PerspectiveCamera( fov, aspect, near, far ) {
-
-		Camera.call( this );
-
-		this.type = 'PerspectiveCamera';
-
-		this.fov = fov !== undefined ? fov : 50;
-		this.zoom = 1;
-
-		this.near = near !== undefined ? near : 0.1;
-		this.far = far !== undefined ? far : 2000;
-		this.focus = 10;
-
-		this.aspect = aspect !== undefined ? aspect : 1;
-		this.view = null;
-
-		this.filmGauge = 35;	// width of the film (default in millimeters)
-		this.filmOffset = 0;	// horizontal film offset (same unit as gauge)
-
-		this.updateProjectionMatrix();
-
-	}
-
-	PerspectiveCamera.prototype = Object.assign( Object.create( Camera.prototype ), {
-
-		constructor: PerspectiveCamera,
-
-		isPerspectiveCamera: true,
-
-		copy: function ( source ) {
-
-			Camera.prototype.copy.call( this, source );
-
-			this.fov = source.fov;
-			this.zoom = source.zoom;
-
-			this.near = source.near;
-			this.far = source.far;
-			this.focus = source.focus;
-
-			this.aspect = source.aspect;
-			this.view = source.view === null ? null : Object.assign( {}, source.view );
-
-			this.filmGauge = source.filmGauge;
-			this.filmOffset = source.filmOffset;
+			this.origin.copy( ray.origin );
+			this.direction.copy( ray.direction );
 
 			return this;
 
 		},
 
-		/**
-		 * Sets the FOV by focal length in respect to the current .filmGauge.
-		 *
-		 * The default film gauge is 35, so that the focal length can be specified for
-		 * a 35mm (full frame) camera.
-		 *
-		 * Values for focal length and film gauge must have the same unit.
-		 */
-		setFocalLength: function ( focalLength ) {
+		at: function ( t, optionalTarget ) {
 
-			// see http://www.bobatkins.com/photography/technical/field_of_view.html
-			var vExtentSlope = 0.5 * this.getFilmHeight() / focalLength;
+			var result = optionalTarget || new Vector3();
 
-			this.fov = _Math.RAD2DEG * 2 * Math.atan( vExtentSlope );
-			this.updateProjectionMatrix();
+			return result.copy( this.direction ).multiplyScalar( t ).add( this.origin );
 
 		},
 
-		/**
-		 * Calculates the focal length from the current .fov and .filmGauge.
-		 */
-		getFocalLength: function () {
+		lookAt: function ( v ) {
 
-			var vExtentSlope = Math.tan( _Math.DEG2RAD * 0.5 * this.fov );
-
-			return 0.5 * this.getFilmHeight() / vExtentSlope;
-
-		},
-
-		getEffectiveFOV: function () {
-
-			return _Math.RAD2DEG * 2 * Math.atan(
-					Math.tan( _Math.DEG2RAD * 0.5 * this.fov ) / this.zoom );
-
-		},
-
-		getFilmWidth: function () {
-
-			// film not completely covered in portrait format (aspect < 1)
-			return this.filmGauge * Math.min( this.aspect, 1 );
-
-		},
-
-		getFilmHeight: function () {
-
-			// film not completely covered in landscape format (aspect > 1)
-			return this.filmGauge / Math.max( this.aspect, 1 );
-
-		},
-
-		/**
-		 * Sets an offset in a larger frustum. This is useful for multi-window or
-		 * multi-monitor/multi-machine setups.
-		 *
-		 * For example, if you have 3x2 monitors and each monitor is 1920x1080 and
-		 * the monitors are in grid like this
-		 *
-		 *   +---+---+---+
-		 *   | A | B | C |
-		 *   +---+---+---+
-		 *   | D | E | F |
-		 *   +---+---+---+
-		 *
-		 * then for each monitor you would call it like this
-		 *
-		 *   var w = 1920;
-		 *   var h = 1080;
-		 *   var fullWidth = w * 3;
-		 *   var fullHeight = h * 2;
-		 *
-		 *   --A--
-		 *   camera.setOffset( fullWidth, fullHeight, w * 0, h * 0, w, h );
-		 *   --B--
-		 *   camera.setOffset( fullWidth, fullHeight, w * 1, h * 0, w, h );
-		 *   --C--
-		 *   camera.setOffset( fullWidth, fullHeight, w * 2, h * 0, w, h );
-		 *   --D--
-		 *   camera.setOffset( fullWidth, fullHeight, w * 0, h * 1, w, h );
-		 *   --E--
-		 *   camera.setOffset( fullWidth, fullHeight, w * 1, h * 1, w, h );
-		 *   --F--
-		 *   camera.setOffset( fullWidth, fullHeight, w * 2, h * 1, w, h );
-		 *
-		 *   Note there is no reason monitors have to be the same size or in a grid.
-		 */
-		setViewOffset: function ( fullWidth, fullHeight, x, y, width, height ) {
-
-			this.aspect = fullWidth / fullHeight;
-
-			this.view = {
-				fullWidth: fullWidth,
-				fullHeight: fullHeight,
-				offsetX: x,
-				offsetY: y,
-				width: width,
-				height: height
-			};
-
-			this.updateProjectionMatrix();
-
-		},
-
-		clearViewOffset: function () {
-
-			this.view = null;
-			this.updateProjectionMatrix();
-
-		},
-
-		updateProjectionMatrix: function () {
-
-			var near = this.near,
-				top = near * Math.tan(
-						_Math.DEG2RAD * 0.5 * this.fov ) / this.zoom,
-				height = 2 * top,
-				width = this.aspect * height,
-				left = - 0.5 * width,
-				view = this.view;
-
-			if ( view !== null ) {
-
-				var fullWidth = view.fullWidth,
-					fullHeight = view.fullHeight;
-
-				left += view.offsetX * width / fullWidth;
-				top -= view.offsetY * height / fullHeight;
-				width *= view.width / fullWidth;
-				height *= view.height / fullHeight;
-
-			}
-
-			var skew = this.filmOffset;
-			if ( skew !== 0 ) left += near * skew / this.getFilmWidth();
-
-			this.projectionMatrix.makePerspective( left, left + width, top, top - height, near, this.far );
-
-		},
-
-		toJSON: function ( meta ) {
-
-			var data = Object3D.prototype.toJSON.call( this, meta );
-
-			data.object.fov = this.fov;
-			data.object.zoom = this.zoom;
-
-			data.object.near = this.near;
-			data.object.far = this.far;
-			data.object.focus = this.focus;
-
-			data.object.aspect = this.aspect;
-
-			if ( this.view !== null ) data.object.view = Object.assign( {}, this.view );
-
-			data.object.filmGauge = this.filmGauge;
-			data.object.filmOffset = this.filmOffset;
-
-			return data;
-
-		}
-
-	} );
-
-	/**
-	 * @author alteredq / http://alteredqualia.com/
-	 * @author arose / http://github.com/arose
-	 */
-
-	function OrthographicCamera( left, right, top, bottom, near, far ) {
-
-		Camera.call( this );
-
-		this.type = 'OrthographicCamera';
-
-		this.zoom = 1;
-		this.view = null;
-
-		this.left = left;
-		this.right = right;
-		this.top = top;
-		this.bottom = bottom;
-
-		this.near = ( near !== undefined ) ? near : 0.1;
-		this.far = ( far !== undefined ) ? far : 2000;
-
-		this.updateProjectionMatrix();
-
-	}
-
-	OrthographicCamera.prototype = Object.assign( Object.create( Camera.prototype ), {
-
-		constructor: OrthographicCamera,
-
-		isOrthographicCamera: true,
-
-		copy: function ( source ) {
-
-			Camera.prototype.copy.call( this, source );
-
-			this.left = source.left;
-			this.right = source.right;
-			this.top = source.top;
-			this.bottom = source.bottom;
-			this.near = source.near;
-			this.far = source.far;
-
-			this.zoom = source.zoom;
-			this.view = source.view === null ? null : Object.assign( {}, source.view );
+			this.direction.copy( v ).sub( this.origin ).normalize();
 
 			return this;
 
 		},
 
-		setViewOffset: function( fullWidth, fullHeight, x, y, width, height ) {
+		recast: function () {
 
-			this.view = {
-				fullWidth: fullWidth,
-				fullHeight: fullHeight,
-				offsetX: x,
-				offsetY: y,
-				width: width,
-				height: height
+			var v1 = new Vector3();
+
+			return function recast( t ) {
+
+				this.origin.copy( this.at( t, v1 ) );
+
+				return this;
+
 			};
 
-			this.updateProjectionMatrix();
+		}(),
 
-		},
+		closestPointToPoint: function ( point, optionalTarget ) {
 
-		clearViewOffset: function() {
+			var result = optionalTarget || new Vector3();
+			result.subVectors( point, this.origin );
+			var directionDistance = result.dot( this.direction );
 
-			this.view = null;
-			this.updateProjectionMatrix();
+			if ( directionDistance < 0 ) {
 
-		},
-
-		updateProjectionMatrix: function () {
-
-			var dx = ( this.right - this.left ) / ( 2 * this.zoom );
-			var dy = ( this.top - this.bottom ) / ( 2 * this.zoom );
-			var cx = ( this.right + this.left ) / 2;
-			var cy = ( this.top + this.bottom ) / 2;
-
-			var left = cx - dx;
-			var right = cx + dx;
-			var top = cy + dy;
-			var bottom = cy - dy;
-
-			if ( this.view !== null ) {
-
-				var zoomW = this.zoom / ( this.view.width / this.view.fullWidth );
-				var zoomH = this.zoom / ( this.view.height / this.view.fullHeight );
-				var scaleW = ( this.right - this.left ) / this.view.width;
-				var scaleH = ( this.top - this.bottom ) / this.view.height;
-
-				left += scaleW * ( this.view.offsetX / zoomW );
-				right = left + scaleW * ( this.view.width / zoomW );
-				top -= scaleH * ( this.view.offsetY / zoomH );
-				bottom = top - scaleH * ( this.view.height / zoomH );
+				return result.copy( this.origin );
 
 			}
 
-			this.projectionMatrix.makeOrthographic( left, right, top, bottom, this.near, this.far );
+			return result.copy( this.direction ).multiplyScalar( directionDistance ).add( this.origin );
 
 		},
 
-		toJSON: function ( meta ) {
+		distanceToPoint: function ( point ) {
 
-			var data = Object3D.prototype.toJSON.call( this, meta );
+			return Math.sqrt( this.distanceSqToPoint( point ) );
 
-			data.object.zoom = this.zoom;
-			data.object.left = this.left;
-			data.object.right = this.right;
-			data.object.top = this.top;
-			data.object.bottom = this.bottom;
-			data.object.near = this.near;
-			data.object.far = this.far;
+		},
 
-			if ( this.view !== null ) data.object.view = Object.assign( {}, this.view );
+		distanceSqToPoint: function () {
 
-			return data;
+			var v1 = new Vector3();
 
-		}
+			return function distanceSqToPoint( point ) {
 
-	} );
+				var directionDistance = v1.subVectors( point, this.origin ).dot( this.direction );
 
-	/**
-	 * @author mrdoob / http://mrdoob.com/
-	 */
+				// point behind the ray
 
-	function WebGLAttributes( gl ) {
+				if ( directionDistance < 0 ) {
 
-		var buffers = {};
+					return this.origin.distanceToSquared( point );
 
-		function createBuffer( attribute, bufferType ) {
+				}
 
-			var array = attribute.array;
-			var usage = attribute.dynamic ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW;
+				v1.copy( this.direction ).multiplyScalar( directionDistance ).add( this.origin );
 
-			var buffer = gl.createBuffer();
+				return v1.distanceToSquared( point );
 
-			gl.bindBuffer( bufferType, buffer );
-			gl.bufferData( bufferType, array, usage );
+			};
 
-			attribute.onUploadCallback();
+		}(),
 
-			var type = gl.FLOAT;
+		distanceSqToSegment: function () {
 
-			if ( array instanceof Float32Array ) {
+			var segCenter = new Vector3();
+			var segDir = new Vector3();
+			var diff = new Vector3();
 
-				type = gl.FLOAT;
+			return function distanceSqToSegment( v0, v1, optionalPointOnRay, optionalPointOnSegment ) {
 
-			} else if ( array instanceof Float64Array ) {
+				// from http://www.geometrictools.com/GTEngine/Include/Mathematics/GteDistRaySegment.h
+				// It returns the min distance between the ray and the segment
+				// defined by v0 and v1
+				// It can also set two optional targets :
+				// - The closest point on the ray
+				// - The closest point on the segment
 
-				console.warn( "Unsupported data buffer format: Float64Array" );
+				segCenter.copy( v0 ).add( v1 ).multiplyScalar( 0.5 );
+				segDir.copy( v1 ).sub( v0 ).normalize();
+				diff.copy( this.origin ).sub( segCenter );
 
-			} else if ( array instanceof Uint16Array ) {
+				var segExtent = v0.distanceTo( v1 ) * 0.5;
+				var a01 = - this.direction.dot( segDir );
+				var b0 = diff.dot( this.direction );
+				var b1 = - diff.dot( segDir );
+				var c = diff.lengthSq();
+				var det = Math.abs( 1 - a01 * a01 );
+				var s0, s1, sqrDist, extDet;
 
-				type = gl.UNSIGNED_SHORT;
+				if ( det > 0 ) {
 
-			} else if ( array instanceof Int16Array ) {
+					// The ray and segment are not parallel.
 
-				type = gl.SHORT;
+					s0 = a01 * b1 - b0;
+					s1 = a01 * b0 - b1;
+					extDet = segExtent * det;
 
-			} else if ( array instanceof Uint32Array ) {
+					if ( s0 >= 0 ) {
 
-				type = gl.UNSIGNED_INT;
+						if ( s1 >= - extDet ) {
 
-			} else if ( array instanceof Int32Array ) {
+							if ( s1 <= extDet ) {
 
-				type = gl.INT;
+								// region 0
+								// Minimum at interior points of ray and segment.
 
-			} else if ( array instanceof Int8Array ) {
+								var invDet = 1 / det;
+								s0 *= invDet;
+								s1 *= invDet;
+								sqrDist = s0 * ( s0 + a01 * s1 + 2 * b0 ) + s1 * ( a01 * s0 + s1 + 2 * b1 ) + c;
 
-				type = gl.BYTE;
+							} else {
 
-			} else if ( array instanceof Uint8Array ) {
+								// region 1
 
-				type = gl.UNSIGNED_BYTE;
+								s1 = segExtent;
+								s0 = Math.max( 0, - ( a01 * s1 + b0 ) );
+								sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
+
+							}
+
+						} else {
+
+							// region 5
+
+							s1 = - segExtent;
+							s0 = Math.max( 0, - ( a01 * s1 + b0 ) );
+							sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
+
+						}
+
+					} else {
+
+						if ( s1 <= - extDet ) {
+
+							// region 4
+
+							s0 = Math.max( 0, - ( - a01 * segExtent + b0 ) );
+							s1 = ( s0 > 0 ) ? - segExtent : Math.min( Math.max( - segExtent, - b1 ), segExtent );
+							sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
+
+						} else if ( s1 <= extDet ) {
+
+							// region 3
+
+							s0 = 0;
+							s1 = Math.min( Math.max( - segExtent, - b1 ), segExtent );
+							sqrDist = s1 * ( s1 + 2 * b1 ) + c;
+
+						} else {
+
+							// region 2
+
+							s0 = Math.max( 0, - ( a01 * segExtent + b0 ) );
+							s1 = ( s0 > 0 ) ? segExtent : Math.min( Math.max( - segExtent, - b1 ), segExtent );
+							sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
+
+						}
+
+					}
+
+				} else {
+
+					// Ray and segment are parallel.
+
+					s1 = ( a01 > 0 ) ? - segExtent : segExtent;
+					s0 = Math.max( 0, - ( a01 * s1 + b0 ) );
+					sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
+
+				}
+
+				if ( optionalPointOnRay ) {
+
+					optionalPointOnRay.copy( this.direction ).multiplyScalar( s0 ).add( this.origin );
+
+				}
+
+				if ( optionalPointOnSegment ) {
+
+					optionalPointOnSegment.copy( segDir ).multiplyScalar( s1 ).add( segCenter );
+
+				}
+
+				return sqrDist;
+
+			};
+
+		}(),
+
+		intersectSphere: function () {
+
+			var v1 = new Vector3();
+
+			return function intersectSphere( sphere, optionalTarget ) {
+
+				v1.subVectors( sphere.center, this.origin );
+				var tca = v1.dot( this.direction );
+				var d2 = v1.dot( v1 ) - tca * tca;
+				var radius2 = sphere.radius * sphere.radius;
+
+				if ( d2 > radius2 ) return null;
+
+				var thc = Math.sqrt( radius2 - d2 );
+
+				// t0 = first intersect point - entrance on front of sphere
+				var t0 = tca - thc;
+
+				// t1 = second intersect point - exit point on back of sphere
+				var t1 = tca + thc;
+
+				// test to see if both t0 and t1 are behind the ray - if so, return null
+				if ( t0 < 0 && t1 < 0 ) return null;
+
+				// test to see if t0 is behind the ray:
+				// if it is, the ray is inside the sphere, so return the second exit point scaled by t1,
+				// in order to always return an intersect point that is in front of the ray.
+				if ( t0 < 0 ) return this.at( t1, optionalTarget );
+
+				// else t0 is in front of the ray, so return the first collision point scaled by t0
+				return this.at( t0, optionalTarget );
+
+			};
+
+		}(),
+
+		intersectsSphere: function ( sphere ) {
+
+			return this.distanceToPoint( sphere.center ) <= sphere.radius;
+
+		},
+
+		distanceToPlane: function ( plane ) {
+
+			var denominator = plane.normal.dot( this.direction );
+
+			if ( denominator === 0 ) {
+
+				// line is coplanar, return origin
+				if ( plane.distanceToPoint( this.origin ) === 0 ) {
+
+					return 0;
+
+				}
+
+				// Null is preferable to undefined since undefined means.... it is undefined
+
+				return null;
 
 			}
 
-			return {
-				buffer: buffer,
-				type: type,
-				bytesPerElement: array.BYTES_PER_ELEMENT,
-				version: attribute.version
-			};
+			var t = - ( this.origin.dot( plane.normal ) + plane.constant ) / denominator;
 
-		}
+			// Return if the ray never intersects the plane
 
-		function updateBuffer( buffer, attribute, bufferType ) {
+			return t >= 0 ? t :  null;
 
-			var array = attribute.array;
-			var updateRange = attribute.updateRange;
+		},
 
-			gl.bindBuffer( bufferType, buffer );
+		intersectPlane: function ( plane, optionalTarget ) {
 
-			if ( attribute.dynamic === false ) {
+			var t = this.distanceToPlane( plane );
 
-				gl.bufferData( bufferType, array, gl.STATIC_DRAW );
+			if ( t === null ) {
 
-			} else if ( updateRange.count === - 1 ) {
+				return null;
 
-				// Not using update ranges
+			}
 
-				gl.bufferSubData( bufferType, 0, array );
+			return this.at( t, optionalTarget );
 
-			} else if ( updateRange.count === 0 ) {
+		},
 
-				console.error( 'THREE.WebGLObjects.updateBuffer: dynamic THREE.BufferAttribute marked as needsUpdate but updateRange.count is 0, ensure you are using set methods or updating manually.' );
+		intersectsPlane: function ( plane ) {
+
+			// check if the ray lies on the plane first
+
+			var distToPoint = plane.distanceToPoint( this.origin );
+
+			if ( distToPoint === 0 ) {
+
+				return true;
+
+			}
+
+			var denominator = plane.normal.dot( this.direction );
+
+			if ( denominator * distToPoint < 0 ) {
+
+				return true;
+
+			}
+
+			// ray origin is behind the plane (and is pointing behind it)
+
+			return false;
+
+		},
+
+		intersectBox: function ( box, optionalTarget ) {
+
+			var tmin, tmax, tymin, tymax, tzmin, tzmax;
+
+			var invdirx = 1 / this.direction.x,
+				invdiry = 1 / this.direction.y,
+				invdirz = 1 / this.direction.z;
+
+			var origin = this.origin;
+
+			if ( invdirx >= 0 ) {
+
+				tmin = ( box.min.x - origin.x ) * invdirx;
+				tmax = ( box.max.x - origin.x ) * invdirx;
 
 			} else {
 
-				gl.bufferSubData( bufferType, updateRange.offset * array.BYTES_PER_ELEMENT,
-					array.subarray( updateRange.offset, updateRange.offset + updateRange.count ) );
+				tmin = ( box.max.x - origin.x ) * invdirx;
+				tmax = ( box.min.x - origin.x ) * invdirx;
 
-				updateRange.count = 0; // reset range
+			}
+
+			if ( invdiry >= 0 ) {
+
+				tymin = ( box.min.y - origin.y ) * invdiry;
+				tymax = ( box.max.y - origin.y ) * invdiry;
+
+			} else {
+
+				tymin = ( box.max.y - origin.y ) * invdiry;
+				tymax = ( box.min.y - origin.y ) * invdiry;
+
+			}
+
+			if ( ( tmin > tymax ) || ( tymin > tmax ) ) return null;
+
+			// These lines also handle the case where tmin or tmax is NaN
+			// (result of 0 * Infinity). x !== x returns true if x is NaN
+
+			if ( tymin > tmin || tmin !== tmin ) tmin = tymin;
+
+			if ( tymax < tmax || tmax !== tmax ) tmax = tymax;
+
+			if ( invdirz >= 0 ) {
+
+				tzmin = ( box.min.z - origin.z ) * invdirz;
+				tzmax = ( box.max.z - origin.z ) * invdirz;
+
+			} else {
+
+				tzmin = ( box.max.z - origin.z ) * invdirz;
+				tzmax = ( box.min.z - origin.z ) * invdirz;
+
+			}
+
+			if ( ( tmin > tzmax ) || ( tzmin > tmax ) ) return null;
+
+			if ( tzmin > tmin || tmin !== tmin ) tmin = tzmin;
+
+			if ( tzmax < tmax || tmax !== tmax ) tmax = tzmax;
+
+			//return point closest to the ray (positive side)
+
+			if ( tmax < 0 ) return null;
+
+			return this.at( tmin >= 0 ? tmin : tmax, optionalTarget );
+
+		},
+
+		intersectsBox: ( function () {
+
+			var v = new Vector3();
+
+			return function intersectsBox( box ) {
+
+				return this.intersectBox( box, v ) !== null;
+
+			};
+
+		} )(),
+
+		intersectTriangle: function () {
+
+			// Compute the offset origin, edges, and normal.
+			var diff = new Vector3();
+			var edge1 = new Vector3();
+			var edge2 = new Vector3();
+			var normal = new Vector3();
+
+			return function intersectTriangle( a, b, c, backfaceCulling, optionalTarget ) {
+
+				// from http://www.geometrictools.com/GTEngine/Include/Mathematics/GteIntrRay3Triangle3.h
+
+				edge1.subVectors( b, a );
+				edge2.subVectors( c, a );
+				normal.crossVectors( edge1, edge2 );
+
+				// Solve Q + t*D = b1*E1 + b2*E2 (Q = kDiff, D = ray direction,
+				// E1 = kEdge1, E2 = kEdge2, N = Cross(E1,E2)) by
+				//   |Dot(D,N)|*b1 = sign(Dot(D,N))*Dot(D,Cross(Q,E2))
+				//   |Dot(D,N)|*b2 = sign(Dot(D,N))*Dot(D,Cross(E1,Q))
+				//   |Dot(D,N)|*t = -sign(Dot(D,N))*Dot(Q,N)
+				var DdN = this.direction.dot( normal );
+				var sign;
+
+				if ( DdN > 0 ) {
+
+					if ( backfaceCulling ) return null;
+					sign = 1;
+
+				} else if ( DdN < 0 ) {
+
+					sign = - 1;
+					DdN = - DdN;
+
+				} else {
+
+					return null;
+
+				}
+
+				diff.subVectors( this.origin, a );
+				var DdQxE2 = sign * this.direction.dot( edge2.crossVectors( diff, edge2 ) );
+
+				// b1 < 0, no intersection
+				if ( DdQxE2 < 0 ) {
+
+					return null;
+
+				}
+
+				var DdE1xQ = sign * this.direction.dot( edge1.cross( diff ) );
+
+				// b2 < 0, no intersection
+				if ( DdE1xQ < 0 ) {
+
+					return null;
+
+				}
+
+				// b1+b2 > 1, no intersection
+				if ( DdQxE2 + DdE1xQ > DdN ) {
+
+					return null;
+
+				}
+
+				// Line intersects triangle, check if ray does.
+				var QdN = - sign * diff.dot( normal );
+
+				// t < 0, no intersection
+				if ( QdN < 0 ) {
+
+					return null;
+
+				}
+
+				// Ray intersects triangle.
+				return this.at( QdN / DdN, optionalTarget );
+
+			};
+
+		}(),
+
+		applyMatrix4: function ( matrix4 ) {
+
+			this.origin.applyMatrix4( matrix4 );
+			this.direction.transformDirection( matrix4 );
+
+			return this;
+
+		},
+
+		equals: function ( ray ) {
+
+			return ray.origin.equals( this.origin ) && ray.direction.equals( this.direction );
+
+		}
+
+	} );
+
+	/**
+	 * @author bhouston / http://clara.io
+	 */
+
+	function Line3( start, end ) {
+
+		this.start = ( start !== undefined ) ? start : new Vector3();
+		this.end = ( end !== undefined ) ? end : new Vector3();
+
+	}
+
+	Object.assign( Line3.prototype, {
+
+		set: function ( start, end ) {
+
+			this.start.copy( start );
+			this.end.copy( end );
+
+			return this;
+
+		},
+
+		clone: function () {
+
+			return new this.constructor().copy( this );
+
+		},
+
+		copy: function ( line ) {
+
+			this.start.copy( line.start );
+			this.end.copy( line.end );
+
+			return this;
+
+		},
+
+		getCenter: function ( optionalTarget ) {
+
+			var result = optionalTarget || new Vector3();
+			return result.addVectors( this.start, this.end ).multiplyScalar( 0.5 );
+
+		},
+
+		delta: function ( optionalTarget ) {
+
+			var result = optionalTarget || new Vector3();
+			return result.subVectors( this.end, this.start );
+
+		},
+
+		distanceSq: function () {
+
+			return this.start.distanceToSquared( this.end );
+
+		},
+
+		distance: function () {
+
+			return this.start.distanceTo( this.end );
+
+		},
+
+		at: function ( t, optionalTarget ) {
+
+			var result = optionalTarget || new Vector3();
+
+			return this.delta( result ).multiplyScalar( t ).add( this.start );
+
+		},
+
+		closestPointToPointParameter: function () {
+
+			var startP = new Vector3();
+			var startEnd = new Vector3();
+
+			return function closestPointToPointParameter( point, clampToLine ) {
+
+				startP.subVectors( point, this.start );
+				startEnd.subVectors( this.end, this.start );
+
+				var startEnd2 = startEnd.dot( startEnd );
+				var startEnd_startP = startEnd.dot( startP );
+
+				var t = startEnd_startP / startEnd2;
+
+				if ( clampToLine ) {
+
+					t = _Math.clamp( t, 0, 1 );
+
+				}
+
+				return t;
+
+			};
+
+		}(),
+
+		closestPointToPoint: function ( point, clampToLine, optionalTarget ) {
+
+			var t = this.closestPointToPointParameter( point, clampToLine );
+
+			var result = optionalTarget || new Vector3();
+
+			return this.delta( result ).multiplyScalar( t ).add( this.start );
+
+		},
+
+		applyMatrix4: function ( matrix ) {
+
+			this.start.applyMatrix4( matrix );
+			this.end.applyMatrix4( matrix );
+
+			return this;
+
+		},
+
+		equals: function ( line ) {
+
+			return line.start.equals( this.start ) && line.end.equals( this.end );
+
+		}
+
+	} );
+
+	/**
+	 * @author bhouston / http://clara.io
+	 * @author mrdoob / http://mrdoob.com/
+	 */
+
+	function Triangle( a, b, c ) {
+
+		this.a = ( a !== undefined ) ? a : new Vector3();
+		this.b = ( b !== undefined ) ? b : new Vector3();
+		this.c = ( c !== undefined ) ? c : new Vector3();
+
+	}
+
+	Object.assign( Triangle, {
+
+		normal: function () {
+
+			var v0 = new Vector3();
+
+			return function normal( a, b, c, optionalTarget ) {
+
+				var result = optionalTarget || new Vector3();
+
+				result.subVectors( c, b );
+				v0.subVectors( a, b );
+				result.cross( v0 );
+
+				var resultLengthSq = result.lengthSq();
+				if ( resultLengthSq > 0 ) {
+
+					return result.multiplyScalar( 1 / Math.sqrt( resultLengthSq ) );
+
+				}
+
+				return result.set( 0, 0, 0 );
+
+			};
+
+		}(),
+
+		// static/instance method to calculate barycentric coordinates
+		// based on: http://www.blackpawn.com/texts/pointinpoly/default.html
+		barycoordFromPoint: function () {
+
+			var v0 = new Vector3();
+			var v1 = new Vector3();
+			var v2 = new Vector3();
+
+			return function barycoordFromPoint( point, a, b, c, optionalTarget ) {
+
+				v0.subVectors( c, a );
+				v1.subVectors( b, a );
+				v2.subVectors( point, a );
+
+				var dot00 = v0.dot( v0 );
+				var dot01 = v0.dot( v1 );
+				var dot02 = v0.dot( v2 );
+				var dot11 = v1.dot( v1 );
+				var dot12 = v1.dot( v2 );
+
+				var denom = ( dot00 * dot11 - dot01 * dot01 );
+
+				var result = optionalTarget || new Vector3();
+
+				// collinear or singular triangle
+				if ( denom === 0 ) {
+
+					// arbitrary location outside of triangle?
+					// not sure if this is the best idea, maybe should be returning undefined
+					return result.set( - 2, - 1, - 1 );
+
+				}
+
+				var invDenom = 1 / denom;
+				var u = ( dot11 * dot02 - dot01 * dot12 ) * invDenom;
+				var v = ( dot00 * dot12 - dot01 * dot02 ) * invDenom;
+
+				// barycentric coordinates must always sum to 1
+				return result.set( 1 - u - v, v, u );
+
+			};
+
+		}(),
+
+		containsPoint: function () {
+
+			var v1 = new Vector3();
+
+			return function containsPoint( point, a, b, c ) {
+
+				var result = Triangle.barycoordFromPoint( point, a, b, c, v1 );
+
+				return ( result.x >= 0 ) && ( result.y >= 0 ) && ( ( result.x + result.y ) <= 1 );
+
+			};
+
+		}()
+
+	} );
+
+	Object.assign( Triangle.prototype, {
+
+		set: function ( a, b, c ) {
+
+			this.a.copy( a );
+			this.b.copy( b );
+			this.c.copy( c );
+
+			return this;
+
+		},
+
+		setFromPointsAndIndices: function ( points, i0, i1, i2 ) {
+
+			this.a.copy( points[ i0 ] );
+			this.b.copy( points[ i1 ] );
+			this.c.copy( points[ i2 ] );
+
+			return this;
+
+		},
+
+		clone: function () {
+
+			return new this.constructor().copy( this );
+
+		},
+
+		copy: function ( triangle ) {
+
+			this.a.copy( triangle.a );
+			this.b.copy( triangle.b );
+			this.c.copy( triangle.c );
+
+			return this;
+
+		},
+
+		area: function () {
+
+			var v0 = new Vector3();
+			var v1 = new Vector3();
+
+			return function area() {
+
+				v0.subVectors( this.c, this.b );
+				v1.subVectors( this.a, this.b );
+
+				return v0.cross( v1 ).length() * 0.5;
+
+			};
+
+		}(),
+
+		midpoint: function ( optionalTarget ) {
+
+			var result = optionalTarget || new Vector3();
+			return result.addVectors( this.a, this.b ).add( this.c ).multiplyScalar( 1 / 3 );
+
+		},
+
+		normal: function ( optionalTarget ) {
+
+			return Triangle.normal( this.a, this.b, this.c, optionalTarget );
+
+		},
+
+		plane: function ( optionalTarget ) {
+
+			var result = optionalTarget || new Plane();
+
+			return result.setFromCoplanarPoints( this.a, this.b, this.c );
+
+		},
+
+		barycoordFromPoint: function ( point, optionalTarget ) {
+
+			return Triangle.barycoordFromPoint( point, this.a, this.b, this.c, optionalTarget );
+
+		},
+
+		containsPoint: function ( point ) {
+
+			return Triangle.containsPoint( point, this.a, this.b, this.c );
+
+		},
+
+		closestPointToPoint: function () {
+
+			var plane = new Plane();
+			var edgeList = [ new Line3(), new Line3(), new Line3() ];
+			var projectedPoint = new Vector3();
+			var closestPoint = new Vector3();
+
+			return function closestPointToPoint( point, optionalTarget ) {
+
+				var result = optionalTarget || new Vector3();
+				var minDistance = Infinity;
+
+				// project the point onto the plane of the triangle
+
+				plane.setFromCoplanarPoints( this.a, this.b, this.c );
+				plane.projectPoint( point, projectedPoint );
+
+				// check if the projection lies within the triangle
+
+				if( this.containsPoint( projectedPoint ) === true ) {
+
+					// if so, this is the closest point
+
+					result.copy( projectedPoint );
+
+				} else {
+
+					// if not, the point falls outside the triangle. the result is the closest point to the triangle's edges or vertices
+
+					edgeList[ 0 ].set( this.a, this.b );
+					edgeList[ 1 ].set( this.b, this.c );
+					edgeList[ 2 ].set( this.c, this.a );
+
+					for( var i = 0; i < edgeList.length; i ++ ) {
+
+						edgeList[ i ].closestPointToPoint( projectedPoint, true, closestPoint );
+
+						var distance = projectedPoint.distanceToSquared( closestPoint );
+
+						if( distance < minDistance ) {
+
+							minDistance = distance;
+
+							result.copy( closestPoint );
+
+						}
+
+					}
+
+				}
+
+				return result;
+
+			};
+
+		}(),
+
+		equals: function ( triangle ) {
+
+			return triangle.a.equals( this.a ) && triangle.b.equals( this.b ) && triangle.c.equals( this.c );
+
+		}
+
+	} );
+
+	/**
+	 * @author mrdoob / http://mrdoob.com/
+	 * @author alteredq / http://alteredqualia.com/
+	 * @author mikael emtinger / http://gomo.se/
+	 * @author jonobr1 / http://jonobr1.com/
+	 */
+
+	function Mesh( geometry, material ) {
+
+		Object3D.call( this );
+
+		this.type = 'Mesh';
+
+		this.geometry = geometry !== undefined ? geometry : new BufferGeometry();
+		this.material = material !== undefined ? material : new MeshBasicMaterial( { color: Math.random() * 0xffffff } );
+
+		this.drawMode = TrianglesDrawMode;
+
+		this.updateMorphTargets();
+
+	}
+
+	Mesh.prototype = Object.assign( Object.create( Object3D.prototype ), {
+
+		constructor: Mesh,
+
+		isMesh: true,
+
+		setDrawMode: function ( value ) {
+
+			this.drawMode = value;
+
+		},
+
+		copy: function ( source ) {
+
+			Object3D.prototype.copy.call( this, source );
+
+			this.drawMode = source.drawMode;
+
+			return this;
+
+		},
+
+		updateMorphTargets: function () {
+
+			var geometry = this.geometry;
+			var m, ml, name;
+
+			if ( geometry.isBufferGeometry ) {
+
+				var morphAttributes = geometry.morphAttributes;
+				var keys = Object.keys( morphAttributes );
+
+				if ( keys.length > 0 ) {
+
+					var morphAttribute = morphAttributes[ keys[ 0 ] ];
+
+					if ( morphAttribute !== undefined ) {
+
+						this.morphTargetInfluences = [];
+						this.morphTargetDictionary = {};
+
+						for ( m = 0, ml = morphAttribute.length; m < ml; m ++ ) {
+
+							name = morphAttribute[ m ].name || String( m );
+
+							this.morphTargetInfluences.push( 0 );
+							this.morphTargetDictionary[ name ] = m;
+
+						}
+
+					}
+
+				}
+
+			} else {
+
+				var morphTargets = geometry.morphTargets;
+
+				if ( morphTargets !== undefined && morphTargets.length > 0 ) {
+
+					this.morphTargetInfluences = [];
+					this.morphTargetDictionary = {};
+
+					for ( m = 0, ml = morphTargets.length; m < ml; m ++ ) {
+
+						name = morphTargets[ m ].name || String( m );
+
+						this.morphTargetInfluences.push( 0 );
+						this.morphTargetDictionary[ name ] = m;
+
+					}
+
+				}
+
+			}
+
+		},
+
+		raycast: ( function () {
+
+			var inverseMatrix = new Matrix4();
+			var ray = new Ray();
+			var sphere = new Sphere();
+
+			var vA = new Vector3();
+			var vB = new Vector3();
+			var vC = new Vector3();
+
+			var tempA = new Vector3();
+			var tempB = new Vector3();
+			var tempC = new Vector3();
+
+			var uvA = new Vector2();
+			var uvB = new Vector2();
+			var uvC = new Vector2();
+
+			var barycoord = new Vector3();
+
+			var intersectionPoint = new Vector3();
+			var intersectionPointWorld = new Vector3();
+
+			function uvIntersection( point, p1, p2, p3, uv1, uv2, uv3 ) {
+
+				Triangle.barycoordFromPoint( point, p1, p2, p3, barycoord );
+
+				uv1.multiplyScalar( barycoord.x );
+				uv2.multiplyScalar( barycoord.y );
+				uv3.multiplyScalar( barycoord.z );
+
+				uv1.add( uv2 ).add( uv3 );
+
+				return uv1.clone();
+
+			}
+
+			function checkIntersection( object, raycaster, ray, pA, pB, pC, point ) {
+
+				var intersect;
+				var material = object.material;
+
+				if ( material.side === BackSide ) {
+
+					intersect = ray.intersectTriangle( pC, pB, pA, true, point );
+
+				} else {
+
+					intersect = ray.intersectTriangle( pA, pB, pC, material.side !== DoubleSide, point );
+
+				}
+
+				if ( intersect === null ) return null;
+
+				intersectionPointWorld.copy( point );
+				intersectionPointWorld.applyMatrix4( object.matrixWorld );
+
+				var distance = raycaster.ray.origin.distanceTo( intersectionPointWorld );
+
+				if ( distance < raycaster.near || distance > raycaster.far ) return null;
+
+				return {
+					distance: distance,
+					point: intersectionPointWorld.clone(),
+					object: object
+				};
+
+			}
+
+			function checkBufferGeometryIntersection( object, raycaster, ray, position, uv, a, b, c ) {
+
+				vA.fromBufferAttribute( position, a );
+				vB.fromBufferAttribute( position, b );
+				vC.fromBufferAttribute( position, c );
+
+				var intersection = checkIntersection( object, raycaster, ray, vA, vB, vC, intersectionPoint );
+
+				if ( intersection ) {
+
+					if ( uv ) {
+
+						uvA.fromBufferAttribute( uv, a );
+						uvB.fromBufferAttribute( uv, b );
+						uvC.fromBufferAttribute( uv, c );
+
+						intersection.uv = uvIntersection( intersectionPoint, vA, vB, vC, uvA, uvB, uvC );
+
+					}
+
+					intersection.face = new Face3( a, b, c, Triangle.normal( vA, vB, vC ) );
+					intersection.faceIndex = a;
+
+				}
+
+				return intersection;
+
+			}
+
+			return function raycast( raycaster, intersects ) {
+
+				var geometry = this.geometry;
+				var material = this.material;
+				var matrixWorld = this.matrixWorld;
+
+				if ( material === undefined ) return;
+
+				// Checking boundingSphere distance to ray
+
+				if ( geometry.boundingSphere === null ) geometry.computeBoundingSphere();
+
+				sphere.copy( geometry.boundingSphere );
+				sphere.applyMatrix4( matrixWorld );
+
+				if ( raycaster.ray.intersectsSphere( sphere ) === false ) return;
+
+				//
+
+				inverseMatrix.getInverse( matrixWorld );
+				ray.copy( raycaster.ray ).applyMatrix4( inverseMatrix );
+
+				// Check boundingBox before continuing
+
+				if ( geometry.boundingBox !== null ) {
+
+					if ( ray.intersectsBox( geometry.boundingBox ) === false ) return;
+
+				}
+
+				var intersection;
+
+				if ( geometry.isBufferGeometry ) {
+
+					var a, b, c;
+					var index = geometry.index;
+					var position = geometry.attributes.position;
+					var uv = geometry.attributes.uv;
+					var i, l;
+
+					if ( index !== null ) {
+
+						// indexed buffer geometry
+
+						for ( i = 0, l = index.count; i < l; i += 3 ) {
+
+							a = index.getX( i );
+							b = index.getX( i + 1 );
+							c = index.getX( i + 2 );
+
+							intersection = checkBufferGeometryIntersection( this, raycaster, ray, position, uv, a, b, c );
+
+							if ( intersection ) {
+
+								intersection.faceIndex = Math.floor( i / 3 ); // triangle number in indices buffer semantics
+								intersects.push( intersection );
+
+							}
+
+						}
+
+					} else {
+
+						// non-indexed buffer geometry
+
+						for ( i = 0, l = position.count; i < l; i += 3 ) {
+
+							a = i;
+							b = i + 1;
+							c = i + 2;
+
+							intersection = checkBufferGeometryIntersection( this, raycaster, ray, position, uv, a, b, c );
+
+							if ( intersection ) {
+
+								intersection.index = a; // triangle number in positions buffer semantics
+								intersects.push( intersection );
+
+							}
+
+						}
+
+					}
+
+				} else if ( geometry.isGeometry ) {
+
+					var fvA, fvB, fvC;
+					var isMultiMaterial = Array.isArray( material );
+
+					var vertices = geometry.vertices;
+					var faces = geometry.faces;
+					var uvs;
+
+					var faceVertexUvs = geometry.faceVertexUvs[ 0 ];
+					if ( faceVertexUvs.length > 0 ) uvs = faceVertexUvs;
+
+					for ( var f = 0, fl = faces.length; f < fl; f ++ ) {
+
+						var face = faces[ f ];
+						var faceMaterial = isMultiMaterial ? material[ face.materialIndex ] : material;
+
+						if ( faceMaterial === undefined ) continue;
+
+						fvA = vertices[ face.a ];
+						fvB = vertices[ face.b ];
+						fvC = vertices[ face.c ];
+
+						if ( faceMaterial.morphTargets === true ) {
+
+							var morphTargets = geometry.morphTargets;
+							var morphInfluences = this.morphTargetInfluences;
+
+							vA.set( 0, 0, 0 );
+							vB.set( 0, 0, 0 );
+							vC.set( 0, 0, 0 );
+
+							for ( var t = 0, tl = morphTargets.length; t < tl; t ++ ) {
+
+								var influence = morphInfluences[ t ];
+
+								if ( influence === 0 ) continue;
+
+								var targets = morphTargets[ t ].vertices;
+
+								vA.addScaledVector( tempA.subVectors( targets[ face.a ], fvA ), influence );
+								vB.addScaledVector( tempB.subVectors( targets[ face.b ], fvB ), influence );
+								vC.addScaledVector( tempC.subVectors( targets[ face.c ], fvC ), influence );
+
+							}
+
+							vA.add( fvA );
+							vB.add( fvB );
+							vC.add( fvC );
+
+							fvA = vA;
+							fvB = vB;
+							fvC = vC;
+
+						}
+
+						intersection = checkIntersection( this, raycaster, ray, fvA, fvB, fvC, intersectionPoint );
+
+						if ( intersection ) {
+
+							if ( uvs && uvs[ f ] ) {
+
+								var uvs_f = uvs[ f ];
+								uvA.copy( uvs_f[ 0 ] );
+								uvB.copy( uvs_f[ 1 ] );
+								uvC.copy( uvs_f[ 2 ] );
+
+								intersection.uv = uvIntersection( intersectionPoint, fvA, fvB, fvC, uvA, uvB, uvC );
+
+							}
+
+							intersection.face = face;
+							intersection.faceIndex = f;
+							intersects.push( intersection );
+
+						}
+
+					}
+
+				}
+
+			};
+
+		}() ),
+
+		clone: function () {
+
+			return new this.constructor( this.geometry, this.material ).copy( this );
+
+		}
+
+	} );
+
+	/**
+	 * @author mrdoob / http://mrdoob.com/
+	 */
+
+	function WebGLBackground( renderer, state, objects, premultipliedAlpha ) {
+
+		var clearColor = new Color( 0x000000 );
+		var clearAlpha = 0;
+
+		var planeCamera, planeMesh;
+		var boxCamera, boxMesh;
+
+		function render( scene, camera, forceClear ) {
+
+			var background = scene.background;
+
+			if ( background === null ) {
+
+				setClear( clearColor, clearAlpha );
+
+			} else if ( background && background.isColor ) {
+
+				setClear( background, 1 );
+				forceClear = true;
+
+			}
+
+			if ( renderer.autoClear || forceClear ) {
+
+				renderer.clear( renderer.autoClearColor, renderer.autoClearDepth, renderer.autoClearStencil );
+
+			}
+
+			if ( background && background.isCubeTexture ) {
+
+				if ( boxCamera === undefined ) {
+
+					boxCamera = new PerspectiveCamera();
+
+					boxMesh = new Mesh(
+						new BoxBufferGeometry( 5, 5, 5 ),
+						new ShaderMaterial( {
+							uniforms: ShaderLib.cube.uniforms,
+							vertexShader: ShaderLib.cube.vertexShader,
+							fragmentShader: ShaderLib.cube.fragmentShader,
+							side: BackSide,
+							depthTest: false,
+							depthWrite: false,
+							fog: false
+						} )
+					);
+
+				}
+
+				boxCamera.projectionMatrix.copy( camera.projectionMatrix );
+
+				boxCamera.matrixWorld.extractRotation( camera.matrixWorld );
+				boxCamera.matrixWorldInverse.getInverse( boxCamera.matrixWorld );
+
+				boxMesh.material.uniforms[ "tCube" ].value = background;
+				boxMesh.modelViewMatrix.multiplyMatrices( boxCamera.matrixWorldInverse, boxMesh.matrixWorld );
+
+				objects.update( boxMesh );
+
+				renderer.renderBufferDirect( boxCamera, null, boxMesh.geometry, boxMesh.material, boxMesh, null );
+
+			} else if ( background && background.isTexture ) {
+
+				if ( planeCamera === undefined ) {
+
+					planeCamera = new OrthographicCamera( - 1, 1, 1, - 1, 0, 1 );
+
+					planeMesh = new Mesh(
+						new PlaneBufferGeometry( 2, 2 ),
+						new MeshBasicMaterial( { depthTest: false, depthWrite: false, fog: false } )
+					);
+
+				}
+
+				planeMesh.material.map = background;
+
+				objects.update( planeMesh );
+
+				renderer.renderBufferDirect( planeCamera, null, planeMesh.geometry, planeMesh.material, planeMesh, null );
 
 			}
 
 		}
 
-		//
+		function setClear( color, alpha ) {
 
-		function get( attribute ) {
-
-			if ( attribute.isInterleavedBufferAttribute ) attribute = attribute.data;
-
-			return buffers[ attribute.uuid ];
-
-		}
-
-		function remove( attribute ) {
-
-			var data = buffers[ attribute.uuid ];
-
-			if ( data ) {
-
-				gl.deleteBuffer( data.buffer );
-
-				delete buffers[ attribute.uuid ];
-
-			}
-
-		}
-
-		function update( attribute, bufferType ) {
-
-			if ( attribute.isInterleavedBufferAttribute ) attribute = attribute.data;
-
-			var data = buffers[ attribute.uuid ];
-
-			if ( data === undefined ) {
-
-				buffers[ attribute.uuid ] = createBuffer( attribute, bufferType );
-
-			} else if ( data.version < attribute.version ) {
-
-				updateBuffer( data.buffer, attribute, bufferType );
-
-				data.version = attribute.version;
-
-			}
+			state.buffers.color.setClear( color.r, color.g, color.b, alpha, premultipliedAlpha );
 
 		}
 
 		return {
 
-			get: get,
-			remove: remove,
-			update: update
+			getClearColor: function () {
+
+				return clearColor;
+
+			},
+			setClearColor: function ( color, alpha ) {
+
+				clearColor.set( color );
+				clearAlpha = alpha !== undefined ? alpha : 1;
+				setClear( clearColor, clearAlpha );
+
+			},
+			getClearAlpha: function () {
+
+				return clearAlpha;
+
+			},
+			setClearAlpha: function ( alpha ) {
+
+				clearAlpha = alpha;
+				setClear( clearColor, clearAlpha );
+
+			},
+			render: render
 
 		};
 
@@ -31739,32 +36141,18 @@ module.exports = function(THREE, EffectComposer) {
 
 		}
 
-		var type, size;
+		var type, bytesPerElement;
 
-		function setIndex( index ) {
+		function setIndex( value ) {
 
-			if ( index.array instanceof Uint32Array && extensions.get( 'OES_element_index_uint' ) ) {
-
-				type = gl.UNSIGNED_INT;
-				size = 4;
-
-			} else if ( index.array instanceof Uint16Array ) {
-
-				type = gl.UNSIGNED_SHORT;
-				size = 2;
-
-			} else {
-
-				type = gl.UNSIGNED_BYTE;
-				size = 1;
-
-			}
+			type = value.type;
+			bytesPerElement = value.bytesPerElement;
 
 		}
 
 		function render( start, count ) {
 
-			gl.drawElements( mode, count, type, start * size );
+			gl.drawElements( mode, count, type, start * bytesPerElement );
 
 			infoRender.calls ++;
 			infoRender.vertices += count;
@@ -31784,7 +36172,7 @@ module.exports = function(THREE, EffectComposer) {
 
 			}
 
-			extension.drawElementsInstancedANGLE( mode, count, type, start * size, geometry.maxInstancedCount );
+			extension.drawElementsInstancedANGLE( mode, count, type, start * bytesPerElement, geometry.maxInstancedCount );
 
 			infoRender.calls ++;
 			infoRender.vertices += count * geometry.maxInstancedCount;
@@ -32436,15 +36824,15 @@ module.exports = function(THREE, EffectComposer) {
 
 	}
 
-	function WebGLProgram( renderer, code, material, parameters ) {
+	function WebGLProgram( renderer, code, material, shader, parameters ) {
 
 		var gl = renderer.context;
 
 		var extensions = material.extensions;
 		var defines = material.defines;
 
-		var vertexShader = material.__webglShader.vertexShader;
-		var fragmentShader = material.__webglShader.fragmentShader;
+		var vertexShader = shader.vertexShader;
+		var fragmentShader = shader.fragmentShader;
 
 		var shadowMapTypeDefine = 'SHADOWMAP_TYPE_BASIC';
 
@@ -32556,7 +36944,7 @@ module.exports = function(THREE, EffectComposer) {
 				'precision ' + parameters.precision + ' float;',
 				'precision ' + parameters.precision + ' int;',
 
-				'#define SHADER_NAME ' + material.__webglShader.name,
+				'#define SHADER_NAME ' + shader.name,
 
 				customDefines,
 
@@ -32663,7 +37051,7 @@ module.exports = function(THREE, EffectComposer) {
 				'precision ' + parameters.precision + ' float;',
 				'precision ' + parameters.precision + ' int;',
 
-				'#define SHADER_NAME ' + material.__webglShader.name,
+				'#define SHADER_NAME ' + shader.name,
 
 				customDefines,
 
@@ -32735,10 +37123,10 @@ module.exports = function(THREE, EffectComposer) {
 
 		}
 
-		vertexShader = parseIncludes( vertexShader, parameters );
+		vertexShader = parseIncludes( vertexShader );
 		vertexShader = replaceLightNums( vertexShader, parameters );
 
-		fragmentShader = parseIncludes( fragmentShader, parameters );
+		fragmentShader = parseIncludes( fragmentShader );
 		fragmentShader = replaceLightNums( fragmentShader, parameters );
 
 		if ( ! material.isShaderMaterial ) {
@@ -33151,11 +37539,15 @@ module.exports = function(THREE, EffectComposer) {
 
 			}
 
+			array.push( material.onBeforeCompile.toString() );
+
+			array.push( renderer.gammaOutput );
+
 			return array.join();
 
 		};
 
-		this.acquireProgram = function ( material, parameters, code ) {
+		this.acquireProgram = function ( material, shader, parameters, code ) {
 
 			var program;
 
@@ -33177,7 +37569,7 @@ module.exports = function(THREE, EffectComposer) {
 
 			if ( program === undefined ) {
 
-				program = new WebGLProgram( renderer, code, material, parameters );
+				program = new WebGLProgram( renderer, code, material, shader, parameters );
 				programs.push( program );
 
 			}
@@ -33274,6 +37666,13 @@ module.exports = function(THREE, EffectComposer) {
 
 			return ( texture.wrapS !== ClampToEdgeWrapping || texture.wrapT !== ClampToEdgeWrapping ) ||
 				( texture.minFilter !== NearestFilter && texture.minFilter !== LinearFilter );
+
+		}
+
+		function textureNeedsGenerateMipmaps( texture, isPowerOfTwo ) {
+
+			return texture.generateMipmaps && isPowerOfTwo &&
+				texture.minFilter !== NearestFilter && texture.minFilter !== LinearFilter;
 
 		}
 
@@ -33514,7 +37913,7 @@ module.exports = function(THREE, EffectComposer) {
 
 					}
 
-					if ( texture.generateMipmaps && isPowerOfTwoImage ) {
+					if ( textureNeedsGenerateMipmaps( texture, isPowerOfTwoImage ) ) {
 
 						_gl.generateMipmap( _gl.TEXTURE_CUBE_MAP );
 
@@ -33676,7 +38075,7 @@ module.exports = function(THREE, EffectComposer) {
 					// (https://www.khronos.org/registry/webgl/extensions/WEBGL_depth_texture/)
 					if ( texture.type !== UnsignedInt248Type ) {
 
-					        console.warn( 'THREE.WebGLRenderer: Use UnsignedInt248Type for DepthStencilFormat DepthTexture.' );
+						console.warn( 'THREE.WebGLRenderer: Use UnsignedInt248Type for DepthStencilFormat DepthTexture.' );
 
 						texture.type = UnsignedInt248Type;
 						glType = paramThreeToGL( texture.type );
@@ -33763,7 +38162,7 @@ module.exports = function(THREE, EffectComposer) {
 
 			}
 
-			if ( texture.generateMipmaps && isPowerOfTwoImage ) _gl.generateMipmap( _gl.TEXTURE_2D );
+			if ( textureNeedsGenerateMipmaps( texture, isPowerOfTwoImage ) ) _gl.generateMipmap( _gl.TEXTURE_2D );
 
 			textureProperties.__version = texture.version;
 
@@ -33941,7 +38340,7 @@ module.exports = function(THREE, EffectComposer) {
 
 				}
 
-				if ( renderTarget.texture.generateMipmaps && isTargetPowerOfTwo ) _gl.generateMipmap( _gl.TEXTURE_CUBE_MAP );
+				if ( textureNeedsGenerateMipmaps( renderTarget.texture, isTargetPowerOfTwo ) ) _gl.generateMipmap( _gl.TEXTURE_CUBE_MAP );
 				state.bindTexture( _gl.TEXTURE_CUBE_MAP, null );
 
 			} else {
@@ -33950,7 +38349,7 @@ module.exports = function(THREE, EffectComposer) {
 				setTextureParameters( _gl.TEXTURE_2D, renderTarget.texture, isTargetPowerOfTwo );
 				setupFrameBufferTexture( renderTargetProperties.__webglFramebuffer, renderTarget, _gl.COLOR_ATTACHMENT0, _gl.TEXTURE_2D );
 
-				if ( renderTarget.texture.generateMipmaps && isTargetPowerOfTwo ) _gl.generateMipmap( _gl.TEXTURE_2D );
+				if ( textureNeedsGenerateMipmaps( renderTarget.texture, isTargetPowerOfTwo ) ) _gl.generateMipmap( _gl.TEXTURE_2D );
 				state.bindTexture( _gl.TEXTURE_2D, null );
 
 			}
@@ -33968,12 +38367,11 @@ module.exports = function(THREE, EffectComposer) {
 		function updateRenderTargetMipmap( renderTarget ) {
 
 			var texture = renderTarget.texture;
+			var isTargetPowerOfTwo = isPowerOfTwo( renderTarget );
 
-			if ( texture.generateMipmaps && isPowerOfTwo( renderTarget ) &&
-					texture.minFilter !== NearestFilter &&
-					texture.minFilter !== LinearFilter ) {
+			if ( textureNeedsGenerateMipmaps( texture, isTargetPowerOfTwo ) ) {
 
-				var target = (renderTarget && renderTarget.isWebGLRenderTargetCube) ? _gl.TEXTURE_CUBE_MAP : _gl.TEXTURE_2D;
+				var target = renderTarget.isWebGLRenderTargetCube ? _gl.TEXTURE_CUBE_MAP : _gl.TEXTURE_2D;
 				var webglTexture = properties.get( texture ).__webglTexture;
 
 				state.bindTexture( target, webglTexture );
@@ -34375,7 +38773,7 @@ module.exports = function(THREE, EffectComposer) {
 
 		var currentScissorTest = null;
 
-		var maxTextures = gl.getParameter( gl.MAX_TEXTURE_IMAGE_UNITS );
+		var maxTextures = gl.getParameter( gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS );
 
 		var version = parseFloat( /^WebGL\ ([0-9])/.exec( gl.getParameter( gl.VERSION ) )[ 1 ] );
 		var lineWidthAvailable = parseFloat( version ) >= 1.0;
@@ -34558,7 +38956,7 @@ module.exports = function(THREE, EffectComposer) {
 
 			}
 
-			if ( blending !== currentBlending || premultipliedAlpha !== currentPremultipledAlpha ) {
+			if ( ( blending !== CustomBlending ) && ( blending !== currentBlending || premultipliedAlpha !== currentPremultipledAlpha ) ) {
 
 				if ( blending === AdditiveBlending ) {
 
@@ -34847,7 +39245,7 @@ module.exports = function(THREE, EffectComposer) {
 
 			} catch ( error ) {
 
-				console.error( error );
+				console.error( 'THREE.WebGLState:', error );
 
 			}
 
@@ -34861,7 +39259,7 @@ module.exports = function(THREE, EffectComposer) {
 
 			} catch ( error ) {
 
-				console.error( error );
+				console.error( 'THREE.WebGLState:', error );
 
 			}
 
@@ -35072,6 +39470,228 @@ module.exports = function(THREE, EffectComposer) {
 			vertexTextures: vertexTextures,
 			floatFragmentTextures: floatFragmentTextures,
 			floatVertexTextures: floatVertexTextures
+
+		};
+
+	}
+
+	/**
+	 * @author mrdoob / http://mrdoob.com/
+	 */
+
+	function ArrayCamera( array ) {
+
+		PerspectiveCamera.call( this );
+
+		this.cameras = array || [];
+
+	}
+
+	ArrayCamera.prototype = Object.assign( Object.create( PerspectiveCamera.prototype ), {
+
+		constructor: ArrayCamera,
+
+		isArrayCamera: true
+
+	} );
+
+	/**
+	 * @author mrdoob / http://mrdoob.com/
+	 */
+
+	function WebVRManager( renderer ) {
+
+		var scope = this;
+
+		var device = null;
+		var frameData = null;
+
+		if ( 'VRFrameData' in window ) {
+
+			frameData = new window.VRFrameData();
+
+		}
+
+		var matrixWorldInverse = new Matrix4();
+
+		var standingMatrix = new Matrix4();
+		var standingMatrixInverse = new Matrix4();
+
+		var cameraL = new PerspectiveCamera();
+		cameraL.bounds = new Vector4( 0.0, 0.0, 0.5, 1.0 );
+		cameraL.layers.enable( 1 );
+
+		var cameraR = new PerspectiveCamera();
+		cameraR.bounds = new Vector4( 0.5, 0.0, 0.5, 1.0 );
+		cameraR.layers.enable( 2 );
+
+		var cameraVR = new ArrayCamera( [ cameraL, cameraR ] );
+		cameraVR.layers.enable( 1 );
+		cameraVR.layers.enable( 2 );
+
+		//
+
+		var currentSize, currentPixelRatio;
+
+		function onVRDisplayPresentChange() {
+
+			if ( device.isPresenting ) {
+
+				var eyeParameters = device.getEyeParameters( 'left' );
+				var renderWidth = eyeParameters.renderWidth;
+				var renderHeight = eyeParameters.renderHeight;
+
+				currentPixelRatio = renderer.getPixelRatio();
+				currentSize = renderer.getSize();
+
+				renderer.setDrawingBufferSize( renderWidth * 2, renderHeight, 1 );
+
+			} else if ( scope.enabled ) {
+
+				renderer.setDrawingBufferSize( currentSize.width, currentSize.height, currentPixelRatio );
+
+			}
+
+		}
+
+		window.addEventListener( 'vrdisplaypresentchange', onVRDisplayPresentChange, false );
+
+		//
+
+		this.enabled = false;
+		this.standing = false;
+
+		this.getDevice = function () {
+
+			return device;
+
+		};
+
+		this.setDevice = function ( value ) {
+
+			if ( value !== undefined ) device = value;
+
+		};
+
+		this.getCamera = function ( camera ) {
+
+			if ( device === null ) return camera;
+
+			device.depthNear = camera.near;
+			device.depthFar = camera.far;
+
+			device.getFrameData( frameData );
+
+			//
+
+			var pose = frameData.pose;
+
+			if ( pose.position !== null ) {
+
+				camera.position.fromArray( pose.position );
+
+			} else {
+
+				camera.position.set( 0, 0, 0 );
+
+			}
+
+			if ( pose.orientation !== null ) {
+
+				camera.quaternion.fromArray( pose.orientation );
+
+			}
+
+			camera.updateMatrixWorld();
+
+			var stageParameters = device.stageParameters;
+
+			if ( this.standing && stageParameters ) {
+
+				standingMatrix.fromArray( stageParameters.sittingToStandingTransform );
+				standingMatrixInverse.getInverse( standingMatrix );
+
+				camera.matrixWorld.multiply( standingMatrix );
+				camera.matrixWorldInverse.multiply( standingMatrixInverse );
+
+			}
+
+			if ( device.isPresenting === false ) return camera;
+
+			//
+
+			cameraVR.matrixWorld.copy( camera.matrixWorld );
+			cameraVR.matrixWorldInverse.copy( camera.matrixWorldInverse );
+
+			cameraL.matrixWorldInverse.fromArray( frameData.leftViewMatrix );
+			cameraR.matrixWorldInverse.fromArray( frameData.rightViewMatrix );
+
+			if ( this.standing && stageParameters ) {
+
+				cameraL.matrixWorldInverse.multiply( standingMatrixInverse );
+				cameraR.matrixWorldInverse.multiply( standingMatrixInverse );
+
+			}
+
+			var parent = camera.parent;
+
+			if ( parent !== null ) {
+
+				matrixWorldInverse.getInverse( parent.matrixWorld );
+
+				cameraL.matrixWorldInverse.multiply( matrixWorldInverse );
+				cameraR.matrixWorldInverse.multiply( matrixWorldInverse );
+
+			}
+
+			// envMap and Mirror needs camera.matrixWorld
+
+			cameraL.matrixWorld.getInverse( cameraL.matrixWorldInverse );
+			cameraR.matrixWorld.getInverse( cameraR.matrixWorldInverse );
+
+			cameraL.projectionMatrix.fromArray( frameData.leftProjectionMatrix );
+			cameraR.projectionMatrix.fromArray( frameData.rightProjectionMatrix );
+
+			// HACK @mrdoob
+			// https://github.com/w3c/webvr/issues/203
+
+			cameraVR.projectionMatrix.copy( cameraL.projectionMatrix );
+
+			//
+
+			var layers = device.getLayers();
+
+			if ( layers.length ) {
+
+				var layer = layers[ 0 ];
+
+				if ( layer.leftBounds !== null && layer.leftBounds.length === 4 ) {
+
+					cameraL.bounds.fromArray( layer.leftBounds );
+
+				}
+
+				if ( layer.rightBounds !== null && layer.rightBounds.length === 4 ) {
+
+					cameraR.bounds.fromArray( layer.rightBounds );
+
+				}
+
+			}
+
+			return cameraVR;
+
+		};
+
+		this.getStandingMatrix = function () {
+
+			return standingMatrix;
+
+		};
+
+		this.submitFrame = function () {
+
+			if ( device && device.isPresenting ) device.submitFrame();
 
 		};
 
@@ -35387,7 +40007,9 @@ module.exports = function(THREE, EffectComposer) {
 			_currentFramebuffer = null,
 			_currentMaterialId = - 1,
 			_currentGeometryProgram = '',
+
 			_currentCamera = null,
+			_currentArrayCamera = null,
 
 			_currentScissor = new Vector4(),
 			_currentScissorTest = null,
@@ -35399,9 +40021,6 @@ module.exports = function(THREE, EffectComposer) {
 			_usedTextureUnits = 0,
 
 			//
-
-			_clearColor = new Color( 0x000000 ),
-			_clearAlpha = 0,
 
 			_width = _canvas.width,
 			_height = _canvas.height,
@@ -35560,15 +40179,13 @@ module.exports = function(THREE, EffectComposer) {
 		var lightCache = new WebGLLights();
 		var renderLists = new WebGLRenderLists();
 
+		var background = new WebGLBackground( this, state, objects, _premultipliedAlpha );
+		var vr = new WebVRManager( this );
+
 		this.info.programs = programCache.programs;
 
 		var bufferRenderer = new WebGLBufferRenderer( _gl, extensions, _infoRender );
 		var indexedBufferRenderer = new WebGLIndexedBufferRenderer( _gl, extensions, _infoRender );
-
-		//
-
-		var backgroundPlaneCamera, backgroundPlaneMesh;
-		var backgroundBoxCamera, backgroundBoxMesh;
 
 		//
 
@@ -35584,8 +40201,6 @@ module.exports = function(THREE, EffectComposer) {
 
 			state.scissor( _currentScissor.copy( _scissor ).multiplyScalar( _pixelRatio ) );
 			state.viewport( _currentViewport.copy( _viewport ).multiplyScalar( _pixelRatio ) );
-
-			state.buffers.color.setClear( _clearColor.r, _clearColor.g, _clearColor.b, _clearAlpha, _premultipliedAlpha );
 
 		}
 
@@ -35607,7 +40222,9 @@ module.exports = function(THREE, EffectComposer) {
 		this.capabilities = capabilities;
 		this.extensions = extensions;
 		this.properties = properties;
+		this.renderLists = renderLists;
 		this.state = state;
+		this.vr = vr;
 
 		// shadow map
 
@@ -35666,7 +40283,7 @@ module.exports = function(THREE, EffectComposer) {
 
 			_pixelRatio = value;
 
-			this.setSize( _viewport.z, _viewport.w, false );
+			this.setSize( _width, _height, false );
 
 		};
 
@@ -35680,6 +40297,15 @@ module.exports = function(THREE, EffectComposer) {
 		};
 
 		this.setSize = function ( width, height, updateStyle ) {
+
+			var device = vr.getDevice();
+
+			if ( device && device.isPresenting ) {
+
+				console.warn( 'THREE.WebGLRenderer: Can\'t change size while VR device is presenting.' );
+				return;
+
+			}
 
 			_width = width;
 			_height = height;
@@ -35698,15 +40324,40 @@ module.exports = function(THREE, EffectComposer) {
 
 		};
 
+		this.getDrawingBufferSize = function () {
+
+			return {
+				width: _width * _pixelRatio,
+				height: _height * _pixelRatio
+			};
+
+		};
+
+		this.setDrawingBufferSize = function ( width, height, pixelRatio ) {
+
+			_width = width;
+			_height = height;
+
+			_pixelRatio = pixelRatio;
+
+			_canvas.width = width * pixelRatio;
+			_canvas.height = height * pixelRatio;
+
+			this.setViewport( 0, 0, width, height );
+
+		};
+
 		this.setViewport = function ( x, y, width, height ) {
 
-			state.viewport( _viewport.set( x, y, width, height ) );
+			_viewport.set( x, _height - y - height, width, height );
+			state.viewport( _currentViewport.copy( _viewport ).multiplyScalar( _pixelRatio ) );
 
 		};
 
 		this.setScissor = function ( x, y, width, height ) {
 
-			state.scissor( _scissor.set( x, y, width, height ) );
+			_scissor.set( x, _height - y - height, width, height );
+			state.scissor( _currentScissor.copy( _scissor ).multiplyScalar( _pixelRatio ) );
 
 		};
 
@@ -35718,35 +40369,10 @@ module.exports = function(THREE, EffectComposer) {
 
 		// Clearing
 
-		this.getClearColor = function () {
-
-			return _clearColor;
-
-		};
-
-		this.setClearColor = function ( color, alpha ) {
-
-			_clearColor.set( color );
-
-			_clearAlpha = alpha !== undefined ? alpha : 1;
-
-			state.buffers.color.setClear( _clearColor.r, _clearColor.g, _clearColor.b, _clearAlpha, _premultipliedAlpha );
-
-		};
-
-		this.getClearAlpha = function () {
-
-			return _clearAlpha;
-
-		};
-
-		this.setClearAlpha = function ( alpha ) {
-
-			_clearAlpha = alpha;
-
-			state.buffers.color.setClear( _clearColor.r, _clearColor.g, _clearColor.b, _clearAlpha, _premultipliedAlpha );
-
-		};
+		this.getClearColor = background.getClearColor;
+		this.setClearColor = background.setClearColor;
+		this.getClearAlpha = background.getClearAlpha;
+		this.setClearAlpha = background.setClearAlpha;
 
 		this.clear = function ( color, depth, stencil ) {
 
@@ -36047,12 +40673,15 @@ module.exports = function(THREE, EffectComposer) {
 
 			}
 
+			var attribute;
 			var renderer = bufferRenderer;
 
 			if ( index !== null ) {
 
+				attribute = attributes.get( index );
+
 				renderer = indexedBufferRenderer;
-				renderer.setIndex( index );
+				renderer.setIndex( attribute );
 
 			}
 
@@ -36062,7 +40691,7 @@ module.exports = function(THREE, EffectComposer) {
 
 				if ( index !== null ) {
 
-					_gl.bindBuffer( _gl.ELEMENT_ARRAY_BUFFER, attributes.get( index ).buffer );
+					_gl.bindBuffer( _gl.ELEMENT_ARRAY_BUFFER, attribute.buffer );
 
 				}
 
@@ -36205,11 +40834,11 @@ module.exports = function(THREE, EffectComposer) {
 						var normalized = geometryAttribute.normalized;
 						var size = geometryAttribute.itemSize;
 
-						var attributeProperties = attributes.get( geometryAttribute );
+						var attribute = attributes.get( geometryAttribute );
 
-						var buffer = attributeProperties.buffer;
-						var type = attributeProperties.type;
-						var bytesPerElement = attributeProperties.bytesPerElement;
+						var buffer = attribute.buffer;
+						var type = attribute.type;
+						var bytesPerElement = attribute.bytesPerElement;
 
 						if ( geometryAttribute.isInterleavedBufferAttribute ) {
 
@@ -36340,9 +40969,23 @@ module.exports = function(THREE, EffectComposer) {
 
 		// Rendering
 
+		this.animate = function ( callback ) {
+
+			function onFrame() {
+
+				callback();
+
+				( vr.getDevice() || window ).requestAnimationFrame( onFrame );
+
+			}
+
+			( vr.getDevice() || window ).requestAnimationFrame( onFrame );
+
+		};
+
 		this.render = function ( scene, camera, renderTarget, forceClear ) {
 
-			if ( camera !== undefined && camera.isCamera !== true ) {
+			if ( ! ( camera && camera.isCamera ) ) {
 
 				console.error( 'THREE.WebGLRenderer.render: camera is not an instance of THREE.Camera.' );
 				return;
@@ -36361,11 +41004,13 @@ module.exports = function(THREE, EffectComposer) {
 
 			// update camera matrices and frustum
 
-			camera.onBeforeRender( _this );
-
 			if ( camera.parent === null ) camera.updateMatrixWorld();
 
-			camera.matrixWorldInverse.getInverse( camera.matrixWorld );
+			if ( vr.enabled ) {
+
+				camera = vr.getCamera( camera );
+
+			}
 
 			_projScreenMatrix.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse );
 			_frustum.setFromMatrix( _projScreenMatrix );
@@ -36420,81 +41065,9 @@ module.exports = function(THREE, EffectComposer) {
 
 			//
 
-			var background = scene.background;
+			background.render( scene, camera, forceClear );
 
-			if ( background === null ) {
-
-				state.buffers.color.setClear( _clearColor.r, _clearColor.g, _clearColor.b, _clearAlpha, _premultipliedAlpha );
-
-			} else if ( background && background.isColor ) {
-
-				state.buffers.color.setClear( background.r, background.g, background.b, 1, _premultipliedAlpha );
-				forceClear = true;
-
-			}
-
-			if ( this.autoClear || forceClear ) {
-
-				this.clear( this.autoClearColor, this.autoClearDepth, this.autoClearStencil );
-
-			}
-
-			if ( background && background.isCubeTexture ) {
-
-				if ( backgroundBoxCamera === undefined ) {
-
-					backgroundBoxCamera = new PerspectiveCamera();
-
-					backgroundBoxMesh = new Mesh(
-						new BoxBufferGeometry( 5, 5, 5 ),
-						new ShaderMaterial( {
-							uniforms: ShaderLib.cube.uniforms,
-							vertexShader: ShaderLib.cube.vertexShader,
-							fragmentShader: ShaderLib.cube.fragmentShader,
-							side: BackSide,
-							depthTest: false,
-							depthWrite: false,
-							fog: false
-						} )
-					);
-
-				}
-
-				backgroundBoxCamera.projectionMatrix.copy( camera.projectionMatrix );
-
-				backgroundBoxCamera.matrixWorld.extractRotation( camera.matrixWorld );
-				backgroundBoxCamera.matrixWorldInverse.getInverse( backgroundBoxCamera.matrixWorld );
-
-
-				backgroundBoxMesh.material.uniforms[ "tCube" ].value = background;
-				backgroundBoxMesh.modelViewMatrix.multiplyMatrices( backgroundBoxCamera.matrixWorldInverse, backgroundBoxMesh.matrixWorld );
-
-				objects.update( backgroundBoxMesh );
-
-				_this.renderBufferDirect( backgroundBoxCamera, null, backgroundBoxMesh.geometry, backgroundBoxMesh.material, backgroundBoxMesh, null );
-
-			} else if ( background && background.isTexture ) {
-
-				if ( backgroundPlaneCamera === undefined ) {
-
-					backgroundPlaneCamera = new OrthographicCamera( - 1, 1, 1, - 1, 0, 1 );
-
-					backgroundPlaneMesh = new Mesh(
-						new PlaneBufferGeometry( 2, 2 ),
-						new MeshBasicMaterial( { depthTest: false, depthWrite: false, fog: false } )
-					);
-
-				}
-
-				backgroundPlaneMesh.material.map = background;
-
-				objects.update( backgroundPlaneMesh );
-
-				_this.renderBufferDirect( backgroundPlaneCamera, null, backgroundPlaneMesh.geometry, backgroundPlaneMesh.material, backgroundPlaneMesh, null );
-
-			}
-
-			//
+			// render scene
 
 			var opaqueObjects = currentRenderList.opaque;
 			var transparentObjects = currentRenderList.transparent;
@@ -36537,13 +41110,17 @@ module.exports = function(THREE, EffectComposer) {
 			state.buffers.depth.setMask( true );
 			state.buffers.color.setMask( true );
 
-			if ( camera.isArrayCamera && camera.enabled ) {
+			if ( camera.isArrayCamera ) {
 
 				_this.setScissorTest( false );
 
 			}
 
-			camera.onAfterRender( _this );
+			if ( vr.enabled ) {
+
+				vr.submitFrame();
+
+			}
 
 			// _gl.finish();
 
@@ -36709,38 +41286,42 @@ module.exports = function(THREE, EffectComposer) {
 				var material = overrideMaterial === undefined ? renderItem.material : overrideMaterial;
 				var group = renderItem.group;
 
-				object.onBeforeRender( _this, scene, camera, geometry, material, group );
+				if ( camera.isArrayCamera ) {
 
-				if ( camera.isArrayCamera && camera.enabled ) {
+					_currentArrayCamera = camera;
 
 					var cameras = camera.cameras;
 
 					for ( var j = 0, jl = cameras.length; j < jl; j ++ ) {
 
 						var camera2 = cameras[ j ];
-						var bounds = camera2.bounds;
 
-						_this.setViewport(
-							bounds.x * _width * _pixelRatio, bounds.y * _height * _pixelRatio,
-							bounds.z * _width * _pixelRatio, bounds.w * _height * _pixelRatio
-						);
-						_this.setScissor(
-							bounds.x * _width * _pixelRatio, bounds.y * _height * _pixelRatio,
-							bounds.z * _width * _pixelRatio, bounds.w * _height * _pixelRatio
-						);
-						_this.setScissorTest( true );
+						if ( object.layers.test( camera2.layers ) ) {
 
-						renderObject( object, scene, camera2, geometry, material, group );
+							var bounds = camera2.bounds;
+
+							var x = bounds.x * _width;
+							var y = bounds.y * _height;
+							var width = bounds.z * _width;
+							var height = bounds.w * _height;
+
+							_this.setViewport( x, y, width, height );
+							_this.setScissor( x, y, width, height );
+							_this.setScissorTest( true );
+
+							renderObject( object, scene, camera2, geometry, material, group );
+
+						}
 
 					}
 
 				} else {
 
+					_currentArrayCamera = null;
+
 					renderObject( object, scene, camera, geometry, material, group );
 
 				}
-
-				object.onAfterRender( _this, scene, camera, geometry, material, group );
 
 			}
 
@@ -36750,6 +41331,8 @@ module.exports = function(THREE, EffectComposer) {
 
 			object.modelViewMatrix.multiplyMatrices( camera.matrixWorldInverse, object.matrixWorld );
 			object.normalMatrix.getNormalMatrix( object.modelViewMatrix );
+
+			object.onBeforeRender( _this, scene, camera, geometry, material, group );
 
 			if ( object.isImmediateRenderObject ) {
 
@@ -36766,6 +41349,8 @@ module.exports = function(THREE, EffectComposer) {
 				_this.renderBufferDirect( camera, scene.fog, geometry, material, object, group );
 
 			}
+
+			object.onAfterRender( _this, scene, camera, geometry, material, group );
 
 		}
 
@@ -36809,7 +41394,7 @@ module.exports = function(THREE, EffectComposer) {
 
 					var shader = ShaderLib[ parameters.shaderID ];
 
-					materialProperties.__webglShader = {
+					materialProperties.shader = {
 						name: material.type,
 						uniforms: UniformsUtils.clone( shader.uniforms ),
 						vertexShader: shader.vertexShader,
@@ -36818,7 +41403,7 @@ module.exports = function(THREE, EffectComposer) {
 
 				} else {
 
-					materialProperties.__webglShader = {
+					materialProperties.shader = {
 						name: material.type,
 						uniforms: material.uniforms,
 						vertexShader: material.vertexShader,
@@ -36827,9 +41412,9 @@ module.exports = function(THREE, EffectComposer) {
 
 				}
 
-				material.__webglShader = materialProperties.__webglShader;
+				material.onBeforeCompile( materialProperties.shader );
 
-				program = programCache.acquireProgram( material, parameters, code );
+				program = programCache.acquireProgram( material, materialProperties.shader, parameters, code );
 
 				materialProperties.program = program;
 				material.program = program;
@@ -36870,7 +41455,7 @@ module.exports = function(THREE, EffectComposer) {
 
 			}
 
-			var uniforms = materialProperties.__webglShader.uniforms;
+			var uniforms = materialProperties.shader.uniforms;
 
 			if ( ! material.isShaderMaterial &&
 				! material.isRawShaderMaterial ||
@@ -36979,7 +41564,7 @@ module.exports = function(THREE, EffectComposer) {
 
 			var program = materialProperties.program,
 				p_uniforms = program.getUniforms(),
-				m_uniforms = materialProperties.__webglShader.uniforms;
+				m_uniforms = materialProperties.shader.uniforms;
 
 			if ( program.id !== _currentProgram ) {
 
@@ -37011,10 +41596,11 @@ module.exports = function(THREE, EffectComposer) {
 
 				}
 
+				// Avoid unneeded uniform updates per ArrayCamera's sub-camera
 
-				if ( camera !== _currentCamera ) {
+				if ( _currentCamera !== ( _currentArrayCamera || camera ) ) {
 
-					_currentCamera = camera;
+					_currentCamera = ( _currentArrayCamera || camera );
 
 					// lighting uniforms depend on the camera so enforce an update
 					// now, in case this material supports lights - or later, when
@@ -37054,9 +41640,6 @@ module.exports = function(THREE, EffectComposer) {
 					p_uniforms.setValue( _gl, 'viewMatrix', camera.matrixWorldInverse );
 
 				}
-
-				p_uniforms.setValue( _gl, 'toneMappingExposure', _this.toneMappingExposure );
-				p_uniforms.setValue( _gl, 'toneMappingWhitePoint', _this.toneMappingWhitePoint );
 
 			}
 
@@ -37116,6 +41699,9 @@ module.exports = function(THREE, EffectComposer) {
 			}
 
 			if ( refreshMaterial ) {
+
+				p_uniforms.setValue( _gl, 'toneMappingExposure', _this.toneMappingExposure );
+				p_uniforms.setValue( _gl, 'toneMappingWhitePoint', _this.toneMappingWhitePoint );
 
 				if ( material.lights ) {
 
@@ -37780,7 +42366,7 @@ module.exports = function(THREE, EffectComposer) {
 
 			if ( textureUnit >= capabilities.maxTextures ) {
 
-				console.warn( 'WebGLRenderer: trying to use ' + textureUnit + ' texture units while this GPU supports only ' + capabilities.maxTextures );
+				console.warn( 'THREE.WebGLRenderer: Trying to use ' + textureUnit + ' texture units while this GPU supports only ' + capabilities.maxTextures );
 
 			}
 
@@ -37952,7 +42538,7 @@ module.exports = function(THREE, EffectComposer) {
 
 		this.readRenderTargetPixels = function ( renderTarget, x, y, width, height, buffer ) {
 
-			if ( ( renderTarget && renderTarget.isWebGLRenderTarget ) === false ) {
+			if ( ! ( renderTarget && renderTarget.isWebGLRenderTarget ) ) {
 
 				console.error( 'THREE.WebGLRenderer.readRenderTargetPixels: renderTarget is not THREE.WebGLRenderTarget.' );
 				return;
@@ -40014,7 +44600,16 @@ module.exports = function(THREE, EffectComposer) {
 		this.addAttribute( 'position', new Float32BufferAttribute( vertexBuffer, 3 ) );
 		this.addAttribute( 'normal', new Float32BufferAttribute( vertexBuffer.slice(), 3 ) );
 		this.addAttribute( 'uv', new Float32BufferAttribute( uvBuffer, 2 ) );
-		this.normalizeNormals();
+
+		if ( detail === 0 ) {
+
+			this.computeVertexNormals(); // flat normals
+
+		} else {
+
+			this.normalizeNormals(); // smooth normals
+
+		}
 
 		// helper functions
 
@@ -41794,7 +46389,6 @@ module.exports = function(THREE, EffectComposer) {
 
 		if ( typeof ( shapes ) === "undefined" ) {
 
-			shapes = [];
 			return;
 
 		}
@@ -41949,8 +46543,6 @@ module.exports = function(THREE, EffectComposer) {
 
 			}
 
-			reverse = false; // If vertices are in order now, we shouldn't need to worry about them again (hopefully)!
-
 		}
 
 
@@ -41994,7 +46586,7 @@ module.exports = function(THREE, EffectComposer) {
 			// inPt' is the intersection of the two lines parallel to the two
 			//  adjacent edges of inPt at a distance of 1 unit on the left side.
 
-			var v_trans_x, v_trans_y, shrink_by = 1; // resulting translation vector for inPt
+			var v_trans_x, v_trans_y, shrink_by; // resulting translation vector for inPt
 
 			// good reading for geometry algorithms (here: line-line intersection)
 			// http://geomalgorithms.com/a05-_intersect-1.html
@@ -42599,7 +47191,7 @@ module.exports = function(THREE, EffectComposer) {
 
 		var font = parameters.font;
 
-		if ( ( font && font.isFont ) === false ) {
+		if ( ! ( font && font.isFont ) ) {
 
 			console.error( 'THREE.TextGeometry: font parameter is not an instance of THREE.Font.' );
 			return new Geometry();
@@ -44390,7 +48982,7 @@ module.exports = function(THREE, EffectComposer) {
 
 	function MeshNormalMaterial( parameters ) {
 
-		Material.call( this, parameters );
+		Material.call( this );
 
 		this.type = 'MeshNormalMaterial';
 
@@ -46596,7 +51188,7 @@ module.exports = function(THREE, EffectComposer) {
 
 				}
 
-				console.warn( message );
+				console.warn( 'THREE.KeyframeTrackPrototype:', message );
 				return;
 
 			}
@@ -46707,7 +51299,7 @@ module.exports = function(THREE, EffectComposer) {
 			var valueSize = this.getValueSize();
 			if ( valueSize - Math.floor( valueSize ) !== 0 ) {
 
-				console.error( "invalid value size in track", this );
+				console.error( 'THREE.KeyframeTrackPrototype: Invalid value size in track.', this );
 				valid = false;
 
 			}
@@ -46719,7 +51311,7 @@ module.exports = function(THREE, EffectComposer) {
 
 			if ( nKeys === 0 ) {
 
-				console.error( "track is empty", this );
+				console.error( 'THREE.KeyframeTrackPrototype: Track is empty.', this );
 				valid = false;
 
 			}
@@ -46732,7 +51324,7 @@ module.exports = function(THREE, EffectComposer) {
 
 				if ( typeof currTime === 'number' && isNaN( currTime ) ) {
 
-					console.error( "time is not a valid number", this, i, currTime );
+					console.error( 'THREE.KeyframeTrackPrototype: Time is not a valid number.', this, i, currTime );
 					valid = false;
 					break;
 
@@ -46740,7 +51332,7 @@ module.exports = function(THREE, EffectComposer) {
 
 				if ( prevTime !== null && prevTime > currTime ) {
 
-					console.error( "out of order keys", this, i, currTime, prevTime );
+					console.error( 'THREE.KeyframeTrackPrototype: Out of order keys.', this, i, currTime, prevTime );
 					valid = false;
 					break;
 
@@ -46760,7 +51352,7 @@ module.exports = function(THREE, EffectComposer) {
 
 						if ( isNaN( value ) ) {
 
-							console.error( "value is not a valid number", this, i, value );
+							console.error( 'THREE.KeyframeTrackPrototype: Value is not a valid number.', this, i, value );
 							valid = false;
 							break;
 
@@ -47459,7 +52051,7 @@ module.exports = function(THREE, EffectComposer) {
 
 			if ( ! animation ) {
 
-				console.error( "  no animation in JSONLoader data" );
+				console.error( 'THREE.AnimationClip: No animation in JSONLoader data.' );
 				return null;
 
 			}
@@ -47501,8 +52093,7 @@ module.exports = function(THREE, EffectComposer) {
 				// skip empty tracks
 				if ( ! animationKeys || animationKeys.length === 0 ) continue;
 
-				// process morph targets in a way exactly compatible
-				// with AnimationHandler.init( animation )
+				// process morph targets
 				if ( animationKeys[ 0 ].morphTargets ) {
 
 					// figure out all morph targets used in this track
@@ -47643,10 +52234,9 @@ module.exports = function(THREE, EffectComposer) {
 			var scope = this;
 
 			var loader = new FileLoader( scope.manager );
-			loader.setResponseType( 'json' );
-			loader.load( url, function ( json ) {
+			loader.load( url, function ( text ) {
 
-				onLoad( scope.parse( json ) );
+				onLoad( scope.parse( JSON.parse( text ) ) );
 
 			}, onProgress, onError );
 
@@ -47790,10 +52380,9 @@ module.exports = function(THREE, EffectComposer) {
 			var scope = this;
 
 			var loader = new FileLoader( scope.manager );
-			loader.setResponseType( 'json' );
-			loader.load( url, function ( json ) {
+			loader.load( url, function ( text ) {
 
-				onLoad( scope.parse( json ) );
+				onLoad( scope.parse( JSON.parse( text ) ) );
 
 			}, onProgress, onError );
 
@@ -47862,7 +52451,8 @@ module.exports = function(THREE, EffectComposer) {
 	var TYPED_ARRAYS = {
 		Int8Array: Int8Array,
 		Uint8Array: Uint8Array,
-		Uint8ClampedArray: Uint8ClampedArray,
+		// Workaround for IE11 pre KB2929437. See #11440
+		Uint8ClampedArray: typeof Uint8ClampedArray !== 'undefined' ? Uint8ClampedArray : Uint8Array,
 		Int16Array: Int16Array,
 		Uint16Array: Uint16Array,
 		Int32Array: Int32Array,
@@ -48231,10 +52821,10 @@ module.exports = function(THREE, EffectComposer) {
 			var texturePath = this.texturePath && ( typeof this.texturePath === "string" ) ? this.texturePath : Loader.prototype.extractUrlBase( url );
 
 			var loader = new FileLoader( this.manager );
-			loader.setResponseType( 'json' );
 			loader.setWithCredentials( this.withCredentials );
-			loader.load( url, function ( json ) {
+			loader.load( url, function ( text ) {
 
+				var json = JSON.parse( text );
 				var metadata = json.metadata;
 
 				if ( metadata !== undefined ) {
@@ -51384,27 +55974,6 @@ module.exports = function(THREE, EffectComposer) {
 	 * @author mrdoob / http://mrdoob.com/
 	 */
 
-	function ArrayCamera( array ) {
-
-		PerspectiveCamera.call( this );
-
-		this.enabled = false;
-		this.cameras = array || [];
-
-	}
-
-	ArrayCamera.prototype = Object.assign( Object.create( PerspectiveCamera.prototype ), {
-
-		constructor: ArrayCamera,
-
-		isArrayCamera: true
-
-	} );
-
-	/**
-	 * @author mrdoob / http://mrdoob.com/
-	 */
-
 	function AudioListener() {
 
 		Object3D.call( this );
@@ -52261,6 +56830,19 @@ module.exports = function(THREE, EffectComposer) {
 
 		},
 
+		/**
+		 * Replaces spaces with underscores and removes unsupported characters from
+		 * node names, to ensure compatibility with parseTrackName().
+		 *
+		 * @param  {string} name Node name to be sanitized.
+		 * @return {string}
+		 */
+		sanitizeNodeName: function ( name ) {
+
+			return name.replace( /\s/g, '_' ).replace( /[^\w-]/g, '' );
+
+		},
+
 		parseTrackName: function () {
 
 			// Parent directories, delimited by '/' or ':'. Currently unused, but must
@@ -52639,7 +57221,7 @@ module.exports = function(THREE, EffectComposer) {
 			// ensure there is a value node
 			if ( ! targetObject ) {
 
-				console.error( "  trying to update node for track: " + this.path + " but it wasn't found." );
+				console.error( 'THREE.PropertyBinding: Trying to update node for track: ' + this.path + ' but it wasn\'t found.' );
 				return;
 
 			}
@@ -52655,14 +57237,14 @@ module.exports = function(THREE, EffectComposer) {
 
 						if ( ! targetObject.material ) {
 
-							console.error( '  can not bind to material as node does not have a material', this );
+							console.error( 'THREE.PropertyBinding: Can not bind to material as node does not have a material.', this );
 							return;
 
 						}
 
 						if ( ! targetObject.material.materials ) {
 
-							console.error( '  can not bind to material.materials as node.material does not have a materials array', this );
+							console.error( 'THREE.PropertyBinding: Can not bind to material.materials as node.material does not have a materials array.', this );
 							return;
 
 						}
@@ -52675,7 +57257,7 @@ module.exports = function(THREE, EffectComposer) {
 
 						if ( ! targetObject.skeleton ) {
 
-							console.error( '  can not bind to bones as node does not have a skeleton', this );
+							console.error( 'THREE.PropertyBinding: Can not bind to bones as node does not have a skeleton.', this );
 							return;
 
 						}
@@ -52703,7 +57285,7 @@ module.exports = function(THREE, EffectComposer) {
 
 						if ( targetObject[ objectName ] === undefined ) {
 
-							console.error( '  can not bind to objectName of node, undefined', this );
+							console.error( 'THREE.PropertyBinding: Can not bind to objectName of node undefined.', this );
 							return;
 
 						}
@@ -52717,7 +57299,7 @@ module.exports = function(THREE, EffectComposer) {
 
 					if ( targetObject[ objectIndex ] === undefined ) {
 
-						console.error( "  trying to bind to objectIndex of objectName, but is undefined:", this, targetObject );
+						console.error( 'THREE.PropertyBinding: Trying to bind to objectIndex of objectName, but is undefined.', this, targetObject );
 						return;
 
 					}
@@ -52735,8 +57317,8 @@ module.exports = function(THREE, EffectComposer) {
 
 				var nodeName = parsedPath.nodeName;
 
-				console.error( "  trying to update property for track: " + nodeName +
-					'.' + propertyName + " but it wasn't found.", targetObject );
+				console.error( 'THREE.PropertyBinding: Trying to update property for track: ' + nodeName +
+					'.' + propertyName + ' but it wasn\'t found.', targetObject );
 				return;
 
 			}
@@ -52770,24 +57352,49 @@ module.exports = function(THREE, EffectComposer) {
 					// support resolving morphTarget names into indices.
 					if ( ! targetObject.geometry ) {
 
-						console.error( '  can not bind to morphTargetInfluences becasuse node does not have a geometry', this );
+						console.error( 'THREE.PropertyBinding: Can not bind to morphTargetInfluences because node does not have a geometry.', this );
 						return;
 
 					}
 
-					if ( ! targetObject.geometry.morphTargets ) {
+					if ( targetObject.geometry.isBufferGeometry ) {
 
-						console.error( '  can not bind to morphTargetInfluences becasuse node does not have a geometry.morphTargets', this );
-						return;
+						if ( ! targetObject.geometry.morphAttributes ) {
 
-					}
+							console.error( 'THREE.PropertyBinding: Can not bind to morphTargetInfluences because node does not have a geometry.morphAttributes.', this );
+							return;
 
-					for ( var i = 0; i < this.node.geometry.morphTargets.length; i ++ ) {
+						}
 
-						if ( targetObject.geometry.morphTargets[ i ].name === propertyIndex ) {
+						for ( var i = 0; i < this.node.geometry.morphAttributes.position.length; i ++ ) {
 
-							propertyIndex = i;
-							break;
+							if ( targetObject.geometry.morphAttributes.position[ i ].name === propertyIndex ) {
+
+								propertyIndex = i;
+								break;
+
+							}
+
+						}
+
+
+					} else {
+
+						if ( ! targetObject.geometry.morphTargets ) {
+
+							console.error( 'THREE.PropertyBinding: Can not bind to morphTargetInfluences because node does not have a geometry.morphTargets.', this );
+							return;
+
+						}
+
+						for ( var i = 0; i < this.node.geometry.morphTargets.length; i ++ ) {
+
+							if ( targetObject.geometry.morphTargets[ i ].name === propertyIndex ) {
+
+								propertyIndex = i;
+								break;
+
+							}
 
 						}
 
@@ -53000,9 +57607,8 @@ module.exports = function(THREE, EffectComposer) {
 
 				} else if ( objects[ index ] !== knownObject ) {
 
-					console.error( "Different objects with the same UUID " +
-							"detected. Clean the caches or recreate your " +
-							"infrastructure when reloading scenes..." );
+					console.error( 'THREE.AnimationObjectGroup: Different objects with the same UUID ' +
+							'detected. Clean the caches or recreate your infrastructure when reloading scenes.' );
 
 				} // else the object is already where we want it to be
 
@@ -55158,6 +59764,7 @@ module.exports = function(THREE, EffectComposer) {
 
 			this.getElapsedTime();
 			this.running = false;
+			this.autoStart = false;
 
 		},
 
@@ -55877,6 +60484,8 @@ module.exports = function(THREE, EffectComposer) {
 
 		return function update() {
 
+			this.light.updateMatrixWorld();
+
 			var coneLength = this.light.distance ? this.light.distance : 1000;
 			var coneWidth = coneLength * Math.tan( this.light.angle );
 
@@ -55901,9 +60510,29 @@ module.exports = function(THREE, EffectComposer) {
 	 * @author Mugen87 / https://github.com/Mugen87
 	 */
 
+	function getBoneList( object ) {
+
+		var boneList = [];
+
+		if ( object && object.isBone ) {
+
+			boneList.push( object );
+
+		}
+
+		for ( var i = 0; i < object.children.length; i ++ ) {
+
+			boneList.push.apply( boneList, getBoneList( object.children[ i ] ) );
+
+		}
+
+		return boneList;
+
+	}
+
 	function SkeletonHelper( object ) {
 
-		this.bones = this.getBoneList( object );
+		var bones = getBoneList( object );
 
 		var geometry = new BufferGeometry();
 
@@ -55913,9 +60542,9 @@ module.exports = function(THREE, EffectComposer) {
 		var color1 = new Color( 0, 0, 1 );
 		var color2 = new Color( 0, 1, 0 );
 
-		for ( var i = 0; i < this.bones.length; i ++ ) {
+		for ( var i = 0; i < bones.length; i ++ ) {
 
-			var bone = this.bones[ i ];
+			var bone = bones[ i ];
 
 			if ( bone.parent && bone.parent.isBone ) {
 
@@ -55936,55 +60565,37 @@ module.exports = function(THREE, EffectComposer) {
 		LineSegments.call( this, geometry, material );
 
 		this.root = object;
+		this.bones = bones;
 
 		this.matrix = object.matrixWorld;
 		this.matrixAutoUpdate = false;
 
-		this.update();
+		this.onBeforeRender();
 
 	}
-
 
 	SkeletonHelper.prototype = Object.create( LineSegments.prototype );
 	SkeletonHelper.prototype.constructor = SkeletonHelper;
 
-	SkeletonHelper.prototype.getBoneList = function( object ) {
-
-		var boneList = [];
-
-		if ( object && object.isBone ) {
-
-			boneList.push( object );
-
-		}
-
-		for ( var i = 0; i < object.children.length; i ++ ) {
-
-			boneList.push.apply( boneList, this.getBoneList( object.children[ i ] ) );
-
-		}
-
-		return boneList;
-
-	};
-
-	SkeletonHelper.prototype.update = function () {
+	SkeletonHelper.prototype.onBeforeRender = function () {
 
 		var vector = new Vector3();
 
 		var boneMatrix = new Matrix4();
 		var matrixWorldInv = new Matrix4();
 
-		return function update() {
+		return function onBeforeRender() {
+
+			var bones = this.bones;
 
 			var geometry = this.geometry;
 			var position = geometry.getAttribute( 'position' );
 
 			matrixWorldInv.getInverse( this.root.matrixWorld );
 
-			for ( var i = 0, j = 0; i < this.bones.length; i ++ ) {
+			for ( var i = 0, j = 0; i < bones.length; i ++ ) {
 
-				var bone = this.bones[ i ];
+				var bone = bones[ i ];
 
 				if ( bone.parent && bone.parent.isBone ) {
 
@@ -57066,11 +61677,13 @@ module.exports = function(THREE, EffectComposer) {
 	var py = new CubicPoly();
 	var pz = new CubicPoly();
 
-	function CatmullRomCurve3( p /* array of Vector3 */ ) {
+	function CatmullRomCurve3( points ) {
 
 		Curve.call( this );
 
-		this.points = p || [];
+		if ( points.length < 2 ) console.warn( 'THREE.CatmullRomCurve3: Points array needs at least two entries.' );
+
+		this.points = points || [];
 		this.closed = false;
 
 	}
@@ -57082,8 +61695,6 @@ module.exports = function(THREE, EffectComposer) {
 
 		var points = this.points;
 		var l = points.length;
-
-		if ( l < 2 ) console.log( 'duh, you need at least 2 points' );
 
 		var point = ( l - ( this.closed ? 0 : 1 ) ) * t;
 		var intPoint = Math.floor( point );
@@ -57279,9 +61890,7 @@ module.exports = function(THREE, EffectComposer) {
 
 		attach: function ( child, scene, parent ) {
 
-			var matrixWorldInverse = new Matrix4();
-			matrixWorldInverse.getInverse( parent.matrixWorld );
-			child.applyMatrix( matrixWorldInverse );
+			child.applyMatrix( new Matrix4().getInverse( parent.matrixWorld ) );
 
 			scene.remove( child );
 			parent.add( child );
@@ -57544,6 +62153,12 @@ module.exports = function(THREE, EffectComposer) {
 
 	};
 
+	SkeletonHelper.prototype.update = function () {
+
+		console.error( 'THREE.SkeletonHelper: update() no longer needs to be called.' );
+		
+	};
+
 	function WireframeHelper( object, hex ) {
 
 		console.warn( 'THREE.WireframeHelper has been removed. Use THREE.WireframeGeometry instead.' );
@@ -57661,8 +62276,7 @@ module.exports = function(THREE, EffectComposer) {
 		},
 		multiplyVector3Array: function ( a ) {
 
-			console.warn( 'THREE.Matrix3: .multiplyVector3Array() has been renamed. Use matrix.applyToVector3Array( array ) instead.' );
-			return this.applyToVector3Array( a );
+			console.error( 'THREE.Matrix3: .multiplyVector3Array() has been removed.'  );
 
 		},
 		applyToBuffer: function( buffer, offset, length ) {
@@ -57731,8 +62345,7 @@ module.exports = function(THREE, EffectComposer) {
 		},
 		multiplyVector3Array: function ( a ) {
 
-			console.warn( 'THREE.Matrix4: .multiplyVector3Array() has been renamed. Use matrix.applyToVector3Array( array ) instead.' );
-			return this.applyToVector3Array( a );
+			console.error( 'THREE.Matrix4: .multiplyVector3Array() has been removed.'  );
 
 		},
 		rotateAxis: function ( v ) {
@@ -59123,7 +63736,7 @@ module.exports = function(THREE, EffectComposer) {
 
 })));
 
-},{}],21:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 module.exports = {
 
   Entity         : require('./lib/Entity.js'),
@@ -59136,7 +63749,7 @@ module.exports = {
 
 };
 
-},{"./lib/Entity.js":22,"./lib/EntityManager.js":23,"./lib/Messanger.js":25,"./lib/ObjectPool.js":26,"./lib/QuadTree.js":27,"./lib/Spatial.js":28,"./lib/Vec2.js":29}],22:[function(require,module,exports){
+},{"./lib/Entity.js":46,"./lib/EntityManager.js":47,"./lib/Messanger.js":49,"./lib/ObjectPool.js":50,"./lib/QuadTree.js":51,"./lib/Spatial.js":52,"./lib/Vec2.js":53}],46:[function(require,module,exports){
 module.exports = Entity;
 
 /**
@@ -59245,7 +63858,7 @@ Entity.prototype.remove = function()
 };
 
 
-},{}],23:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 module.exports = EntityManager;
 
 var Entity     = require('./Entity.js');
@@ -59630,7 +64243,7 @@ function groupKey(Components)
 }
 
 
-},{"./Entity.js":22,"./Messanger.js":25,"./ObjectPool.js":26,"typedef":30}],24:[function(require,module,exports){
+},{"./Entity.js":46,"./Messanger.js":49,"./ObjectPool.js":50,"typedef":54}],48:[function(require,module,exports){
 module.exports = Event;
 
 /**
@@ -59689,7 +64302,7 @@ Event.prototype.whereComponents = function(Components)
 };
 
 
-},{}],25:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 module.exports = Messanger;
 
 var Event = require('./Event.js');
@@ -59743,7 +64356,7 @@ Messanger.prototype.trigger = function(eventName, entity, option)
 };
 
 
-},{"./Event.js":24}],26:[function(require,module,exports){
+},{"./Event.js":48}],50:[function(require,module,exports){
 module.exports = ObjectPool;
 
 /**
@@ -59823,7 +64436,7 @@ ObjectPool.prototype.totalUsed = function()
 };
 
 
-},{}],27:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 module.exports = QuadTree;
 
 var ObjectPool = require('./ObjectPool.js');
@@ -60193,7 +64806,7 @@ QuadTree.prototype._combine = function()
 };
 
 
-},{"./ObjectPool.js":26,"./Spatial.js":28,"./Vec2.js":29}],28:[function(require,module,exports){
+},{"./ObjectPool.js":50,"./Spatial.js":52,"./Vec2.js":53}],52:[function(require,module,exports){
 module.exports = Spatial;
 
 var Vec2 = require('./Vec2.js');
@@ -60339,7 +64952,7 @@ Spatial.prototype.absScale = function()
 };
 
 
-},{"./Vec2.js":29}],29:[function(require,module,exports){
+},{"./Vec2.js":53}],53:[function(require,module,exports){
 module.exports = Vec2;
 
 var ObjectPool = require('./ObjectPool.js');
@@ -60678,7 +65291,7 @@ Vec2.prototype.toString = function()
 };
 
 
-},{"./ObjectPool.js":26}],30:[function(require,module,exports){
+},{"./ObjectPool.js":50}],54:[function(require,module,exports){
 module.exports = {
 
   'extends'      : require('./lib/extends.js'),
@@ -60690,7 +65303,7 @@ module.exports = {
 
 
 
-},{"./lib/extends.js":31,"./lib/getArguments.js":32,"./lib/getName.js":33,"./lib/mixin.js":34}],31:[function(require,module,exports){
+},{"./lib/extends.js":55,"./lib/getArguments.js":56,"./lib/getName.js":57,"./lib/mixin.js":58}],55:[function(require,module,exports){
 module.exports = extends_;
 
 /**
@@ -60740,7 +65353,7 @@ function makeT(Child)
 }
 
 
-},{}],32:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 module.exports = getArguments;
 
 var FUNCTION_ARGS = /^\w*function[^\(]*\(([^\)]+)/;
@@ -60769,7 +65382,7 @@ function getArguments(f)
 }
 
 
-},{}],33:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 module.exports = getName;
 
 var FUNCTION_NAME = /function\s+([^\s(]+)/;
@@ -60800,7 +65413,7 @@ function getName(f)
   return name;
 }
 
-},{}],34:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 module.exports = mixin_;
 
 /**
@@ -60829,7 +65442,390 @@ function mixin_(T, mixin)
 }
 
 
-},{}],35:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = Billboard;
+
+
+function Billboard() {}
+
+},{}],60:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _three = require("three");
+
+var THREE = _interopRequireWildcard(_three);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+/**
+ * @author yomboprime https://github.com/yomboprime
+ *
+ * GPUComputationRenderer, based on SimulationRenderer by zz85
+ *
+ * The GPUComputationRenderer uses the concept of variables. These variables are RGBA float textures that hold 4 floats
+ * for each compute element (texel)
+ *
+ * Each variable has a fragment shader that defines the computation made to obtain the variable in question.
+ * You can use as many variables you need, and make dependencies so you can use textures of other variables in the shader
+ * (the sampler uniforms are added automatically) Most of the variables will need themselves as dependency.
+ *
+ * The renderer has actually two render targets per variable, to make ping-pong. Textures from the current frame are used
+ * as inputs to render the textures of the next frame.
+ *
+ * The render targets of the variables can be used as input textures for your visualization shaders.
+ *
+ * Variable names should be valid identifiers and should not collide with THREE GLSL used identifiers.
+ * a common approach could be to use 'texture' prefixing the variable name; i.e texturePosition, textureVelocity...
+ *
+ * The size of the computation (sizeX * sizeY) is defined as 'resolution' automatically in the shader. For example:
+ * #DEFINE resolution vec2( 1024.0, 1024.0 )
+ *
+ * -------------
+ *
+ * Basic use:
+ *
+ * // Initialization...
+ *
+ * // Create computation renderer
+ * var gpuCompute = new GPUComputationRenderer( 1024, 1024, renderer );
+ *
+ * // Create initial state float textures
+ * var pos0 = gpuCompute.createTexture();
+ * var vel0 = gpuCompute.createTexture();
+ * // and fill in here the texture data...
+ *
+ * // Add texture variables
+ * var velVar = gpuCompute.addVariable( "textureVelocity", fragmentShaderVel, pos0 );
+ * var posVar = gpuCompute.addVariable( "texturePosition", fragmentShaderPos, vel0 );
+ *
+ * // Add variable dependencies
+ * gpuCompute.setVariableDependencies( velVar, [ velVar, posVar ] );
+ * gpuCompute.setVariableDependencies( posVar, [ velVar, posVar ] );
+ *
+ * // Add custom uniforms
+ * velVar.material.uniforms.time = { value: 0.0 };
+ *
+ * // Check for completeness
+ * var error = gpuCompute.init();
+ * if ( error !== null ) {
+ *		console.error( error );
+  * }
+ *
+ *
+ * // In each frame...
+ *
+ * // Compute!
+ * gpuCompute.compute();
+ *
+ * // Update texture uniforms in your visualization materials with the gpu renderer output
+ * myMaterial.uniforms.myTexture.value = gpuCompute.getCurrentRenderTarget( posVar ).texture;
+ *
+ * // Do your rendering
+ * renderer.render( myScene, myCamera );
+ *
+ * -------------
+ *
+ * Also, you can use utility functions to create ShaderMaterial and perform computations (rendering between textures)
+ * Note that the shaders can have multiple input textures.
+ *
+ * var myFilter1 = gpuCompute.createShaderMaterial( myFilterFragmentShader1, { theTexture: { value: null } } );
+ * var myFilter2 = gpuCompute.createShaderMaterial( myFilterFragmentShader2, { theTexture: { value: null } } );
+ *
+ * var inputTexture = gpuCompute.createTexture();
+ *
+ * // Fill in here inputTexture...
+ *
+ * myFilter1.uniforms.theTexture.value = inputTexture;
+ *
+ * var myRenderTarget = gpuCompute.createRenderTarget();
+ * myFilter2.uniforms.theTexture.value = myRenderTarget.texture;
+ *
+ * var outputRenderTarget = gpuCompute.createRenderTarget();
+ *
+ * // Now use the output texture where you want:
+ * myMaterial.uniforms.map.value = outputRenderTarget.texture;
+ *
+ * // And compute each frame, before rendering to screen:
+ * gpuCompute.doRenderTarget( myFilter1, myRenderTarget );
+ * gpuCompute.doRenderTarget( myFilter2, outputRenderTarget );
+ * 
+ *
+ *
+ * @param {int} sizeX Computation problem size is always 2d: sizeX * sizeY elements.
+ * @param {int} sizeY Computation problem size is always 2d: sizeX * sizeY elements.
+ * @param {WebGLRenderer} renderer The renderer
+  */
+
+exports.default = GPUComputationRenderer;
+
+
+function GPUComputationRenderer(sizeX, sizeY, renderer) {
+
+	this.variables = [];
+
+	this.currentTextureIndex = 0;
+
+	var scene = new THREE.Scene();
+
+	var camera = new THREE.Camera();
+	camera.position.z = 1;
+
+	var passThruUniforms = {
+		texture: { value: null }
+	};
+
+	var passThruShader = createShaderMaterial(getPassThroughFragmentShader(), passThruUniforms);
+
+	var mesh = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2), passThruShader);
+	scene.add(mesh);
+
+	this.addVariable = function (variableName, computeFragmentShader, initialValueTexture) {
+
+		var material = this.createShaderMaterial(computeFragmentShader);
+
+		var variable = {
+			name: variableName,
+			initialValueTexture: initialValueTexture,
+			material: material,
+			dependencies: null,
+			renderTargets: [],
+			wrapS: null,
+			wrapT: null,
+			minFilter: THREE.NearestFilter,
+			magFilter: THREE.NearestFilter
+		};
+
+		this.variables.push(variable);
+
+		return variable;
+	};
+
+	this.setVariableDependencies = function (variable, dependencies) {
+
+		variable.dependencies = dependencies;
+	};
+
+	this.init = function () {
+
+		if (!renderer.extensions.get("OES_texture_float")) {
+
+			return "No OES_texture_float support for float textures.";
+		}
+
+		if (renderer.capabilities.maxVertexTextures === 0) {
+
+			return "No support for vertex shader textures.";
+		}
+
+		for (var i = 0; i < this.variables.length; i++) {
+
+			var variable = this.variables[i];
+
+			// Creates rendertargets and initialize them with input texture
+			variable.renderTargets[0] = this.createRenderTarget(sizeX, sizeY, variable.wrapS, variable.wrapT, variable.minFilter, variable.magFilter);
+			variable.renderTargets[1] = this.createRenderTarget(sizeX, sizeY, variable.wrapS, variable.wrapT, variable.minFilter, variable.magFilter);
+			this.renderTexture(variable.initialValueTexture, variable.renderTargets[0]);
+			this.renderTexture(variable.initialValueTexture, variable.renderTargets[1]);
+
+			// Adds dependencies uniforms to the ShaderMaterial
+			var material = variable.material;
+			var uniforms = material.uniforms;
+			if (variable.dependencies !== null) {
+
+				for (var d = 0; d < variable.dependencies.length; d++) {
+
+					var depVar = variable.dependencies[d];
+
+					if (depVar.name !== variable.name) {
+
+						// Checks if variable exists
+						var found = false;
+						for (var j = 0; j < this.variables.length; j++) {
+
+							if (depVar.name === this.variables[j].name) {
+								found = true;
+								break;
+							}
+						}
+						if (!found) {
+							return "Variable dependency not found. Variable=" + variable.name + ", dependency=" + depVar.name;
+						}
+					}
+
+					uniforms[depVar.name] = { value: null };
+
+					material.fragmentShader = "\nuniform sampler2D " + depVar.name + ";\n" + material.fragmentShader;
+				}
+			}
+		}
+
+		this.currentTextureIndex = 0;
+
+		return null;
+	};
+
+	this.compute = function () {
+
+		var currentTextureIndex = this.currentTextureIndex;
+		var nextTextureIndex = this.currentTextureIndex === 0 ? 1 : 0;
+
+		for (var i = 0, il = this.variables.length; i < il; i++) {
+
+			var variable = this.variables[i];
+
+			// Sets texture dependencies uniforms
+			if (variable.dependencies !== null) {
+
+				var uniforms = variable.material.uniforms;
+				for (var d = 0, dl = variable.dependencies.length; d < dl; d++) {
+
+					var depVar = variable.dependencies[d];
+
+					uniforms[depVar.name].value = depVar.renderTargets[currentTextureIndex].texture;
+				}
+			}
+
+			// Performs the computation for this variable
+			this.doRenderTarget(variable.material, variable.renderTargets[nextTextureIndex]);
+		}
+
+		this.currentTextureIndex = nextTextureIndex;
+	};
+
+	this.getCurrentRenderTarget = function (variable) {
+
+		return variable.renderTargets[this.currentTextureIndex];
+	};
+
+	this.getAlternateRenderTarget = function (variable) {
+
+		return variable.renderTargets[this.currentTextureIndex === 0 ? 1 : 0];
+	};
+
+	function addResolutionDefine(materialShader) {
+
+		materialShader.defines.resolution = 'vec2( ' + sizeX.toFixed(1) + ', ' + sizeY.toFixed(1) + " )";
+	}
+	this.addResolutionDefine = addResolutionDefine;
+
+	// The following functions can be used to compute things manually
+
+	function createShaderMaterial(computeFragmentShader, uniforms) {
+
+		uniforms = uniforms || {};
+
+		var material = new THREE.ShaderMaterial({
+			uniforms: uniforms,
+			vertexShader: getPassThroughVertexShader(),
+			fragmentShader: computeFragmentShader
+		});
+
+		addResolutionDefine(material);
+
+		return material;
+	}
+	this.createShaderMaterial = createShaderMaterial;
+
+	this.createRenderTarget = function (sizeXTexture, sizeYTexture, wrapS, wrapT, minFilter, magFilter) {
+
+		sizeXTexture = sizeXTexture || sizeX;
+		sizeYTexture = sizeYTexture || sizeY;
+
+		wrapS = wrapS || THREE.ClampToEdgeWrapping;
+		wrapT = wrapT || THREE.ClampToEdgeWrapping;
+
+		minFilter = minFilter || THREE.NearestFilter;
+		magFilter = magFilter || THREE.NearestFilter;
+
+		var renderTarget = new THREE.WebGLRenderTarget(sizeXTexture, sizeYTexture, {
+			wrapS: wrapS,
+			wrapT: wrapT,
+			minFilter: minFilter,
+			magFilter: magFilter,
+			format: THREE.RGBAFormat,
+			type: /(iPad|iPhone|iPod)/g.test(navigator.userAgent) ? THREE.HalfFloatType : THREE.FloatType,
+			stencilBuffer: false
+		});
+
+		return renderTarget;
+	};
+
+	this.createTexture = function (sizeXTexture, sizeYTexture) {
+
+		sizeXTexture = sizeXTexture || sizeX;
+		sizeYTexture = sizeYTexture || sizeY;
+
+		var a = new Float32Array(sizeXTexture * sizeYTexture * 4);
+		var texture = new THREE.DataTexture(a, sizeX, sizeY, THREE.RGBAFormat, THREE.FloatType);
+		texture.needsUpdate = true;
+
+		return texture;
+	};
+
+	this.renderTexture = function (input, output) {
+
+		// Takes a texture, and render out in rendertarget
+		// input = Texture
+		// output = RenderTarget
+
+		passThruUniforms.texture.value = input;
+
+		this.doRenderTarget(passThruShader, output);
+
+		passThruUniforms.texture.value = null;
+	};
+
+	this.doRenderTarget = function (material, output) {
+
+		mesh.material = material;
+		renderer.render(scene, camera, output);
+		mesh.material = passThruShader;
+	};
+
+	// Shaders
+
+	function getPassThroughVertexShader() {
+
+		return "void main()	{\n" + "\n" + "	gl_Position = vec4( position, 1.0 );\n" + "\n" + "}\n";
+	}
+
+	function getPassThroughFragmentShader() {
+
+		return "uniform sampler2D texture;\n" + "\n" + "void main() {\n" + "\n" + "	vec2 uv = gl_FragCoord.xy / resolution.xy;\n" + "\n" + "	gl_FragColor = texture2D( texture, uv );\n" + "\n" + "}\n";
+	}
+}
+
+},{"three":44}],61:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _three = require('three');
+
+var THREE = _interopRequireWildcard(_three);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+exports.default = Graphics;
+
+
+function Graphics() {
+	this.mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 1, 1, 1));
+	this.inScene = false;
+}
+
+},{"three":44}],62:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -60843,18 +65839,106 @@ function Physics() {
     this.mass = 5;
 }
 
-},{}],36:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true
 });
-exports.default = Shape;
+exports.default = Position;
 
 
-function Shape() {}
+function Position() {
+	this.x = 0;
+	this.y = 0;
+	this.z = 0;
+}
 
-},{}],37:[function(require,module,exports){
+Position.prototype.copy = function (source) {
+	this.x = source.x;
+	this.y = source.y;
+	this.z = source.z;
+	return this;
+};
+
+},{}],64:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.default = Quaternion;
+
+
+function Quaternion() {
+	this.x = 0;
+	this.y = 0;
+	this.z = 0;
+	this.w = 1;
+}
+
+Quaternion.prototype.copy = function (source) {
+	this.x = source.x;
+	this.y = source.y;
+	this.z = source.z;
+	this.w = source.w;
+	return this;
+};
+
+},{}],65:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.default = StickToTarget;
+
+
+function StickToTarget() {
+	this.target;
+	this.offset = { x: 0, z: 0 };
+}
+
+},{}],66:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+        value: true
+});
+exports.default = WASD;
+
+
+function WASD() {}
+
+},{}],67:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.default = billboardSystem;
+
+
+function billboardSystem(thing, camera) {
+	thing.quaternion.copy(camera.quaternion);
+}
+
+},{}],68:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.default = initGraphics;
+
+
+function initGraphics(scene, thing) {
+
+	scene.add(thing.graphics.mesh);
+	thing.graphics.inScene = true;
+}
+
+},{}],69:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -60873,36 +65957,15 @@ exports.default = initPhysics;
 function initPhysics(world, thing) {
     thing.physics.body = new _cannon2.default.Body({
         mass: thing.physics.mass,
-        position: new _cannon2.default.Vec3(0, 8, 0), // m 
+        //	position: new CANNON.Vec3(0, 8, 0), // m 
+        position: thing.position,
         shape: new _cannon2.default.Sphere(1)
     });
 
     world.addBody(thing.physics.body);
 }
 
-},{"cannon":1}],38:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _three = require('three');
-
-var _three2 = _interopRequireDefault(_three);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-exports.default = initShape;
-
-
-function initShape(scene, thing) {
-	thing.shape = new _three2.default.Mesh(new _three2.default.SphereGeometry(1, 1, 1, 1));
-
-	scene.add(thing.shape);
-}
-
-},{"three":20}],39:[function(require,module,exports){
+},{"cannon":1}],70:[function(require,module,exports){
 'use strict';
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
@@ -60910,6 +65973,10 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 var _three = require('three');
 
 var THREE = _interopRequireWildcard(_three);
+
+var _GPUComputationRenderer = require('./GPUComputationRenderer');
+
+var _GPUComputationRenderer2 = _interopRequireDefault(_GPUComputationRenderer);
 
 var _canvasLoop = require('canvas-loop');
 
@@ -60931,21 +65998,53 @@ var _cannon = require('cannon');
 
 var _cannon2 = _interopRequireDefault(_cannon);
 
+var _dat = require('dat.gui');
+
+var _dat2 = _interopRequireDefault(_dat);
+
 var _initPhysics = require('./initPhysics');
 
 var _initPhysics2 = _interopRequireDefault(_initPhysics);
 
-var _initShape = require('./initShape');
+var _initGraphics = require('./initGraphics');
 
-var _initShape2 = _interopRequireDefault(_initShape);
+var _initGraphics2 = _interopRequireDefault(_initGraphics);
+
+var _stickToTargetSystem = require('./stickToTargetSystem');
+
+var _stickToTargetSystem2 = _interopRequireDefault(_stickToTargetSystem);
+
+var _billboardSystem = require('./billboardSystem');
+
+var _billboardSystem2 = _interopRequireDefault(_billboardSystem);
 
 var _Physics = require('./Physics');
 
 var _Physics2 = _interopRequireDefault(_Physics);
 
-var _Shape = require('./Shape');
+var _WASD = require('./WASD');
 
-var _Shape2 = _interopRequireDefault(_Shape);
+var _WASD2 = _interopRequireDefault(_WASD);
+
+var _Graphics = require('./Graphics');
+
+var _Graphics2 = _interopRequireDefault(_Graphics);
+
+var _StickToTarget = require('./StickToTarget');
+
+var _StickToTarget2 = _interopRequireDefault(_StickToTarget);
+
+var _Position = require('./Position');
+
+var _Position2 = _interopRequireDefault(_Position);
+
+var _Quaternion = require('./Quaternion');
+
+var _Quaternion2 = _interopRequireDefault(_Quaternion);
+
+var _Billboard = require('./Billboard');
+
+var _Billboard2 = _interopRequireDefault(_Billboard);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -60956,8 +66055,6 @@ var EffectComposer = (0, _threeEffectcomposer2.default)(THREE);
 var glslify = require('glslify'); // needed for bug https://github.com/stackgl/glslify/issues/49 - if you try using fixes like glslify babel plugin, then shaders wont live reload!!
 
 
-function ready() {}
-
 //systems 
 
 
@@ -60967,126 +66064,371 @@ function ready() {}
 //assets 
 
 var scene = new THREE.Scene();
+var gui = new _dat2.default.GUI();
+document.getElementsByClassName('dg')[0].style.zIndex = 1;
+
+var seed = { "value": 0.0 };
 
 //physics 
 
 var world = new _cannon2.default.World();
 
-//world.gravity = new CANNON.Vec3(0, -9.82, 0) // m/s² 
+//world.gravity = new CANNON.Vec3(0, -9.82, 0) // m/s²  
 world.gravity = new _cannon2.default.Vec3(0, 0, 0); // m/s² 
 
 world.broadphase = new _cannon2.default.NaiveBroadphase();
 
 world.solver.iterations = 10;
 
-//const canvas = document.querySelector('canvas')
+//canvas for rendering	
 var canvas = document.createElement('canvas');
 document.body.appendChild(canvas);
+
+//renderer 
 var renderer = new THREE.WebGLRenderer({
-  canvas: canvas,
-  antialias: true,
-  devicePixelRatio: window.devicePixelRatio
+    canvas: canvas,
+    antialias: true,
+    devicePixelRatio: window.devicePixelRatio
 });
 
 //renderer.context.getShaderInfoLog = function () { return '' }; //nasty hack to suppress error merssages due to possible ff bug? https://github.com/mrdoob/three.js/issues/9716
 
+
+//setup ecs
 var ents = new _tinyEcs2.default.EntityManager(); //ents, because, i keep misspelling entities
 
 // the player
 var player = ents.createEntity();
+player.addComponent(_Position2.default);
+player.addComponent(_Quaternion2.default);
 player.addComponent(_Physics2.default);
-player.addComponent(_Shape2.default);
+player.addComponent(_Graphics2.default);
+//player.addComponent(WASD);
 
-//renderer.setClearColor(0x000000, 1)
-renderer.setClearColor(0xff6600, 1);
+player.position.y = 8;
+player.position.z = 30;
 
-var fixedTimeStep = 1 / 60; // seconds
-var maxSubSteps = 10; // Max sub steps to catch up with the wall clock
+//renderer.setClearColor(0xff6600, 1)
+renderer.setClearColor(0xeeeeee, 1);
+var fixedTimeStep = 1 / 60; // physics engine setting - keeps render framerate and sim in sync
+var maxSubSteps = 10; // physics engine setting - not 100% sure what this does
 
+//setup buffer render target for render to texture stuff. 
 var bufferScene = new THREE.Scene();
 var bufferTexture = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter });
+
+//setup camera	
 var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
 camera.position.set(0, 0, 0);
+
+//passthrough shader for fullscreen + buffer. Use this as template for effects.  
 var passthroughShader = {
 
-  uniforms: {
-    "tLast": { type: "t", value: bufferTexture },
-    "tDiffuse": { type: "t", value: null }, // output from previous - all need this  
-    "iResolution": { type: 'v2', value: new THREE.Vector2() },
-    "iGlobalTime": { type: 'f', value: 0 }
-  },
-  vertexShader: glslify(["#ifdef GL_ES\nprecision mediump float;\n#define GLSLIFY 1\n#endif\n\nvarying vec3 vNorm;\nvarying vec2 vUv;\nuniform float logDepthBufFC;\nvarying float vFragDepth;\nvoid main() {\n  vUv = uv;\n  vNorm = position.xyz;\n  gl_Position = projectionMatrix *\n              modelViewMatrix *\n              vec4(position, 1.0);\n // gl_Position.z = log2(max( 0.00001, gl_Position.w + 1.0 )) * logDepthBufFC;\n // gl_Position.z = (gl_Position.z - 1.0) * gl_Position.w;\n}\n"]),
-  fragmentShader: glslify(["#define GLSLIFY 1\nvarying vec2 vUv;\nuniform sampler2D tDiffuse; \nuniform vec2 iResolution;\nuniform float iGlobalTime;\nuniform float amount;\n\nvoid main() {\n    vec4 colour = texture2D(tDiffuse,vUv);\n    gl_FragColor = vec4(colour);\n}\n"])
+    uniforms: {
+        "tLast": { type: "t", value: bufferTexture },
+        "tDiffuse": { type: "t", value: null }, // output from previous - all need this  
+        "iResolution": { type: 'v2', value: new THREE.Vector2() },
+        "iGlobalTime": { type: 'f', value: 0 }
+    },
+    vertexShader: glslify(["#ifdef GL_ES\nprecision mediump float;\n#define GLSLIFY 1\n#endif\n\nvarying vec3 vNorm;\nvarying vec2 vUv;\nuniform float logDepthBufFC;\nvarying float vFragDepth;\nvoid main() {\n  vUv = uv;\n  vNorm = position.xyz;\n  gl_Position = projectionMatrix *\n              modelViewMatrix *\n              vec4(position, 1.0);\n // gl_Position.z = log2(max( 0.00001, gl_Position.w + 1.0 )) * logDepthBufFC;\n // gl_Position.z = (gl_Position.z - 1.0) * gl_Position.w;\n}\n"]),
+    fragmentShader: glslify(["#define GLSLIFY 1\nvarying vec2 vUv;\nuniform sampler2D tDiffuse; \nuniform vec2 iResolution;\nuniform float iGlobalTime;\nuniform float amount;\n\nvoid main() {\n    vec4 colour = texture2D(tDiffuse,vUv);\n    gl_FragColor = vec4(colour);\n}\n"])
 
-};
-
-var composer = new EffectComposer(renderer);
-composer.addPass(new EffectComposer.RenderPass(scene, camera));
-var passthroughEffect = new EffectComposer.ShaderPass(passthroughShader);
-composer.addPass(passthroughEffect);
+    //effect composer to deal with the screen shaders
+};var composer = new EffectComposer(renderer);
+composer.addPass(new EffectComposer.RenderPass(scene, camera)); //the actual scene
+var passthroughEffect = new EffectComposer.ShaderPass(passthroughShader); // the passthrough shader
+composer.addPass(passthroughEffect); // adding the passthrough shader
 
 composer.passes[composer.passes.length - 1].renderToScreen = true;
 
 var light = new THREE.AmbientLight(0x404040); // soft white light
 scene.add(light);
 
-var dmat = new THREE.ShaderMaterial({
-  vertexShader: glslify(["#ifdef GL_ES\nprecision mediump float;\n#define GLSLIFY 1\n#endif\n\n//\n// Description : Array and textureless GLSL 2D/3D/4D simplex\n//               noise functions.\n//      Author : Ian McEwan, Ashima Arts.\n//  Maintainer : ijm\n//     Lastmod : 20110822 (ijm)\n//     License : Copyright (C) 2011 Ashima Arts. All rights reserved.\n//               Distributed under the MIT License. See LICENSE file.\n//               https://github.com/ashima/webgl-noise\n//\n\nvec3 mod289(vec3 x) {\n  return x - floor(x * (1.0 / 289.0)) * 289.0;\n}\n\nvec4 mod289(vec4 x) {\n  return x - floor(x * (1.0 / 289.0)) * 289.0;\n}\n\nvec4 permute(vec4 x) {\n     return mod289(((x*34.0)+1.0)*x);\n}\n\nvec4 taylorInvSqrt(vec4 r)\n{\n  return 1.79284291400159 - 0.85373472095314 * r;\n}\n\nfloat snoise(vec3 v)\n  {\n  const vec2  C = vec2(1.0/6.0, 1.0/3.0) ;\n  const vec4  D = vec4(0.0, 0.5, 1.0, 2.0);\n\n// First corner\n  vec3 i  = floor(v + dot(v, C.yyy) );\n  vec3 x0 =   v - i + dot(i, C.xxx) ;\n\n// Other corners\n  vec3 g = step(x0.yzx, x0.xyz);\n  vec3 l = 1.0 - g;\n  vec3 i1 = min( g.xyz, l.zxy );\n  vec3 i2 = max( g.xyz, l.zxy );\n\n  //   x0 = x0 - 0.0 + 0.0 * C.xxx;\n  //   x1 = x0 - i1  + 1.0 * C.xxx;\n  //   x2 = x0 - i2  + 2.0 * C.xxx;\n  //   x3 = x0 - 1.0 + 3.0 * C.xxx;\n  vec3 x1 = x0 - i1 + C.xxx;\n  vec3 x2 = x0 - i2 + C.yyy; // 2.0*C.x = 1/3 = C.y\n  vec3 x3 = x0 - D.yyy;      // -1.0+3.0*C.x = -0.5 = -D.y\n\n// Permutations\n  i = mod289(i);\n  vec4 p = permute( permute( permute(\n             i.z + vec4(0.0, i1.z, i2.z, 1.0 ))\n           + i.y + vec4(0.0, i1.y, i2.y, 1.0 ))\n           + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));\n\n// Gradients: 7x7 points over a square, mapped onto an octahedron.\n// The ring size 17*17 = 289 is close to a multiple of 49 (49*6 = 294)\n  float n_ = 0.142857142857; // 1.0/7.0\n  vec3  ns = n_ * D.wyz - D.xzx;\n\n  vec4 j = p - 49.0 * floor(p * ns.z * ns.z);  //  mod(p,7*7)\n\n  vec4 x_ = floor(j * ns.z);\n  vec4 y_ = floor(j - 7.0 * x_ );    // mod(j,N)\n\n  vec4 x = x_ *ns.x + ns.yyyy;\n  vec4 y = y_ *ns.x + ns.yyyy;\n  vec4 h = 1.0 - abs(x) - abs(y);\n\n  vec4 b0 = vec4( x.xy, y.xy );\n  vec4 b1 = vec4( x.zw, y.zw );\n\n  //vec4 s0 = vec4(lessThan(b0,0.0))*2.0 - 1.0;\n  //vec4 s1 = vec4(lessThan(b1,0.0))*2.0 - 1.0;\n  vec4 s0 = floor(b0)*2.0 + 1.0;\n  vec4 s1 = floor(b1)*2.0 + 1.0;\n  vec4 sh = -step(h, vec4(0.0));\n\n  vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy ;\n  vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww ;\n\n  vec3 p0 = vec3(a0.xy,h.x);\n  vec3 p1 = vec3(a0.zw,h.y);\n  vec3 p2 = vec3(a1.xy,h.z);\n  vec3 p3 = vec3(a1.zw,h.w);\n\n//Normalise gradients\n  vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));\n  p0 *= norm.x;\n  p1 *= norm.y;\n  p2 *= norm.z;\n  p3 *= norm.w;\n\n// Mix final noise value\n  vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);\n  m = m * m;\n  return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1),\n                                dot(p2,x2), dot(p3,x3) ) );\n  }\n\nvarying vec3 vNorm;\nvarying vec2 vUv;\nvarying float deform;\nvarying float deform2;\nvoid main() {\n  vUv = uv;\n  vNorm = position.xyz;\n  vec3 worldPos = vec4(modelMatrix * vec4(position,1.0)).xyz;\n  deform = 0.5 * snoise(worldPos * 0.03) + snoise(worldPos * 0.05);\n  //deform =  10. * snoise3(worldPos * 0.005) +  5. * snoise3(worldPos) * 0.01 +  1. * snoise3(worldPos* 0.05);\n  vec3 newPosition = vec3(position.x,position.y, deform * 4.); \n  gl_Position = projectionMatrix *\n              modelViewMatrix *\n              vec4(newPosition, 1.0);\n\n}\n"]),
-  fragmentShader: glslify(["#ifdef GL_ES\nprecision mediump float;\n#define GLSLIFY 1\n#endif\n\n#define FOG_DENSITY 0.025\n\nuniform vec2 iResolution;\nvarying vec2 vUv;\nuniform float iGlobalTime;\nvarying vec3 vNorm;\nuniform float logDepthBufFC;\nvarying float vFragDepth;\nvarying float deform;\nvarying float deform2;\n\nfloat fogFactorExp(\n  const float dist,\n  const float density\n) {\n  return 1.0 - clamp(exp(-density * dist), 0.0, 1.0);\n}\n\nfloat fogFactorExp2(\n  const float dist,\n  const float density\n) {\n  const float LOG2 = -1.442695;\n  float d = density * dist;\n  return 1.0 - clamp(exp2(d * d * LOG2), 0.0, 1.0);\n}\n\nvoid main() {\n    vec2 st = vUv;\n    vec3 color = vec3(0.8 + deform * 0.5,0.2,0.5-2.*deform); \nfloat fogDistance = gl_FragCoord.z / gl_FragCoord.w;\n  float fogAmount = fogFactorExp2(fogDistance, FOG_DENSITY);\n  vec4 fogColor = vec4(1,0.5,0.,1.); // white \n\n    gl_FragColor = vec4(mix(vec4(color, 1.0),fogColor,fogAmount));\n}\n"]),
-  transparent: true,
-  uniforms: {
-    iGlobalTime: { type: 'f', value: 0 },
-    iResolution: { type: 'v2', value: new THREE.Vector2() }
-  },
-  defines: {
-    USE_MAP: ''
-  }
+// procedural deformation texture
+var deform_mat = new THREE.ShaderMaterial({
+    vertexShader: glslify(["#ifdef GL_ES\nprecision mediump float;\n#define GLSLIFY 1\n#endif\n\n//\n// Description : Array and textureless GLSL 2D/3D/4D simplex\n//               noise functions.\n//      Author : Ian McEwan, Ashima Arts.\n//  Maintainer : ijm\n//     Lastmod : 20110822 (ijm)\n//     License : Copyright (C) 2011 Ashima Arts. All rights reserved.\n//               Distributed under the MIT License. See LICENSE file.\n//               https://github.com/ashima/webgl-noise\n//\n\nvec3 mod289_0(vec3 x) {\n  return x - floor(x * (1.0 / 289.0)) * 289.0;\n}\n\nvec4 mod289_0(vec4 x) {\n  return x - floor(x * (1.0 / 289.0)) * 289.0;\n}\n\nvec4 permute_0(vec4 x) {\n     return mod289_0(((x*34.0)+1.0)*x);\n}\n\nvec4 taylorInvSqrt(vec4 r)\n{\n  return 1.79284291400159 - 0.85373472095314 * r;\n}\n\nfloat snoise_0(vec3 v)\n  {\n  const vec2  C = vec2(1.0/6.0, 1.0/3.0) ;\n  const vec4  D = vec4(0.0, 0.5, 1.0, 2.0);\n\n// First corner\n  vec3 i  = floor(v + dot(v, C.yyy) );\n  vec3 x0 =   v - i + dot(i, C.xxx) ;\n\n// Other corners\n  vec3 g_0 = step(x0.yzx, x0.xyz);\n  vec3 l = 1.0 - g_0;\n  vec3 i1 = min( g_0.xyz, l.zxy );\n  vec3 i2 = max( g_0.xyz, l.zxy );\n\n  //   x0 = x0 - 0.0 + 0.0 * C.xxx;\n  //   x1 = x0 - i1  + 1.0 * C.xxx;\n  //   x2 = x0 - i2  + 2.0 * C.xxx;\n  //   x3 = x0 - 1.0 + 3.0 * C.xxx;\n  vec3 x1 = x0 - i1 + C.xxx;\n  vec3 x2 = x0 - i2 + C.yyy; // 2.0*C.x = 1/3 = C.y\n  vec3 x3 = x0 - D.yyy;      // -1.0+3.0*C.x = -0.5 = -D.y\n\n// Permutations\n  i = mod289_0(i);\n  vec4 p = permute_0( permute_0( permute_0(\n             i.z + vec4(0.0, i1.z, i2.z, 1.0 ))\n           + i.y + vec4(0.0, i1.y, i2.y, 1.0 ))\n           + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));\n\n// Gradients: 7x7 points over a square, mapped onto an octahedron.\n// The ring size 17*17 = 289 is close to a multiple of 49 (49*6 = 294)\n  float n_ = 0.142857142857; // 1.0/7.0\n  vec3  ns = n_ * D.wyz - D.xzx;\n\n  vec4 j = p - 49.0 * floor(p * ns.z * ns.z);  //  mod(p,7*7)\n\n  vec4 x_ = floor(j * ns.z);\n  vec4 y_ = floor(j - 7.0 * x_ );    // mod(j,N)\n\n  vec4 x = x_ *ns.x + ns.yyyy;\n  vec4 y = y_ *ns.x + ns.yyyy;\n  vec4 h = 1.0 - abs(x) - abs(y);\n\n  vec4 b0 = vec4( x.xy, y.xy );\n  vec4 b1 = vec4( x.zw, y.zw );\n\n  //vec4 s0 = vec4(lessThan(b0,0.0))*2.0 - 1.0;\n  //vec4 s1 = vec4(lessThan(b1,0.0))*2.0 - 1.0;\n  vec4 s0 = floor(b0)*2.0 + 1.0;\n  vec4 s1 = floor(b1)*2.0 + 1.0;\n  vec4 sh = -step(h, vec4(0.0));\n\n  vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy ;\n  vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww ;\n\n  vec3 p0 = vec3(a0.xy,h.x);\n  vec3 p1 = vec3(a0.zw,h.y);\n  vec3 p2 = vec3(a1.xy,h.z);\n  vec3 p3 = vec3(a1.zw,h.w);\n\n//Normalise gradients\n  vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));\n  p0 *= norm.x;\n  p1 *= norm.y;\n  p2 *= norm.z;\n  p3 *= norm.w;\n\n// Mix final noise value\n  vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);\n  m = m * m;\n  return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1),\n                                dot(p2,x2), dot(p3,x3) ) );\n  }\n\n//\n// Description : Array and textureless GLSL 2D simplex noise function.\n//      Author : Ian McEwan, Ashima Arts.\n//  Maintainer : ijm\n//     Lastmod : 20110822 (ijm)\n//     License : Copyright (C) 2011 Ashima Arts. All rights reserved.\n//               Distributed under the MIT License. See LICENSE file.\n//               https://github.com/ashima/webgl-noise\n//\n\nvec3 mod289_1(vec3 x) {\n  return x - floor(x * (1.0 / 289.0)) * 289.0;\n}\n\nvec2 mod289_1(vec2 x) {\n  return x - floor(x * (1.0 / 289.0)) * 289.0;\n}\n\nvec3 permute_1(vec3 x) {\n  return mod289_1(((x*34.0)+1.0)*x);\n}\n\nfloat snoise_1(vec2 v)\n  {\n  const vec4 C = vec4(0.211324865405187,  // (3.0-sqrt(3.0))/6.0\n                      0.366025403784439,  // 0.5*(sqrt(3.0)-1.0)\n                     -0.577350269189626,  // -1.0 + 2.0 * C.x\n                      0.024390243902439); // 1.0 / 41.0\n// First corner\n  vec2 i  = floor(v + dot(v, C.yy) );\n  vec2 x0 = v -   i + dot(i, C.xx);\n\n// Other corners\n  vec2 i1;\n  //i1.x = step( x0.y, x0.x ); // x0.x > x0.y ? 1.0 : 0.0\n  //i1.y = 1.0 - i1.x;\n  i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);\n  // x0 = x0 - 0.0 + 0.0 * C.xx ;\n  // x1 = x0 - i1 + 1.0 * C.xx ;\n  // x2 = x0 - 1.0 + 2.0 * C.xx ;\n  vec4 x12 = x0.xyxy + C.xxzz;\n  x12.xy -= i1;\n\n// Permutations\n  i = mod289_1(i); // Avoid truncation effects in permutation\n  vec3 p = permute_1( permute_1( i.y + vec3(0.0, i1.y, 1.0 ))\n    + i.x + vec3(0.0, i1.x, 1.0 ));\n\n  vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);\n  m = m*m ;\n  m = m*m ;\n\n// Gradients: 41 points uniformly over a line, mapped onto a diamond.\n// The ring size 17*17 = 289 is close to a multiple of 41 (41*7 = 287)\n\n  vec3 x = 2.0 * fract(p * C.www) - 1.0;\n  vec3 h = abs(x) - 0.5;\n  vec3 ox = floor(x + 0.5);\n  vec3 a0 = x - ox;\n\n// Normalise gradients implicitly by scaling m\n// Approximation of: m *= inversesqrt( a0*a0 + h*h );\n  m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );\n\n// Compute final noise value at P\n  vec3 g;\n  g.x  = a0.x  * x0.x  + h.x  * x0.y;\n  g.yz = a0.yz * x12.xz + h.yz * x12.yw;\n  return 130.0 * dot(m, g);\n}\n\nuniform vec3 colour;\nuniform float alpha;\nuniform sampler2D tDiffuse; \nuniform float deformAmount;\n\nvarying vec3 vNorm;\nvarying vec2 vUv;\nvarying float deform;\n\nvoid main() {\n  vUv = uv;\n  \n  vec4 influence = texture2D(tDiffuse,vUv); \n  deform = influence.x;\n  deform = (deform * 2.) - 1.;\n  vec3 newPosition = vec3(position.x,position.y, deform * deformAmount); \n  gl_Position = projectionMatrix *\n              modelViewMatrix *\n              vec4(newPosition, 1.0);\n\n}\n"]),
+    fragmentShader: glslify(["#ifdef GL_ES\nprecision mediump float;\n#define GLSLIFY 1\n#endif\n\n#define FOG_DENSITY 0.025\n\nuniform vec2 iResolution;\nvarying vec2 vUv;\nuniform float iGlobalTime;\nvarying vec3 vNorm;\nuniform float logDepthBufFC;\nvarying float vFragDepth;\nvarying float deform;\nvarying float deform2;\n\nuniform vec3 colour;\nuniform float alpha;\nfloat fogFactorExp(\n  const float dist,\n  const float density\n) {\n  return 1.0 - clamp(exp(-density * dist), 0.0, 1.0);\n}\n\nfloat fogFactorExp2(\n  const float dist,\n  const float density\n) {\n  const float LOG2 = -1.442695;\n  float d = density * dist;\n  return 1.0 - clamp(exp2(d * d * LOG2), 0.0, 1.0);\n}\n\nvoid main() {\n    vec2 st = vUv;\n    //vec3 color = vec3(0.8 + deform * 0.5,0.2,0.5-2.*deform); \n    vec3 color = (colour/255.) * (1. - vec3(deform) *2.); \nfloat fogDistance = gl_FragCoord.z / gl_FragCoord.w;\n  float fogAmount = fogFactorExp2(fogDistance, FOG_DENSITY);\n  vec4 fogColor = vec4(1.,1.,1.,1.); // white \n\n    gl_FragColor = vec4(mix(vec4(color, alpha),fogColor,fogAmount));\n}\n"]),
+    transparent: true,
+    uniforms: {
+        lacunarity: { type: 'f', value: 2.0 },
+        gain: { type: 'f', value: 0.5 },
+        fbmx: { type: 'f', value: 0.5 },
+        fbmy: { type: 'f', value: 0.5 },
+        deformAmount: { type: 'f', value: 1.0 },
+        iGlobalTime: { type: 'f', value: 0 },
+        iResolution: { type: 'v2', value: new THREE.Vector2() },
+        colour: { type: 'v3', value: new THREE.Color(26, 165, 26) },
+        alpha: { type: 'f', value: 1.0 },
+        tDiffuse: { type: "t", value: null }
+    },
+    defines: {
+        USE_MAP: ''
+    }
 });
+var water_mat = new THREE.ShaderMaterial({
+    vertexShader: glslify(["\n#ifdef GL_ES\nprecision mediump float;\n#define GLSLIFY 1\n#endif\n\nuniform float iGlobalTime;\nuniform float lacunarity;\nuniform float gain;\nuniform float fbmx;\nuniform float fbmy;\nuniform float deformAmount;\nuniform float seaLevel;\nvarying vec2 vUv;\nvarying float deform;\n\n// from https://thebookofshaders.com/13/\n// Based on Morgan McGuire @morgan3d\n// https://www.shadertoy.com/view/4dS3Wd\nfloat random (in vec2 _st) { \n    return fract(sin(dot(_st.xy,\n                         vec2(12.9898,78.233)))* \n        43758.5453123);\n}\n\nfloat noise (in vec2 _st) {\n    vec2 i = floor(_st);\n    vec2 f = fract(_st);\n\n    // Four corners in 2D of a tile\n    float a = random(i);\n    float b = random(i + vec2(1.0, 0.0));\n    float c = random(i + vec2(0.0, 1.0));\n    float d = random(i + vec2(1.0, 1.0));\n\n    vec2 u = f * f * (3.0 - 2.0 * f);\n\n    return mix(a, b, u.x) + \n            (c - a)* u.y * (1.0 - u.x) + \n            (d - b) * u.x * u.y;\n}\n\n  #define OCTAVES 12\n  #\n \n// from https://thebookofshaders.com/13/\nfloat fbm ( in vec2 _st) {\n    float v = 0.0;\n    float a = 0.5;\n    vec2 shift = vec2(100.0);\n    // Rotate to reduce axial bias\n    mat2 rot = mat2(cos(0.5), sin(0.5), \n                    -sin(0.5), cos(0.50));\n    for (int i = 0; i < OCTAVES; ++i) {\n        v += a * noise(_st);\n        _st = rot * _st * lacunarity + shift;\n\ta *= gain;\n    }\n    return v;\n}\n\nvoid main() {\n  vec2 st = uv;\n\nvec2 q = vec2(0.);\n    q.x = fbm( st + 0.00);\n    q.y = fbm( st + vec2(1.0));\n \n    vec2 r = vec2(0.);\n    r.x = fbm( st + 1.*q + vec2(1.7,9.2)+ 0.15 * sin(iGlobalTime * fbmx) );\n    r.y = fbm( st + 1.*q + vec2(8.3,2.8)+ 0.26 * cos(iGlobalTime * fbmy));\n    float deform = fbm(st + r);\n  vec3 newPosition = vec3(position.x,position.y, seaLevel + deform * deformAmount); \n  gl_Position = projectionMatrix *\n              modelViewMatrix *\n              vec4(newPosition, 1.0);\n}\n"]),
+    fragmentShader: glslify(["#define GLSLIFY 1\n#define FOG_DENSITY 0.025\n\nvarying float deform;\nuniform vec3 colour;\nuniform float alpha;\n\nfloat fogFactorExp(\n  const float dist,\n  const float density\n) {\n  return 1.0 - clamp(exp(-density * dist), 0.0, 1.0);\n}\n\nfloat fogFactorExp2(\n  const float dist,\n  const float density\n) {\n  const float LOG2 = -1.442695;\n  float d = density * dist;\n  return 1.0 - clamp(exp2(d * d * LOG2), 0.0, 1.0);\n}\n\nvoid main(){\n\tvec3 colour = colour/255.;\n\tfloat fogDistance = gl_FragCoord.z / gl_FragCoord.w;\n\tfloat fogAmount = fogFactorExp2(fogDistance, FOG_DENSITY);\n\tvec4 fogColor = vec4(1.,1.,1.,1.); // white \n\n\tgl_FragColor = vec4(mix(vec4(colour, alpha),fogColor,fogAmount));\n}\n"]),
+    transparent: true,
+    uniforms: {
+        lacunarity: { type: 'f', value: 2.0 },
+        gain: { type: 'f', value: 0.5 },
+        fbmx: { type: 'f', value: 0.5 },
+        fbmy: { type: 'f', value: 0.5 },
+        deformAmount: { type: 'f', value: 1.0 },
+        seaLevel: { type: 'f', value: -0.25 },
+        iResolution: { type: 'v2', value: new THREE.Vector2() },
+        colour: { type: 'v3', value: new THREE.Color(0, 0, 255) },
+        alpha: { type: 'f', value: 0.3 },
+        iGlobalTime: { type: 'f', value: 0 }
+
+    },
+    defines: {
+        USE_MAP: ''
+    }
+});
+var vor_mat = new THREE.ShaderMaterial({
+    vertexShader: glslify(["#ifdef GL_ES\nprecision mediump float;\n#define GLSLIFY 1\n#endif\n\nvarying vec3 vNorm;\nvarying vec2 vUv;\nuniform float logDepthBufFC;\nvarying float vFragDepth;\nvoid main() {\n  vUv = uv;\n  vNorm = position.xyz;\n  gl_Position = projectionMatrix *\n              modelViewMatrix *\n              vec4(position, 1.0);\n // gl_Position.z = log2(max( 0.00001, gl_Position.w + 1.0 )) * logDepthBufFC;\n // gl_Position.z = (gl_Position.z - 1.0) * gl_Position.w;\n}\n"]),
+    fragmentShader: glslify(["#define GLSLIFY 1\nvarying vec2 vUv;\nuniform sampler2D tDiffuse; \nuniform vec2 iResolution;\nuniform float iGlobalTime;\nuniform float amount;\n\nvoid main() {\n    vec4 colour = texture2D(tDiffuse,vUv);\n    gl_FragColor = vec4(colour);\n}\n"]),
+    transparent: true,
+    uniforms: {
+        "tDiffuse": { type: "t", value: null }
+    },
+    defines: {
+        USE_MAP: ''
+    }
+});
+var fbm_mat = new THREE.ShaderMaterial({
+    vertexShader: glslify(["#ifdef GL_ES\nprecision mediump float;\n#define GLSLIFY 1\n#endif\n\nvarying vec3 vNorm;\nvarying vec2 vUv;\nuniform float logDepthBufFC;\nvarying float vFragDepth;\nvoid main() {\n  vUv = uv;\n  vNorm = position.xyz;\n  gl_Position = projectionMatrix *\n              modelViewMatrix *\n              vec4(position, 1.0);\n // gl_Position.z = log2(max( 0.00001, gl_Position.w + 1.0 )) * logDepthBufFC;\n // gl_Position.z = (gl_Position.z - 1.0) * gl_Position.w;\n}\n"]),
+    fragmentShader: glslify(["#define GLSLIFY 1\nvarying vec2 vUv;\nuniform sampler2D tDiffuse; \nuniform vec2 iResolution;\nuniform float iGlobalTime;\nuniform float amount;\n\nvoid main() {\n    vec4 colour = texture2D(tDiffuse,vUv);\n    gl_FragColor = vec4(colour);\n}\n"]),
+    transparent: true,
+    uniforms: {
+        "tDiffuse": { type: "t", value: null }
+    },
+    defines: {
+        USE_MAP: ''
+    }
+});
+
+var island_mat = new THREE.ShaderMaterial({
+    vertexShader: glslify(["#ifdef GL_ES\nprecision mediump float;\n#define GLSLIFY 1\n#endif\n\nvarying vec3 vNorm;\nvarying vec2 vUv;\nuniform float logDepthBufFC;\nvarying float vFragDepth;\nvoid main() {\n  vUv = uv;\n  vNorm = position.xyz;\n  gl_Position = projectionMatrix *\n              modelViewMatrix *\n              vec4(position, 1.0);\n // gl_Position.z = log2(max( 0.00001, gl_Position.w + 1.0 )) * logDepthBufFC;\n // gl_Position.z = (gl_Position.z - 1.0) * gl_Position.w;\n}\n"]),
+    fragmentShader: glslify(["#define GLSLIFY 1\nvarying vec2 vUv;\nuniform sampler2D tDiffuse; \nuniform vec2 iResolution;\nuniform float iGlobalTime;\nuniform float amount;\n\nvoid main() {\n    vec4 colour = texture2D(tDiffuse,vUv);\n    gl_FragColor = vec4(colour);\n}\n"]),
+    transparent: true,
+    uniforms: {
+        "tDiffuse": { type: "t", value: null }
+    },
+    defines: {
+        USE_MAP: ''
+    }
+});
+
+gui.add(seed, 'value', 0, 10000).name('seed');
+
+var terrainGui = gui.addFolder("Terrain");
+terrainGui.addColor(deform_mat.uniforms.colour, 'value').name('colour');
+terrainGui.add(deform_mat.uniforms.deformAmount, 'value', -50, 50).name('deformAmount');
+
+var gpuCompute = new _GPUComputationRenderer2.default(128, 128, renderer);
+var vorHeight = gpuCompute.createTexture();
+var vorHeightVariable = gpuCompute.addVariable("textureVorHeight", glslify(["#define GLSLIFY 1\nuniform float scale;\nuniform vec2 gridPos;\n\nvec2 random2( vec2 p ) {\n    return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);\n}\n\nvoid main() {\n    vec2 st = gl_FragCoord.xy / resolution.xy;\n    vec3 color = vec3(.0);\n    \n    // Scale \n    st *= scale;\n    \n    // Tile the space\n    vec2 i_st = floor(st);\n    vec2 f_st = fract(st);\n\n    float m_dist = 10.;  // minimun distance\n    vec2 m_point;        // minimum point\n    \n    for (int j=-1; j<=1; j++ ) {\n        for (int i=-1; i<=1; i++ ) {\n            vec2 neighbor = vec2(float(i),float(j));\n            vec2 point = random2(gridPos + i_st + neighbor);\n            point = 0.5 + 0.5*sin(6.2831*point);\n            vec2 diff = neighbor + point - f_st;\n            float dist = length(diff);\n\n            if( dist < m_dist ) {\n                m_dist = dist;\n                m_point = point;\n            }\n        }\n    }\n\n    // Assign a color using the closest point position\n    color = vec3(0.5);\n    //color += dot(m_point,vec2(0.3,0.6)) * 0.0;\n    \n    // Add distance field to closest point center \n    color+= pow(m_dist,4.);\n    // Show isolines\n    //color -= abs(sin(40.0*m_dist))*0.07;\n    \n    // Draw cell center\n    //color += 1.-step(.05, m_dist);\n    \n    // Draw grid\n    //color.r += step(.98, f_st.x) + step(.98, f_st.y);\n    \n    gl_FragColor = vec4(color,1.0);\n}\n\n//void main(){\n//\tvec2 uv = gl_FragCoord.xy / resolution.xy;\n//\tvec4 tmpPos = texture2D( texturePosition, uv );\n//\tvec3 position = tmpPos.xyz;\n//\tgl_FragColor = vec4(1.,0.5,1.,1.);\n//}\n"]), vorHeight);
+gpuCompute.setVariableDependencies(vorHeightVariable, [vorHeightVariable]);
+
+vorHeightVariable.material.uniforms.gridPos = { type: 'v2', value: new THREE.Vector2(seed.value, seed.value) };
+vorHeightVariable.material.uniforms.scale = { type: 'f', value: 9.5 };
+
+var vorGui = gui.addFolder('Voronoi');
+vorGui.add(vorHeightVariable.material.uniforms.scale, 'value', 0, 128).name('scale');
+
+var fbmHeight = gpuCompute.createTexture();
+var fbmHeightVariable = gpuCompute.addVariable("textureFbmHeight", glslify(["#ifdef GL_ES\nprecision mediump float;\n#define GLSLIFY 1\n#endif\n\n//\n// Description : Array and textureless GLSL 2D/3D/4D simplex\n//               noise functions.\n//      Author : Ian McEwan, Ashima Arts.\n//  Maintainer : ijm\n//     Lastmod : 20110822 (ijm)\n//     License : Copyright (C) 2011 Ashima Arts. All rights reserved.\n//               Distributed under the MIT License. See LICENSE file.\n//               https://github.com/ashima/webgl-noise\n//\n\nvec3 mod289_0(vec3 x) {\n  return x - floor(x * (1.0 / 289.0)) * 289.0;\n}\n\nvec4 mod289_0(vec4 x) {\n  return x - floor(x * (1.0 / 289.0)) * 289.0;\n}\n\nvec4 permute_0(vec4 x) {\n     return mod289_0(((x*34.0)+1.0)*x);\n}\n\nvec4 taylorInvSqrt(vec4 r)\n{\n  return 1.79284291400159 - 0.85373472095314 * r;\n}\n\nfloat snoise_0(vec3 v)\n  {\n  const vec2  C = vec2(1.0/6.0, 1.0/3.0) ;\n  const vec4  D = vec4(0.0, 0.5, 1.0, 2.0);\n\n// First corner\n  vec3 i  = floor(v + dot(v, C.yyy) );\n  vec3 x0 =   v - i + dot(i, C.xxx) ;\n\n// Other corners\n  vec3 g_0 = step(x0.yzx, x0.xyz);\n  vec3 l = 1.0 - g_0;\n  vec3 i1 = min( g_0.xyz, l.zxy );\n  vec3 i2 = max( g_0.xyz, l.zxy );\n\n  //   x0 = x0 - 0.0 + 0.0 * C.xxx;\n  //   x1 = x0 - i1  + 1.0 * C.xxx;\n  //   x2 = x0 - i2  + 2.0 * C.xxx;\n  //   x3 = x0 - 1.0 + 3.0 * C.xxx;\n  vec3 x1 = x0 - i1 + C.xxx;\n  vec3 x2 = x0 - i2 + C.yyy; // 2.0*C.x = 1/3 = C.y\n  vec3 x3 = x0 - D.yyy;      // -1.0+3.0*C.x = -0.5 = -D.y\n\n// Permutations\n  i = mod289_0(i);\n  vec4 p = permute_0( permute_0( permute_0(\n             i.z + vec4(0.0, i1.z, i2.z, 1.0 ))\n           + i.y + vec4(0.0, i1.y, i2.y, 1.0 ))\n           + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));\n\n// Gradients: 7x7 points over a square, mapped onto an octahedron.\n// The ring size 17*17 = 289 is close to a multiple of 49 (49*6 = 294)\n  float n_ = 0.142857142857; // 1.0/7.0\n  vec3  ns = n_ * D.wyz - D.xzx;\n\n  vec4 j = p - 49.0 * floor(p * ns.z * ns.z);  //  mod(p,7*7)\n\n  vec4 x_ = floor(j * ns.z);\n  vec4 y_ = floor(j - 7.0 * x_ );    // mod(j,N)\n\n  vec4 x = x_ *ns.x + ns.yyyy;\n  vec4 y = y_ *ns.x + ns.yyyy;\n  vec4 h = 1.0 - abs(x) - abs(y);\n\n  vec4 b0 = vec4( x.xy, y.xy );\n  vec4 b1 = vec4( x.zw, y.zw );\n\n  //vec4 s0 = vec4(lessThan(b0,0.0))*2.0 - 1.0;\n  //vec4 s1 = vec4(lessThan(b1,0.0))*2.0 - 1.0;\n  vec4 s0 = floor(b0)*2.0 + 1.0;\n  vec4 s1 = floor(b1)*2.0 + 1.0;\n  vec4 sh = -step(h, vec4(0.0));\n\n  vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy ;\n  vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww ;\n\n  vec3 p0 = vec3(a0.xy,h.x);\n  vec3 p1 = vec3(a0.zw,h.y);\n  vec3 p2 = vec3(a1.xy,h.z);\n  vec3 p3 = vec3(a1.zw,h.w);\n\n//Normalise gradients\n  vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));\n  p0 *= norm.x;\n  p1 *= norm.y;\n  p2 *= norm.z;\n  p3 *= norm.w;\n\n// Mix final noise value\n  vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);\n  m = m * m;\n  return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1),\n                                dot(p2,x2), dot(p3,x3) ) );\n  }\n\n//\n// Description : Array and textureless GLSL 2D simplex noise function.\n//      Author : Ian McEwan, Ashima Arts.\n//  Maintainer : ijm\n//     Lastmod : 20110822 (ijm)\n//     License : Copyright (C) 2011 Ashima Arts. All rights reserved.\n//               Distributed under the MIT License. See LICENSE file.\n//               https://github.com/ashima/webgl-noise\n//\n\nvec3 mod289_1(vec3 x) {\n  return x - floor(x * (1.0 / 289.0)) * 289.0;\n}\n\nvec2 mod289_1(vec2 x) {\n  return x - floor(x * (1.0 / 289.0)) * 289.0;\n}\n\nvec3 permute_1(vec3 x) {\n  return mod289_1(((x*34.0)+1.0)*x);\n}\n\nfloat snoise_1(vec2 v)\n  {\n  const vec4 C = vec4(0.211324865405187,  // (3.0-sqrt(3.0))/6.0\n                      0.366025403784439,  // 0.5*(sqrt(3.0)-1.0)\n                     -0.577350269189626,  // -1.0 + 2.0 * C.x\n                      0.024390243902439); // 1.0 / 41.0\n// First corner\n  vec2 i  = floor(v + dot(v, C.yy) );\n  vec2 x0 = v -   i + dot(i, C.xx);\n\n// Other corners\n  vec2 i1;\n  //i1.x = step( x0.y, x0.x ); // x0.x > x0.y ? 1.0 : 0.0\n  //i1.y = 1.0 - i1.x;\n  i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);\n  // x0 = x0 - 0.0 + 0.0 * C.xx ;\n  // x1 = x0 - i1 + 1.0 * C.xx ;\n  // x2 = x0 - 1.0 + 2.0 * C.xx ;\n  vec4 x12 = x0.xyxy + C.xxzz;\n  x12.xy -= i1;\n\n// Permutations\n  i = mod289_1(i); // Avoid truncation effects in permutation\n  vec3 p = permute_1( permute_1( i.y + vec3(0.0, i1.y, 1.0 ))\n    + i.x + vec3(0.0, i1.x, 1.0 ));\n\n  vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);\n  m = m*m ;\n  m = m*m ;\n\n// Gradients: 41 points uniformly over a line, mapped onto a diamond.\n// The ring size 17*17 = 289 is close to a multiple of 41 (41*7 = 287)\n\n  vec3 x = 2.0 * fract(p * C.www) - 1.0;\n  vec3 h = abs(x) - 0.5;\n  vec3 ox = floor(x + 0.5);\n  vec3 a0 = x - ox;\n\n// Normalise gradients implicitly by scaling m\n// Approximation of: m *= inversesqrt( a0*a0 + h*h );\n  m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );\n\n// Compute final noise value at P\n  vec3 g;\n  g.x  = a0.x  * x0.x  + h.x  * x0.y;\n  g.yz = a0.yz * x12.xz + h.yz * x12.yw;\n  return 130.0 * dot(m, g);\n}\n\nuniform vec2 gridPos;\n\nuniform float lacunarity;\nuniform float gain;\nuniform float fbmx;\nuniform float fbmy;\nuniform sampler2D tDiffuse; \n\n// from https://thebookofshaders.com/13/\n// Based on Morgan McGuire @morgan3d\n// https://www.shadertoy.com/view/4dS3Wd\nfloat random (in vec2 _st) { \n    return fract(sin(dot(_st.xy,\n                         vec2(12.9898,78.233)))* \n        43758.5453123);\n}\n\nfloat noise (in vec2 _st) {\n    vec2 i = floor(_st);\n    vec2 f = fract(_st);\n\n    // Four corners in 2D of a tile\n    float a = random(i);\n    float b = random(i + vec2(1.0, 0.0));\n    float c = random(i + vec2(0.0, 1.0));\n    float d = random(i + vec2(1.0, 1.0));\n\n    vec2 u = f * f * (3.0 - 2.0 * f);\n\n    return mix(a, b, u.x) + \n            (c - a)* u.y * (1.0 - u.x) + \n            (d - b) * u.x * u.y;\n}\n\n  #define OCTAVES 12\n  #\n \n// from https://thebookofshaders.com/13/\nfloat fbm ( in vec2 _st) {\n    float v = 0.0;\n    float a = 0.5;\n    vec2 shift = vec2(100.0);\n    // Rotate to reduce axial bias\n    mat2 rot = mat2(cos(0.5), sin(0.5), \n                    -sin(0.5), cos(0.50));\n    for (int i = 0; i < OCTAVES; ++i) {\n        v += a * noise(_st);\n        _st = rot * _st * lacunarity + shift;\n\ta *= gain;\n    }\n    return v;\n}\n\nvoid main() {\n    vec2 st = gl_FragCoord.xy / resolution.xy;\n    st = st + gridPos;\nvec2 q = vec2(0.);\n    q.x = fbm( st + 0.00);\n    q.y = fbm( st + vec2(1.0));\n \n    vec2 r = vec2(0.);\n    r.x = fbm( st + 1.0*q + vec2(1.7,9.2)+ fbmx );\n    r.y = fbm( st + 1.0*q + vec2(8.3,2.8)+ fbmy );\n    float deform = fbm(st + r);\n\n    vec3 color = vec3(deform); \n\n    gl_FragColor = vec4(color,1.0);\n}\n"]), fbmHeight);
+gpuCompute.setVariableDependencies(fbmHeightVariable, [fbmHeightVariable]);
+
+fbmHeightVariable.material.uniforms.gridPos = { type: 'v2', value: new THREE.Vector2(seed.value, seed.value) };
+fbmHeightVariable.material.uniforms.lacunarity = { type: 'f', value: 2.0 };
+fbmHeightVariable.material.uniforms.gain = { type: 'f', value: 0.5 };
+fbmHeightVariable.material.uniforms.fbmx = { type: 'f', value: 0.5 };
+fbmHeightVariable.material.uniforms.fbmy = { type: 'f', value: 0.5 };
+
+var fbmGui = gui.addFolder('Fractal Brownian Motion');
+fbmGui.add(fbmHeightVariable.material.uniforms.fbmx, 'value', -5, 5).name('fbmx');
+fbmGui.add(fbmHeightVariable.material.uniforms.fbmy, 'value', -5, 5).name('fbmy');
+fbmGui.add(fbmHeightVariable.material.uniforms.lacunarity, 'value', -5, 5).name('lacunarity');
+fbmGui.add(fbmHeightVariable.material.uniforms.gain, 'value', -5, 5).name('gain');
+
+var islandHeight = gpuCompute.createTexture();
+var islandHeightVariable = gpuCompute.addVariable("textureIslandHeight", glslify(["#define GLSLIFY 1\nuniform vec2 p0;\nuniform vec2 p1;\n\nfloat smoothen(float d1, float d2) {\n    float k = 1.5;\n    return -log(exp(-k * d1) + exp(-k * d2)) / k;\n}\n\nvoid main(){\n\tvec2 st = gl_FragCoord.xy / resolution.xy;\n    float d = smoothen(distance(st, p0) * 3.0, distance(st, p1) * 5.0);\n        vec3 colour = vec3(smoothstep(0.0, 0.8, d));\t\n        colour += smoothstep(0.2, 1., d * .55);\t\n\tcolour = 1.0-colour;\n\tgl_FragColor = vec4(colour,1.0);\n}\n"]), islandHeight);
+gpuCompute.setVariableDependencies(islandHeightVariable, [islandHeightVariable]);
+
+islandHeightVariable.material.uniforms.p0 = { type: 'v2', value: new THREE.Vector2(0.5, 0.5) };
+islandHeightVariable.material.uniforms.p1 = { type: 'v2', value: new THREE.Vector2(0.5, 0.5) };
+
+var islandGui = gui.addFolder('Blobs');
+islandGui.add(islandHeightVariable.material.uniforms.p0.value, 'x', 0., 1.).name('p0.x');
+islandGui.add(islandHeightVariable.material.uniforms.p0.value, 'y', 0., 1.).name('p0.y');
+islandGui.add(islandHeightVariable.material.uniforms.p1.value, 'x', 0., 1.).name('p1.x');
+islandGui.add(islandHeightVariable.material.uniforms.p1.value, 'y', 0., 1.).name('p1.y');
+var mix = gpuCompute.createTexture();
+var mixVariable = gpuCompute.addVariable("textureMix", glslify(["#define GLSLIFY 1\nuniform float mixAmount;\nuniform float mixAmount2;\n\nvoid main() {\n\n    vec2 st = gl_FragCoord.xy / resolution.xy;\n    vec4 input1 = texture2D(textureVorHeight,st); \n    vec4 input2 = texture2D(textureFbmHeight,st);\n    vec4 input3 = texture2D(textureIslandHeight,st);\n    input1 = input1 * pow(vec4(mixAmount2),input3);  \n     \n    //mix(input1,input3,vec4(mixAmount2));\n    \n    vec4 colour = mix(input2,input1,vec4(mixAmount));\n    gl_FragColor =  vec4(colour);\n} \n"]), mix);
+gpuCompute.setVariableDependencies(mixVariable, [mixVariable, fbmHeightVariable, vorHeightVariable, islandHeightVariable]);
+mixVariable.material.uniforms.mixAmount = { type: 'f', value: 0.32 };
+mixVariable.material.uniforms.mixAmount2 = { type: 'f', value: 2.91 };
+var mixGui = gui.addFolder('Mix');
+mixGui.add(mixVariable.material.uniforms.mixAmount, 'value', 0., 1.).name('voroni-fbm mix');
+mixGui.add(mixVariable.material.uniforms.mixAmount2, 'value', 0., 10.).name('blob mix');
+
+var waterGui = gui.addFolder('Water');
+waterGui.add(water_mat.uniforms.fbmx, 'value', -5, 5).name('fbmx');
+waterGui.add(water_mat.uniforms.fbmy, 'value', -5, 5).name('fbmy');
+waterGui.add(water_mat.uniforms.lacunarity, 'value', -5, 5).name('lacunarity');
+waterGui.add(water_mat.uniforms.gain, 'value', -5, 5).name('gain');
+waterGui.add(water_mat.uniforms.deformAmount, 'value', -5, 5).name('deformAmount');
+waterGui.add(water_mat.uniforms.seaLevel, 'value', -5, 5).name('seaLevel');
+
+waterGui.addColor(water_mat.uniforms.colour, 'value').name('colour');
+waterGui.add(water_mat.uniforms.alpha, 'value', 0., 1.).name('alpha');
+var error = gpuCompute.init();
+if (error !== null) {
+    console.error(error);
+}
 
 var app = (0, _canvasLoop2.default)(canvas, { scale: renderer.devicePixelRatio });
 
+//uniforms for screen shaders
 passthroughEffect.uniforms.iResolution.value.set(app.shape[0], app.shape[1]);
 
+//time - for passing into shaders
 var time = 0;
 
-var geom = new THREE.PlaneGeometry(300, 300, // Width and Height
-300, 300 // Terrain resolution
+//the terrain plane
+var geom = new THREE.PlaneGeometry(32, 32, // Width and Height
+32, 32 // Terrain resolution
 );
 
-var plane = new THREE.Mesh(geom);
+var geom2 = new THREE.PlaneGeometry(8, 8, // Width and Height
+1, 1 // Terrain resolution
+);
 
-plane.material = dmat;
-plane.material.side = THREE.DoubleSide;
-scene.add(plane);
-plane.rotation.x -= 90 * Math.PI / 180;
+var plane = ents.createEntity();
+plane.addComponent(_Graphics2.default);
+plane.addComponent(_Position2.default);
+plane.graphics.mesh = new THREE.Mesh(geom);
+
+plane.graphics.mesh.material = deform_mat;
+plane.graphics.mesh.material.side = THREE.DoubleSide;
+plane.graphics.mesh.rotation.x -= 90 * Math.PI / 180;
+
+var plane2 = ents.createEntity();
+plane2.addComponent(_Graphics2.default);
+plane2.addComponent(_Position2.default);
+plane2.addComponent(_Quaternion2.default);
+plane2.addComponent(_Billboard2.default);
+plane2.addComponent(_StickToTarget2.default);
+plane2.stickToTarget.target = plane;
+plane2.stickToTarget.offset.x = -10;
+plane2.position.y = 10;
+plane2.graphics.mesh = new THREE.Mesh(geom2);
+
+plane2.graphics.mesh.material = vor_mat;
+var plane3 = ents.createEntity();
+plane3.addComponent(_Graphics2.default);
+plane3.addComponent(_Position2.default);
+plane3.addComponent(_Quaternion2.default);
+plane3.addComponent(_Billboard2.default);
+plane3.addComponent(_StickToTarget2.default);
+plane3.stickToTarget.target = plane;
+plane3.position.y = 10;
+plane3.stickToTarget.offset.x = 0;
+plane3.graphics.mesh = new THREE.Mesh(geom2);
+
+plane3.graphics.mesh.material = fbm_mat;
+
+var plane4 = ents.createEntity();
+plane4.addComponent(_Graphics2.default);
+plane4.addComponent(_Position2.default);
+plane4.addComponent(_Quaternion2.default);
+plane4.addComponent(_Billboard2.default);
+plane4.addComponent(_StickToTarget2.default);
+plane4.stickToTarget.target = plane;
+plane4.position.y = 10;
+plane4.stickToTarget.offset.x = 10;
+plane4.graphics.mesh = new THREE.Mesh(geom2);
+
+plane4.graphics.mesh.material = island_mat;
+
+var plane5 = ents.createEntity();
+plane5.addComponent(_Graphics2.default);
+plane5.addComponent(_Position2.default);
+plane5.graphics.mesh = new THREE.Mesh(geom);
+plane5.graphics.mesh.material = water_mat;
+
+plane5.graphics.mesh.material.side = THREE.DoubleSide;
+plane5.graphics.mesh.rotation.x -= 90 * Math.PI / 180;
 app.on('tick', function (dt) {
-  _keydrown2.default.tick();
-  time += dt / 1000;
-  dmat.uniforms.iGlobalTime.value = time;
-  composer.render(scene, camera);
-  renderer.render(scene, camera, bufferTexture);
-  passthroughEffect.uniforms.iGlobalTime.value = time;
+    _keydrown2.default.tick();
+    time += dt / 1000;
+    deform_mat.uniforms.iGlobalTime.value = time;
+    water_mat.uniforms.iGlobalTime.value = time;
+    composer.render(scene, camera);
+    renderer.render(scene, camera, bufferTexture);
+    passthroughEffect.uniforms.iGlobalTime.value = time;
 
-  world.step(fixedTimeStep, dt, maxSubSteps);
+    vorHeightVariable.material.uniforms.gridPos.value.x = seed.value;
+    vorHeightVariable.material.uniforms.gridPos.value.y = seed.value;
+    fbmHeightVariable.material.uniforms.gridPos.value.x = seed.value;
+    fbmHeightVariable.material.uniforms.gridPos.value.y = seed.value;
 
-  ents.queryComponents([_Shape2.default]).forEach(function (each) {
-    if (!each.shape) {
-      (0, _initShape2.default)(scene, each);
-    }
-  });
-  //run systems 
-  ents.queryComponents([_Physics2.default]).forEach(function (each) {
-    if (!each.physics.body) {
-      (0, _initPhysics2.default)(world, each);
-    }
-    //	each.shape.position.copy(each.physics.body.position) 
-    //	each.shape.quaternion.copy(each.physics.body.quaternion);
-  });
+    gpuCompute.compute();
+    var stage1 = gpuCompute.getCurrentRenderTarget(vorHeightVariable).texture;
+    var stage2 = gpuCompute.getCurrentRenderTarget(fbmHeightVariable).texture;
+    var stage3 = gpuCompute.getCurrentRenderTarget(islandHeightVariable).texture;
+    var mixed = gpuCompute.getCurrentRenderTarget(mixVariable).texture;
+    vor_mat.uniforms.tDiffuse.value = stage1;
+    fbm_mat.uniforms.tDiffuse.value = stage2;
+    island_mat.uniforms.tDiffuse.value = mixed;
+    deform_mat.uniforms.tDiffuse.value = mixed;
 
-  camera.position.copy(player.physics.body.position);
-  camera.quaternion.copy(player.physics.body.quaternion);
-  plane.position.x = player.physics.body.position.x;
-  plane.position.z = player.physics.body.position.z;
+    world.step(fixedTimeStep, dt, maxSubSteps);
+
+    //run system inits 
+    ents.queryComponents([_Graphics2.default]).forEach(function (each) {
+
+        if (!each.graphics.inScene) {
+            (0, _initGraphics2.default)(scene, each);
+        }
+    });
+    ents.queryComponents([_Physics2.default]).forEach(function (each) {
+        if (!each.physics.body) {
+            (0, _initPhysics2.default)(world, each);
+        }
+    });
+    //run systems
+
+    //update position from physics
+    ents.queryComponents([_Physics2.default, _Position2.default]).forEach(function (each) {
+        each.position.copy(each.physics.body.position);
+    });
+    //update quaternion from physics
+    ents.queryComponents([_Physics2.default, _Quaternion2.default]).forEach(function (each) {
+        each.quaternion.copy(each.physics.body.quaternion);
+    });
+
+    //update mesh from position
+    ents.queryComponents([_Graphics2.default, _Position2.default]).forEach(function (each) {
+        each.graphics.mesh.position.copy(each.position);
+    });
+    //update mesh from quaternion
+    ents.queryComponents([_Graphics2.default, _Quaternion2.default]).forEach(function (each) {
+        each.graphics.mesh.quaternion.copy(each.quaternion);
+    });
+
+    ents.queryComponents([_Position2.default, _StickToTarget2.default]).forEach(function (each) {
+        (0, _stickToTargetSystem2.default)(each);
+    });
+
+    camera.position.copy(player.position);
+    camera.quaternion.copy(player.quaternion);
+    ents.queryComponents([_Position2.default, _Billboard2.default]).forEach(function (each) {
+        (0, _billboardSystem2.default)(each, camera);
+    });
 });
 
 app.on('resize', resize);
@@ -61095,40 +66437,54 @@ app.start();
 resize();
 
 function resize() {
-  var _app$shape = _slicedToArray(app.shape, 2),
-      width = _app$shape[0],
-      height = _app$shape[1];
+    var _app$shape = _slicedToArray(app.shape, 2),
+        width = _app$shape[0],
+        height = _app$shape[1];
 
-  camera.aspect = width / height;
-  renderer.setSize(width, height, false);
+    camera.aspect = width / height;
+    renderer.setSize(width, height, false);
 
-  camera.updateProjectionMatrix();
+    camera.updateProjectionMatrix();
 }
 
-_keydrown2.default.LEFT.down(function () {});
-
-_keydrown2.default.RIGHT.down(function () {});
-
-_keydrown2.default.UP.down(function () {});
-
-_keydrown2.default.DOWN.down(function () {});
-
-_keydrown2.default.SPACE.up(function () {});
+//keyboard input
 
 _keydrown2.default.W.down(function () {
-  player.physics.body.applyLocalImpulse(new _cannon2.default.Vec3(0, 0, -1), new _cannon2.default.Vec3(0, 0, 0));
+    ents.queryComponents([_WASD2.default]).forEach(function (each) {
+        each.physics.body.applyLocalImpulse(new _cannon2.default.Vec3(0, 0, -1), new _cannon2.default.Vec3(0, 0, 0));
+    });
 });
 
 _keydrown2.default.S.down(function () {
-  player.physics.body.applyLocalImpulse(new _cannon2.default.Vec3(0, 0, 1), new _cannon2.default.Vec3(0, 0, 0));
+    ents.queryComponents([_WASD2.default]).forEach(function (each) {
+        each.physics.body.applyLocalImpulse(new _cannon2.default.Vec3(0, 0, 1), new _cannon2.default.Vec3(0, 0, 0));
+    });
 });
 
 _keydrown2.default.A.down(function () {
-  player.physics.body.angularVelocity = new _cannon2.default.Vec3(0, 0.05, 0);
+    ents.queryComponents([_WASD2.default]).forEach(function (each) {
+        each.physics.body.angularVelocity = new _cannon2.default.Vec3(0, 0.05, 0);
+    });
 });
 
 _keydrown2.default.D.down(function () {
-  player.physics.body.angularVelocity = new _cannon2.default.Vec3(0, -0.05, 0);
+    ents.queryComponents([_WASD2.default]).forEach(function (each) {
+        each.physics.body.angularVelocity = new _cannon2.default.Vec3(0, -0.05, 0);
+    });
 });
 
-},{"./Physics":35,"./Shape":36,"./initPhysics":37,"./initShape":38,"cannon":1,"canvas-loop":3,"glslify":6,"keydrown":8,"three":20,"three-effectcomposer":15,"tiny-ecs":21}]},{},[39]);
+},{"./Billboard":59,"./GPUComputationRenderer":60,"./Graphics":61,"./Physics":62,"./Position":63,"./Quaternion":64,"./StickToTarget":65,"./WASD":66,"./billboardSystem":67,"./initGraphics":68,"./initPhysics":69,"./stickToTargetSystem":71,"cannon":1,"canvas-loop":3,"dat.gui":4,"glslify":30,"keydrown":32,"three":44,"three-effectcomposer":39,"tiny-ecs":45}],71:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.default = stickToTargetSystem;
+
+
+function stickToTargetSystem(thing) {
+	thing.position.x = thing.stickToTarget.target.position.x + thing.stickToTarget.offset.x;
+	thing.position.z = thing.stickToTarget.target.position.z + thing.stickToTarget.offset.z;
+}
+
+},{}]},{},[70]);
